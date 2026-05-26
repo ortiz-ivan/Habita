@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Contrato
+from .services import ESTADOS_ACTIVOS
 from apps.habitaciones.models import Habitacion
 from apps.inquilinos.models import Inquilino
 
@@ -30,3 +31,21 @@ class ContratoWriteSerializer(serializers.ModelSerializer):
         model = Contrato
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
+
+    def validate(self, data):
+        habitacion = data.get('habitacion', getattr(self.instance, 'habitacion', None))
+        estado = data.get('estado', getattr(self.instance, 'estado', 'activo'))
+
+        if habitacion and estado in ESTADOS_ACTIVOS:
+            qs = Contrato.objects.filter(
+                habitacion=habitacion,
+                estado__in=ESTADOS_ACTIVOS,
+            )
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise serializers.ValidationError(
+                    {'habitacion': 'Esta habitación ya tiene un contrato activo.'}
+                )
+
+        return data

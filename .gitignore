@@ -1,0 +1,35 @@
+# ── Python / Django ──────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+
+# Entorno virtual
+backend/venv/
+
+# Variables de entorno  ← NUNCA subir al repo
+backend/.env
+
+# Base de datos local
+backend/db.sqlite3
+
+# Archivos estáticos y media generados
+backend/staticfiles/
+backend/media/
+
+# ── Frontend ─────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# ── IDE / OS ─────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+.claude

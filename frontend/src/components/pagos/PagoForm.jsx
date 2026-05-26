@@ -47,7 +47,7 @@ export default function PagoForm({ defaultValues, onSubmit, isLoading, apiError 
           <option value="">Seleccionar...</option>
           {contratos?.map((c) => (
             <option key={c.id} value={c.id}>
-              #{c.id} — {c.inquilino.apellido}, {c.inquilino.nombre} / Hab. {c.habitacion.numero} ({formatGs(c.monto_mensual)})
+              {c.id} — {c.inquilino.apellido}, {c.inquilino.nombre} / Hab. {c.habitacion.numero} ({formatGs(c.monto_mensual)})
             </option>
           ))}
         </select>

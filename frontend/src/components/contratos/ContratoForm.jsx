@@ -54,7 +54,7 @@ export default function ContratoForm({ defaultValues, onSubmit, isLoading, apiEr
             <option value="">Seleccionar...</option>
             {habitaciones?.map((h) => (
               <option key={h.id} value={h.id}>
-                #{h.numero} — Piso {h.piso} ({h.estado})
+                {h.numero} — Piso {h.piso} ({h.estado})
               </option>
             ))}
           </select>

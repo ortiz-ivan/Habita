@@ -71,7 +71,7 @@ export default function DashboardPage() {
                 key={h.id}
                 className={`rounded-lg px-3 py-2 text-xs font-medium ${estadoColor[h.estado] ?? 'bg-gray-100 text-gray-600'}`}
               >
-                <span className="font-bold">#{h.numero}</span>
+                <span className="font-bold">{h.numero}</span>
                 <span className="ml-1 text-gray-500">Piso {h.piso}</span>
                 <p className="capitalize mt-0.5">{h.estado}</p>
               </div>

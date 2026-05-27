@@ -10,6 +10,8 @@ const schema = z.object({
   password: z.string().min(1, 'Ingresá tu contraseña'),
 })
 
+const inp = 'w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#D85A30] text-stone-700 placeholder:text-stone-300'
+
 export default function LoginPage() {
   const navigate = useNavigate()
   const [apiError, setApiError] = useState('')
@@ -29,17 +31,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm p-8">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-1">Habita</h1>
-        <p className="text-sm text-gray-500 mb-6">Sistema de gestión de habitaciones</p>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F1EFE8' }}>
+      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 w-full max-w-sm p-8">
+        <div className="mb-7">
+          <h1 className="text-2xl font-medium mb-1" style={{ color: '#D85A30' }}>Habita</h1>
+          <p className="text-sm text-stone-400">Sistema de gestión de habitaciones</p>
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
+            <label className="block text-sm font-medium text-stone-600 mb-1.5">Usuario</label>
             <input
               {...register('username')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inp}
               placeholder="admin"
               autoFocus
             />
@@ -47,11 +51,11 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+            <label className="block text-sm font-medium text-stone-600 mb-1.5">Contraseña</label>
             <input
               {...register('password')}
               type="password"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inp}
               placeholder="••••••••"
             />
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
@@ -64,7 +68,10 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium rounded-lg py-2 text-sm transition-colors"
+            className="text-white font-medium rounded-lg py-2.5 text-sm transition-colors disabled:opacity-60 mt-1"
+            style={{ backgroundColor: '#D85A30' }}
+            onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.backgroundColor = '#c04e27' }}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#D85A30'}
           >
             {isSubmitting ? 'Ingresando...' : 'Ingresar'}
           </button>

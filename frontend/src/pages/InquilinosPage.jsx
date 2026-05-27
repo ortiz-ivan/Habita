@@ -5,14 +5,15 @@ import { parseApiError } from '../utils/format'
 import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import InquilinoForm from '../components/inquilinos/InquilinoForm'
+import { EmptyState } from '../components/ui/EmptyState'
 import { useDebounce } from '../hooks/useDebounce'
 
-const inp = 'border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+const inp = 'border border-stone-200 rounded-lg px-3 py-2 text-sm bg-stone-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#D85A30] text-stone-700 transition-colors'
 
 function Initials({ nombre, apellido }) {
   const text = `${apellido?.[0] ?? ''}${nombre?.[0] ?? ''}`.toUpperCase()
   return (
-    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold flex-shrink-0">
+    <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-900 flex items-center justify-center text-sm font-medium flex-shrink-0">
       {text}
     </div>
   )
@@ -20,42 +21,45 @@ function Initials({ nombre, apellido }) {
 
 function InquilinoCard({ i, onEdit, onView }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-      <div className="px-4 py-4 flex items-center gap-3 border-b border-gray-100">
+    <div className="bg-white rounded-xl border border-stone-200 overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow">
+      <div className="px-4 py-4 flex items-center gap-3 border-b border-stone-100">
         <Initials nombre={i.nombre} apellido={i.apellido} />
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-800 truncate">
+          <p className="text-sm font-medium text-stone-800 truncate">
             {i.apellido}, {i.nombre}
           </p>
-          <p className="text-xs text-gray-400 truncate">{i.email}</p>
+          <p className="text-xs text-stone-400 truncate">{i.email}</p>
         </div>
       </div>
 
-      <div className="px-4 py-3 flex-1 space-y-1.5 text-sm">
+      <div className="px-5 py-4 flex-1 space-y-3 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-400">Documento</span>
-          <span className="text-gray-700 font-medium">{i.documento}</span>
+          <span className="text-stone-400">Documento</span>
+          <span className="text-stone-700 font-medium">{i.documento}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-400">Teléfono</span>
-          <span className="text-gray-700">{i.telefono || '—'}</span>
+          <span className="text-stone-400">Teléfono</span>
+          <span className="text-stone-700">{i.telefono || '—'}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-400">Ingreso</span>
-          <span className="text-gray-700">{i.fecha_ingreso}</span>
+          <span className="text-stone-400">Ingreso</span>
+          <span className="text-stone-700">{i.fecha_ingreso}</span>
         </div>
       </div>
 
-      <div className="px-4 py-3 border-t border-gray-100 flex gap-2">
+      <div className="px-4 py-4 border-t border-stone-100 flex gap-2">
         <button
           onClick={() => onView(i)}
-          className="flex-1 text-sm py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+          className="flex-1 text-sm py-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 transition-colors"
         >
           Ver más
         </button>
         <button
           onClick={() => onEdit(i)}
-          className="flex-1 text-sm py-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors"
+          className="flex-1 text-sm py-2 rounded-lg text-white transition-colors"
+          style={{ backgroundColor: '#D85A30' }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#c04e27'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#D85A30'}
         >
           Editar
         </button>
@@ -70,34 +74,37 @@ function InquilinoDetail({ i, onEdit, onDelete }) {
       <div className="flex items-center gap-3 pb-2">
         <Initials nombre={i.nombre} apellido={i.apellido} />
         <div>
-          <p className="font-semibold text-gray-800">{i.apellido}, {i.nombre}</p>
-          <p className="text-sm text-gray-400">{i.email}</p>
+          <p className="font-medium text-stone-800">{i.apellido}, {i.nombre}</p>
+          <p className="text-sm text-stone-400">{i.email}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-sm">
-        <div className="bg-gray-50 rounded-lg px-3 py-2">
-          <p className="text-xs text-gray-400 mb-0.5">Documento</p>
-          <p className="font-semibold text-gray-800">{i.documento}</p>
+        <div className="bg-stone-50 rounded-lg px-3 py-2">
+          <p className="text-xs text-stone-400 mb-0.5">Documento</p>
+          <p className="font-medium text-stone-800">{i.documento}</p>
         </div>
-        <div className="bg-gray-50 rounded-lg px-3 py-2">
-          <p className="text-xs text-gray-400 mb-0.5">Teléfono</p>
-          <p className="font-semibold text-gray-800">{i.telefono || '—'}</p>
+        <div className="bg-stone-50 rounded-lg px-3 py-2">
+          <p className="text-xs text-stone-400 mb-0.5">Teléfono</p>
+          <p className="font-medium text-stone-800">{i.telefono || '—'}</p>
         </div>
-        <div className="bg-gray-50 rounded-lg px-3 py-2">
-          <p className="text-xs text-gray-400 mb-0.5">Fecha de ingreso</p>
-          <p className="font-semibold text-gray-800">{i.fecha_ingreso}</p>
+        <div className="bg-stone-50 rounded-lg px-3 py-2">
+          <p className="text-xs text-stone-400 mb-0.5">Fecha de ingreso</p>
+          <p className="font-medium text-stone-800">{i.fecha_ingreso}</p>
         </div>
-        <div className="bg-gray-50 rounded-lg px-3 py-2">
-          <p className="text-xs text-gray-400 mb-0.5">Contacto de emergencia</p>
-          <p className="font-semibold text-gray-800">{i.contacto_emergencia || '—'}</p>
+        <div className="bg-stone-50 rounded-lg px-3 py-2">
+          <p className="text-xs text-stone-400 mb-0.5">Contacto de emergencia</p>
+          <p className="font-medium text-stone-800">{i.contacto_emergencia || '—'}</p>
         </div>
       </div>
 
       <div className="flex gap-2 pt-1">
         <button
           onClick={onEdit}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+          className="flex-1 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+          style={{ backgroundColor: '#D85A30' }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#c04e27'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#D85A30'}
         >
           Editar
         </button>
@@ -163,43 +170,64 @@ export default function InquilinosPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">Inquilinos</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-medium text-stone-800">Inquilinos</h2>
         <button
           onClick={openCreate}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          className="text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          style={{ backgroundColor: '#D85A30' }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#c04e27'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#D85A30'}
         >
           + Nuevo inquilino
         </button>
       </div>
 
-      {/* Filtros */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por nombre, apellido, documento o email..."
-          className={`${inp} w-80`}
-        />
+      <div className="bg-white rounded-xl border border-stone-200 shadow-sm px-4 py-3 mb-8 flex flex-wrap items-center gap-3">
+        <div className="relative">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nombre, apellido, documento o email..."
+            className={`${inp} pl-9 w-80`}
+          />
+        </div>
         {search && (
           <button
             onClick={() => setSearch('')}
-            className="text-sm text-gray-400 hover:text-gray-600 px-2"
+            className="ml-auto flex items-center gap-1.5 text-sm text-stone-400 hover:text-[#D85A30] transition-colors"
           >
-            Limpiar
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+            Limpiar filtros
           </button>
         )}
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-400">Cargando...</p>
+        <p className="text-sm text-stone-400">Cargando...</p>
       ) : !data?.results?.length ? (
-        <p className="text-sm text-gray-400">
-          {search ? 'Sin resultados para esa búsqueda.' : 'No hay inquilinos registrados.'}
-        </p>
+        <EmptyState
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" className="w-8 h-8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+            </svg>
+          }
+          title={search ? 'Sin resultados para esa búsqueda' : 'No hay inquilinos registrados'}
+          description={search ? 'Probá con otro nombre o documento' : 'Agregá el primer inquilino para empezar'}
+          action={!search && (
+            <button onClick={openCreate} className="text-sm font-medium px-4 py-2 rounded-lg text-white" style={{ backgroundColor: '#D85A30' }}>
+              + Nuevo inquilino
+            </button>
+          )}
+        />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {data.results.map((i) => (
             <InquilinoCard key={i.id} i={i} onEdit={openEdit} onView={setViewTarget} />
           ))}

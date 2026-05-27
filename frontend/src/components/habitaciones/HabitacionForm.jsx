@@ -3,24 +3,24 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 const schema = z.object({
-  numero:             z.string().min(1, 'Requerido'),
-  piso:               z.coerce.number().int().min(1, 'Mínimo 1'),
-  precio:             z.coerce.number().int().min(1, 'Requerido'),
-  estado:             z.enum(['disponible', 'ocupada', 'reservada', 'mantenimiento']),
-  capacidad:          z.coerce.number().int().min(1, 'Mínimo 1'),
+  numero:              z.string().min(1, 'Requerido'),
+  piso:                z.coerce.number().int().min(1, 'Mínimo 1'),
+  precio:              z.coerce.number().int().min(1, 'Requerido'),
+  estado:              z.enum(['disponible', 'ocupada', 'reservada', 'mantenimiento']),
+  capacidad:           z.coerce.number().int().min(1, 'Mínimo 1'),
   tiene_banio_privado: z.boolean().default(false),
-  descripcion:        z.string().optional().default(''),
+  descripcion:         z.string().optional().default(''),
 })
 
-const inp = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-const sel = `${inp} bg-white`
+const inp = 'w-full border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm bg-white text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#D85A30] focus:border-[#D85A30] transition-all'
+const sel = `${inp} cursor-pointer`
 
 function Field({ label, error, children }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-semibold text-stone-700 mb-1.5">{label}</label>
       {children}
-      {error && <p className="text-red-500 text-xs mt-1">{error.message}</p>}
+      {error && <p className="text-xs mt-1.5 font-medium" style={{ color: '#A32D2D' }}>{error.message}</p>}
     </div>
   )
 }
@@ -64,17 +64,22 @@ export default function HabitacionForm({ defaultValues, onSubmit, isLoading, api
         <textarea {...register('descripcion')} className={inp} rows={2} placeholder="Opcional" />
       </Field>
 
-      <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-        <input {...register('tiene_banio_privado')} type="checkbox" className="rounded" />
+      <label className="flex items-center gap-2.5 text-sm font-medium text-stone-700 cursor-pointer select-none">
+        <input {...register('tiene_banio_privado')} type="checkbox" className="w-4 h-4 rounded accent-[#D85A30]" />
         Tiene baño privado
       </label>
 
-      {apiError && <p className="text-red-500 text-sm">{apiError}</p>}
+      {apiError && (
+        <p className="text-sm font-medium" style={{ color: '#A32D2D' }}>{apiError}</p>
+      )}
 
       <button
         type="submit"
         disabled={isLoading}
-        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium rounded-lg py-2 text-sm transition-colors"
+        className="w-full py-2.5 rounded-xl text-sm font-semibold text-white cursor-pointer disabled:opacity-50 transition-colors mt-1"
+        style={{ backgroundColor: '#D85A30' }}
+        onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#C04E27' }}
+        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#D85A30' }}
       >
         {isLoading ? 'Guardando...' : 'Guardar'}
       </button>

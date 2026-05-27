@@ -1,25 +1,42 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import { useAuthStore } from '../store/authStore'
 import { formatGs } from '../utils/format'
 import { AlertBanner } from '../components/ui/AlertBanner'
 import { MetricCard } from '../components/ui/MetricCard'
 import { PaymentStatusBadge } from '../components/ui/PaymentStatusBadge'
+import { FilterBar } from '../components/ui/FilterBar'
 import { EmptyState } from '../components/ui/EmptyState'
 
-const estadoHabColor = {
-  disponible:    'bg-green-100 text-green-700',
-  ocupada:       'bg-red-100 text-red-700',
-  reservada:     'bg-amber-100 text-amber-800',
-  mantenimiento: 'bg-stone-100 text-stone-500',
+// ─── Configuraciones ────────────────────────────────────────────────────────
+
+const estadoHabConfig = {
+  disponible:    { label: 'Disponible',    dot: '#3B6D11', bg: '#EAF3DE', text: '#3B6D11' },
+  ocupada:       { label: 'Ocupada',       dot: '#A32D2D', bg: '#FCEBEB', text: '#A32D2D' },
+  reservada:     { label: 'Reservada',     dot: '#FAC775', bg: '#FAEEDA', text: '#633806' },
+  mantenimiento: { label: 'Mantenimiento', dot: '#5F5E5A', bg: '#F5F0E8', text: '#5F5E5A' },
 }
 
-const estadoHabLabel = {
-  disponible:    'Disponible',
-  ocupada:       'Ocupada',
-  reservada:     'Reservada',
-  mantenimiento: 'Mantenimiento',
+// El color del avatar coincide con el estado del pago (unidad visual con el badge)
+const avatarByStatus = {
+  pagado:       { bg: '#EAF3DE', text: '#3B6D11' },
+  pendiente:    { bg: '#FAEEDA', text: '#633806' },
+  por_vencer:   { bg: '#FAEEDA', text: '#633806' },
+  vencido:      { bg: '#FCEBEB', text: '#A32D2D' },
+  parcial:      { bg: '#FAEEDA', text: '#633806' },
+  sin_contrato: { bg: '#F5F0E8', text: '#5F5E5A' },
 }
+
+const tenantFilters = [
+  { id: 'all',       label: 'Todos'      },
+  { id: 'pendiente', label: 'Pendientes' },
+  { id: 'por_vencer',label: 'Por vencer' },
+  { id: 'vencido',   label: 'Vencidos'   },
+]
+
+// ─── Íconos ──────────────────────────────────────────────────────────────────
 
 const IconHome = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -51,72 +68,108 @@ const IconBuildingEmpty = () => (
   </svg>
 )
 
-function PaymentRow({ pago }) {
-  const words = (pago.contrato?.inquilino_nombre ?? '').trim().split(' ').filter(Boolean)
+const IconUsersEmpty = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" className="w-8 h-8">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+  </svg>
+)
+
+// ─── TenantRow ───────────────────────────────────────────────────────────────
+
+function TenantRow({ pago }) {
+  const nombre   = pago.contrato?.inquilino_nombre ?? ''
+  const words    = nombre.trim().split(' ').filter(Boolean)
   const initials = words.slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?'
+  const { bg, text } = avatarByStatus[pago.estado] ?? avatarByStatus.sin_contrato
 
   return (
-    <div className="flex items-center gap-3 py-3 border-b border-stone-100 last:border-0">
-      <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-xs font-medium text-amber-900 shrink-0">
+    <div
+      className="flex items-center gap-2.5 px-4 py-[10px] transition-colors cursor-pointer"
+      style={{ borderBottom: '1px solid #EDE8DE' }}
+      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FDFCFA' }}
+      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+    >
+      <div
+        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-medium shrink-0"
+        style={{ backgroundColor: bg, color: text }}
+      >
         {initials}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[15px] font-medium text-stone-800 truncate">
-          {pago.contrato?.inquilino_nombre ?? '—'}
+        <p className="text-[13px] font-medium truncate" style={{ color: '#1C1917' }}>
+          {nombre || '—'}
         </p>
-        <p className="text-xs text-stone-400">Hab. {pago.contrato?.habitacion_numero}</p>
+        <p className="text-[11px]" style={{ color: '#5F5E5A' }}>
+          Hab. {pago.contrato?.habitacion_numero} · {pago.fecha_pago}
+        </p>
       </div>
-      <span className="text-[15px] font-medium text-stone-700 shrink-0">{formatGs(pago.monto)}</span>
+      <span className="text-[13px] font-medium shrink-0" style={{ color: '#444441' }}>
+        {formatGs(pago.monto)}
+      </span>
       <PaymentStatusBadge status={pago.estado} />
     </div>
   )
 }
 
-export default function DashboardPage() {
-  const user = useAuthStore((s) => s.user)
+// ─── Página ──────────────────────────────────────────────────────────────────
 
+export default function DashboardPage() {
+  const user     = useAuthStore((s) => s.user)
+  const navigate = useNavigate()
+  const [tenantFilter, setTenantFilter] = useState('all')
+
+  // ── Queries para métricas ─────────────────────────────────────────────────
   const { data: habitaciones } = useQuery({
     queryKey: ['habitaciones'],
-    queryFn: () => api.get('/api/habitaciones/?page_size=100').then((r) => r.data),
+    queryFn:  () => api.get('/api/habitaciones/?page_size=100').then((r) => r.data),
   })
 
   const { data: contratos } = useQuery({
     queryKey: ['contratos-activos'],
-    queryFn: () => api.get('/api/contratos/?estado=activo&page_size=100').then((r) => r.data),
+    queryFn:  () => api.get('/api/contratos/?estado=activo&page_size=100').then((r) => r.data),
   })
 
   const { data: pagosVencidos } = useQuery({
     queryKey: ['pagos-vencidos'],
-    queryFn: () => api.get('/api/pagos/?estado=vencido&page_size=5').then((r) => r.data),
+    queryFn:  () => api.get('/api/pagos/?estado=vencido&page_size=1').then((r) => r.data),
   })
 
   const { data: pagosPendientes } = useQuery({
     queryKey: ['pagos-pendientes'],
-    queryFn: () => api.get('/api/pagos/?estado=pendiente&page_size=5').then((r) => r.data),
+    queryFn:  () => api.get('/api/pagos/?estado=pendiente&page_size=1').then((r) => r.data),
   })
 
+  // ── Query para TenantTable (reacciona al filtro activo) ───────────────────
+  const { data: tenantData, isLoading: tenantLoading } = useQuery({
+    queryKey: ['pagos-dashboard', tenantFilter],
+    queryFn:  () => {
+      const params = { page_size: 8 }
+      if (tenantFilter !== 'all') params.estado = tenantFilter
+      return api.get('/api/pagos/', { params }).then((r) => r.data)
+    },
+  })
+
+  // ── Métricas ──────────────────────────────────────────────────────────────
   const habs        = habitaciones?.results ?? []
   const disponibles = habs.filter((h) => h.estado === 'disponible').length
   const ocupadas    = habs.filter((h) => h.estado === 'ocupada').length
   const total       = habs.length
   const ocupacion   = total ? Math.round((ocupadas / total) * 100) : 0
 
-  const vencidosCount   = pagosVencidos?.count   ?? 0
-  const pendientesCount = pagosPendientes?.count  ?? 0
+  const vencidosCount    = pagosVencidos?.count   ?? 0
+  const pendientesCount  = pagosPendientes?.count  ?? 0
+  const pagosPendTotal   = pendientesCount + vencidosCount
 
-  const rowsVencidos   = pagosVencidos?.results   ?? []
-  const rowsPendientes = pagosPendientes?.results ?? []
-  const urgentRows     = [...rowsVencidos, ...rowsPendientes].slice(0, 6)
-
-  const pagosPendientesTotal = pendientesCount + vencidosCount
+  const tenantRows = tenantData?.results ?? []
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-medium text-stone-800">
+    <div className="max-w-6xl">
+      {/* Saludo */}
+      <div className="mb-5">
+        <h2 className="text-[17px] font-semibold" style={{ color: '#1C1917' }}>
           Bienvenido, {user?.first_name || user?.username}
         </h2>
-        <p className="text-sm text-stone-400 capitalize">{user?.rol}</p>
+        <p className="text-[13px] mt-0.5 capitalize" style={{ color: '#5F5E5A' }}>{user?.rol}</p>
       </div>
 
       {/* Alertas */}
@@ -124,12 +177,16 @@ export default function DashboardPage() {
         <AlertBanner
           type="danger"
           message={`${vencidosCount} pago${vencidosCount > 1 ? 's' : ''} vencido${vencidosCount > 1 ? 's' : ''} sin cobrar — acción urgente requerida`}
+          actionLabel="Ver todos"
+          onAction={() => navigate('/pagos?estado=vencido')}
         />
       )}
       {pendientesCount > 0 && (
         <AlertBanner
           type="warning"
           message={`${pendientesCount} pago${pendientesCount > 1 ? 's' : ''} pendiente${pendientesCount > 1 ? 's' : ''} por cobrar este mes`}
+          actionLabel="Ver todos"
+          onAction={() => navigate('/pagos?estado=pendiente')}
         />
       )}
       {vencidosCount === 0 && pendientesCount === 0 && (
@@ -137,73 +194,121 @@ export default function DashboardPage() {
       )}
 
       {/* Métricas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <MetricCard
-          label="Habitaciones disponibles"
-          value={disponibles}
-          color="success"
-          icon={<IconHome />}
-        />
-        <MetricCard
-          label="Ocupación"
-          value={`${ocupacion}%`}
-          color="brand"
-          icon={<IconChart />}
-        />
-        <MetricCard
-          label="Contratos activos"
-          value={contratos?.count}
-          color="default"
-          icon={<IconDoc />}
-        />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <MetricCard label="Disponibles"      value={disponibles}      color="success" icon={<IconHome />} />
+        <MetricCard label="Ocupación"        value={`${ocupacion}%`}  color="brand"   icon={<IconChart />} progress={ocupacion} />
+        <MetricCard label="Contratos activos" value={contratos?.count} color="default" icon={<IconDoc />} />
         <MetricCard
           label="Pagos pendientes"
-          value={pagosPendientesTotal}
+          value={pagosPendTotal}
           color={vencidosCount > 0 ? 'danger' : 'warning'}
           icon={<IconMoney />}
         />
       </div>
 
-      {/* Lista de pagos urgentes */}
-      {urgentRows.length > 0 && (
-        <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-5 mb-6">
-          <h3 className="text-lg font-medium text-stone-800 mb-1">Pagos por atender</h3>
-          <p className="text-sm text-stone-400 mb-4">Vencidos y pendientes · ordenados por urgencia</p>
-          <div>
-            {urgentRows.map((p) => (
-              <PaymentRow key={p.id} pago={p} />
-            ))}
+      {/* Fila inferior: TenantTable + Habitaciones */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-4">
+
+        {/* TenantTable */}
+        <div className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E8E4DC' }}>
+          {/* Header */}
+          <div className="flex items-center px-4 py-3" style={{ borderBottom: '1px solid #F0EDE7' }}>
+            <h2 className="text-[13px] font-medium" style={{ color: '#1C1917' }}>Inquilinos</h2>
+            <button
+              onClick={() => navigate('/pagos')}
+              className="ml-auto text-[12px] hover:underline cursor-pointer"
+              style={{ color: '#D85A30' }}
+            >
+              Ver todos →
+            </button>
           </div>
-        </div>
-      )}
 
-      {/* Grid de habitaciones */}
-      <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-stone-800">Estado de habitaciones</h3>
-          <span className="text-sm text-stone-400">{ocupadas} de {total} ocupadas</span>
-        </div>
-
-        {total === 0 ? (
-          <EmptyState
-            icon={<IconBuildingEmpty />}
-            title="No hay habitaciones cargadas"
-            description="Agregá la primera habitación para empezar"
+          {/* FilterBar */}
+          <FilterBar
+            filters={tenantFilters}
+            active={tenantFilter}
+            onChange={setTenantFilter}
           />
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            {habs.map((h) => (
-              <div
-                key={h.id}
-                className={`rounded-lg px-3 py-2 text-xs ${estadoHabColor[h.estado] ?? 'bg-stone-100 text-stone-500'}`}
-              >
-                <p className="font-medium">Hab. {h.numero}</p>
-                <p className="text-[11px] opacity-60">Piso {h.piso}</p>
-                <p className="mt-0.5 capitalize">{estadoHabLabel[h.estado] ?? h.estado}</p>
+
+          {/* Filas */}
+          <div>
+            {tenantLoading ? (
+              <div className="px-4 py-8 text-center text-[13px]" style={{ color: '#5F5E5A' }}>
+                Cargando…
               </div>
-            ))}
+            ) : tenantRows.length === 0 ? (
+              <div className="py-8">
+                <EmptyState
+                  icon={<IconUsersEmpty />}
+                  title="Sin resultados"
+                  description="No hay pagos en este estado"
+                />
+              </div>
+            ) : (
+              tenantRows.map((p) => (
+                <TenantRow key={p.id} pago={p} />
+              ))
+            )}
           </div>
-        )}
+        </div>
+
+        {/* Grid de habitaciones */}
+        <div className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DC' }}>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-[13px] font-medium" style={{ color: '#1C1917' }}>Habitaciones</h2>
+              <p className="text-[11px] mt-[1px]" style={{ color: '#5F5E5A' }}>
+                {ocupadas} de {total} ocupadas
+              </p>
+            </div>
+            {total > 0 && (
+              <div className="flex items-center gap-2.5">
+                {Object.entries(estadoHabConfig).map(([key, { dot }]) => {
+                  const count = habs.filter((h) => h.estado === key).length
+                  if (count === 0) return null
+                  return (
+                    <span key={key} className="flex items-center gap-1 text-[11px]" style={{ color: '#5F5E5A' }}>
+                      <span className="w-[7px] h-[7px] rounded-full" style={{ backgroundColor: dot }} />
+                      {count}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {total === 0 ? (
+            <EmptyState
+              icon={<IconBuildingEmpty />}
+              title="No hay habitaciones"
+              description="Agregá la primera habitación"
+            />
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {habs.map((h) => {
+                const cfg = estadoHabConfig[h.estado] ?? { label: h.estado, dot: '#5F5E5A', bg: '#F5F0E8', text: '#5F5E5A' }
+                return (
+                  <div
+                    key={h.id}
+                    className="rounded-lg px-3 py-2.5 cursor-default transition-transform duration-150"
+                    style={{ backgroundColor: cfg.bg, borderLeft: `3px solid ${cfg.dot}` }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    <p className="text-[13px] font-semibold leading-tight" style={{ color: cfg.text }}>
+                      #{h.numero}
+                    </p>
+                    <p className="text-[10px] mt-0.5" style={{ color: cfg.dot }}>Piso {h.piso}</p>
+                    <p className="text-[11px] mt-1 capitalize font-medium" style={{ color: cfg.text }}>
+                      {cfg.label}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import api from '../services/api'
 import { formatGs, parseApiError } from '../utils/format'
+import { contratosService } from '../services/contratosService'
 import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import ContratoForm from '../components/contratos/ContratoForm'
@@ -194,7 +194,7 @@ export default function ContratosPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.contratos.list(filters),
-    queryFn:  () => api.get('/api/contratos/', { params: filters }).then((r) => r.data),
+    queryFn:  () => contratosService.list(filters),
   })
 
   const invalidate = () => {
@@ -204,19 +204,19 @@ export default function ContratosPage() {
   }
 
   const createMutation = useMutation({
-    mutationFn: (data) => api.post('/api/contratos/', data),
+    mutationFn: contratosService.create,
     onSuccess: () => { invalidate(); setModalOpen(false) },
     onError: (err) => setApiError(parseApiError(err)),
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => api.patch(`/api/contratos/${id}/`, data),
+    mutationFn: ({ id, data }) => contratosService.update(id, data),
     onSuccess: () => { invalidate(); setModalOpen(false) },
     onError: (err) => setApiError(parseApiError(err)),
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => api.delete(`/api/contratos/${id}/`),
+    mutationFn: contratosService.remove,
     onSuccess: () => { invalidate(); setDeleteTarget(null); setViewTarget(null) },
     onError: (err) => { setDeleteTarget(null); alert(parseApiError(err)) },
   })

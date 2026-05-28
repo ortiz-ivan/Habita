@@ -3,8 +3,8 @@ import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '../store/authStore'
 import { logout } from '../services/authService'
-import api from '../services/api'
 import { parseApiError } from '../utils/format'
+import { pagosService } from '../services/pagosService'
 import Modal from '../components/ui/Modal'
 import PagoForm from '../components/pagos/PagoForm'
 import { queryKeys } from '../lib/queryKeys'
@@ -120,13 +120,13 @@ export default function MainLayout() {
 
   const { data: vencidosData } = useQuery({
     queryKey: queryKeys.pagos.vencidosCount(),
-    queryFn:  () => api.get('/api/pagos/?estado=vencido&page_size=1').then((r) => r.data),
+    queryFn:  () => pagosService.list({ estado: 'vencido', page_size: 1 }),
     refetchInterval: 60_000,
   })
   const unreadCount = vencidosData?.count ?? 0
 
   const createPago = useMutation({
-    mutationFn: (data) => api.post('/api/pagos/', data),
+    mutationFn: pagosService.create,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.pagos.all() })
       qc.invalidateQueries({ queryKey: queryKeys.pagos.pendientes() })

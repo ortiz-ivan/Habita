@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import api from '../services/api'
 import { formatGs, parseApiError } from '../utils/format'
+import { pagosService } from '../services/pagosService'
 import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import PagoForm from '../components/pagos/PagoForm'
@@ -237,7 +237,7 @@ export default function PagosPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.pagos.list(filters),
-    queryFn:  () => api.get('/api/pagos/', { params: filters }).then((r) => r.data),
+    queryFn:  () => pagosService.list(filters),
   })
 
   const invalidate = () => {
@@ -247,19 +247,19 @@ export default function PagosPage() {
   }
 
   const createMutation = useMutation({
-    mutationFn: (data) => api.post('/api/pagos/', data),
+    mutationFn: pagosService.create,
     onSuccess: () => { invalidate(); setModalOpen(false) },
     onError: (err) => setApiError(parseApiError(err)),
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => api.patch(`/api/pagos/${id}/`, data),
+    mutationFn: ({ id, data }) => pagosService.update(id, data),
     onSuccess: () => { invalidate(); setModalOpen(false) },
     onError: (err) => setApiError(parseApiError(err)),
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => api.delete(`/api/pagos/${id}/`),
+    mutationFn: pagosService.remove,
     onSuccess: () => { invalidate(); setDeleteTarget(null); setViewTarget(null) },
     onError: (err) => { setDeleteTarget(null); alert(parseApiError(err)) },
   })

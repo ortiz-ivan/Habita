@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import api from '../services/api'
 import { parseApiError } from '../utils/format'
+import { inquilinosService } from '../services/inquilinosService'
 import { avatarColor } from '../utils/avatar'
 import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
@@ -170,25 +170,25 @@ export default function InquilinosPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.inquilinos.list(filters),
-    queryFn:  () => api.get('/api/inquilinos/', { params: filters }).then((r) => r.data),
+    queryFn:  () => inquilinosService.list(filters),
   })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: queryKeys.inquilinos.all() })
 
   const createMutation = useMutation({
-    mutationFn: (data) => api.post('/api/inquilinos/', data),
+    mutationFn: inquilinosService.create,
     onSuccess: () => { invalidate(); setModalOpen(false) },
     onError: (err) => setApiError(parseApiError(err)),
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => api.patch(`/api/inquilinos/${id}/`, data),
+    mutationFn: ({ id, data }) => inquilinosService.update(id, data),
     onSuccess: () => { invalidate(); setModalOpen(false) },
     onError: (err) => setApiError(parseApiError(err)),
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => api.delete(`/api/inquilinos/${id}/`),
+    mutationFn: inquilinosService.remove,
     onSuccess: () => { invalidate(); setDeleteTarget(null); setViewTarget(null) },
     onError: (err) => { setDeleteTarget(null); alert(parseApiError(err)) },
   })

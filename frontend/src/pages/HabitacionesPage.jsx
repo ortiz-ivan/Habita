@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import api from '../services/api'
 import { formatGs, parseApiError } from '../utils/format'
+import { habitacionesService } from '../services/habitacionesService'
 import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import HabitacionForm from '../components/habitaciones/HabitacionForm'
@@ -196,12 +196,12 @@ export default function HabitacionesPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.habitaciones.list(filters),
-    queryFn:  () => api.get('/api/habitaciones/', { params: filters }).then((r) => r.data),
+    queryFn:  () => habitacionesService.list(filters),
   })
 
   const { data: allHabs } = useQuery({
     queryKey: queryKeys.habitaciones.pisos(),
-    queryFn:  () => api.get('/api/habitaciones/', { params: { page_size: 200 } }).then((r) => r.data),
+    queryFn:  () => habitacionesService.list({ page_size: 200 }),
     staleTime: 2 * 60 * 1000,
   })
 
@@ -213,19 +213,19 @@ export default function HabitacionesPage() {
   }
 
   const createMutation = useMutation({
-    mutationFn: (data) => api.post('/api/habitaciones/', data),
+    mutationFn: habitacionesService.create,
     onSuccess: () => { invalidate(); setModalOpen(false) },
     onError: (err) => setApiError(parseApiError(err)),
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => api.patch(`/api/habitaciones/${id}/`, data),
+    mutationFn: ({ id, data }) => habitacionesService.update(id, data),
     onSuccess: () => { invalidate(); setModalOpen(false) },
     onError: (err) => setApiError(parseApiError(err)),
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => api.delete(`/api/habitaciones/${id}/`),
+    mutationFn: habitacionesService.remove,
     onSuccess: () => { invalidate(); setDeleteTarget(null); setViewTarget(null) },
     onError: (err) => { setDeleteTarget(null); alert(parseApiError(err)) },
   })

@@ -2,8 +2,8 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
-import api from '../../services/api'
 import { formatGs } from '../../utils/format'
+import { contratosService } from '../../services/contratosService'
 import { queryKeys } from '../../lib/queryKeys'
 
 const schema = z.object({
@@ -38,7 +38,7 @@ export default function PagoForm({ defaultValues, onSubmit, isLoading, apiError 
 
   const { data: contratos } = useQuery({
     queryKey: queryKeys.contratos.select(),
-    queryFn: () => api.get('/api/contratos/?estado=activo&page_size=200').then((r) => r.data.results),
+    queryFn: contratosService.listSelect,
   })
 
   return (

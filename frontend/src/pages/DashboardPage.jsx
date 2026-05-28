@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import api from '../services/api'
 import { useAuthStore } from '../store/authStore'
+import { habitacionesService } from '../services/habitacionesService'
+import { contratosService } from '../services/contratosService'
+import { pagosService } from '../services/pagosService'
 import { formatGs } from '../utils/format'
 import { AlertBanner } from '../components/ui/AlertBanner'
 import { MetricCard } from '../components/ui/MetricCard'
@@ -121,22 +123,22 @@ export default function DashboardPage() {
   // ── Queries para métricas ─────────────────────────────────────────────────
   const { data: habitaciones } = useQuery({
     queryKey: queryKeys.habitaciones.all(),
-    queryFn:  () => api.get('/api/habitaciones/?page_size=100').then((r) => r.data),
+    queryFn:  () => habitacionesService.list({ page_size: 100 }),
   })
 
   const { data: contratos } = useQuery({
     queryKey: queryKeys.contratos.activos(),
-    queryFn:  () => api.get('/api/contratos/?estado=activo&page_size=100').then((r) => r.data),
+    queryFn:  () => contratosService.list({ estado: 'activo', page_size: 100 }),
   })
 
   const { data: pagosVencidos } = useQuery({
     queryKey: queryKeys.pagos.vencidos(),
-    queryFn:  () => api.get('/api/pagos/?estado=vencido&page_size=1').then((r) => r.data),
+    queryFn:  () => pagosService.list({ estado: 'vencido', page_size: 1 }),
   })
 
   const { data: pagosPendientes } = useQuery({
     queryKey: queryKeys.pagos.pendientes(),
-    queryFn:  () => api.get('/api/pagos/?estado=pendiente&page_size=1').then((r) => r.data),
+    queryFn:  () => pagosService.list({ estado: 'pendiente', page_size: 1 }),
   })
 
   // ── Query para TenantTable (reacciona al filtro activo) ───────────────────
@@ -145,7 +147,7 @@ export default function DashboardPage() {
     queryFn:  () => {
       const params = { page_size: 8 }
       if (tenantFilter !== 'all') params.estado = tenantFilter
-      return api.get('/api/pagos/', { params }).then((r) => r.data)
+      return pagosService.list(params)
     },
   })
 

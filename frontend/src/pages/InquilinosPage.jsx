@@ -10,6 +10,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { SkeletonGrid } from '../components/ui/Skeleton'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useDebounce } from '../hooks/useDebounce'
+import { queryKeys } from '../lib/queryKeys'
 import { Chip } from '../components/ui/Chip'
 
 const inpFilter = 'border border-[#2a2a2a] rounded px-3 py-2 text-sm bg-[#111111] focus:outline-none focus:ring-2 focus:ring-[#D85A30] text-[#e5e5e5] transition-all'
@@ -168,11 +169,11 @@ export default function InquilinosPage() {
   const filters = { search: debouncedSearch || undefined }
 
   const { data, isLoading } = useQuery({
-    queryKey: ['inquilinos', filters],
+    queryKey: queryKeys.inquilinos.list(filters),
     queryFn:  () => api.get('/api/inquilinos/', { params: filters }).then((r) => r.data),
   })
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['inquilinos'] })
+  const invalidate = () => qc.invalidateQueries({ queryKey: queryKeys.inquilinos.all() })
 
   const createMutation = useMutation({
     mutationFn: (data) => api.post('/api/inquilinos/', data),

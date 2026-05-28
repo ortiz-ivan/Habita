@@ -7,6 +7,7 @@ import api from '../services/api'
 import { parseApiError } from '../utils/format'
 import Modal from '../components/ui/Modal'
 import PagoForm from '../components/pagos/PagoForm'
+import { queryKeys } from '../lib/queryKeys'
 
 const IconDashboard = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-[18px] h-[18px] shrink-0">
@@ -118,7 +119,7 @@ export default function MainLayout() {
   const [apiError, setApiError]   = useState('')
 
   const { data: vencidosData } = useQuery({
-    queryKey: ['pagos-vencidos-count'],
+    queryKey: queryKeys.pagos.vencidosCount(),
     queryFn:  () => api.get('/api/pagos/?estado=vencido&page_size=1').then((r) => r.data),
     refetchInterval: 60_000,
   })
@@ -127,10 +128,10 @@ export default function MainLayout() {
   const createPago = useMutation({
     mutationFn: (data) => api.post('/api/pagos/', data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['pagos'] })
-      qc.invalidateQueries({ queryKey: ['pagos-pendientes'] })
-      qc.invalidateQueries({ queryKey: ['pagos-vencidos'] })
-      qc.invalidateQueries({ queryKey: ['pagos-vencidos-count'] })
+      qc.invalidateQueries({ queryKey: queryKeys.pagos.all() })
+      qc.invalidateQueries({ queryKey: queryKeys.pagos.pendientes() })
+      qc.invalidateQueries({ queryKey: queryKeys.pagos.vencidos() })
+      qc.invalidateQueries({ queryKey: queryKeys.pagos.vencidosCount() })
       setPayModal(false)
       setApiError('')
     },

@@ -9,6 +9,7 @@ import { MetricCard } from '../components/ui/MetricCard'
 import { PaymentStatusBadge } from '../components/ui/PaymentStatusBadge'
 import { FilterBar } from '../components/ui/FilterBar'
 import { EmptyState } from '../components/ui/EmptyState'
+import { queryKeys } from '../lib/queryKeys'
 
 // ─── Configuraciones ────────────────────────────────────────────────────────
 
@@ -119,28 +120,28 @@ export default function DashboardPage() {
 
   // ── Queries para métricas ─────────────────────────────────────────────────
   const { data: habitaciones } = useQuery({
-    queryKey: ['habitaciones'],
+    queryKey: queryKeys.habitaciones.all(),
     queryFn:  () => api.get('/api/habitaciones/?page_size=100').then((r) => r.data),
   })
 
   const { data: contratos } = useQuery({
-    queryKey: ['contratos-activos'],
+    queryKey: queryKeys.contratos.activos(),
     queryFn:  () => api.get('/api/contratos/?estado=activo&page_size=100').then((r) => r.data),
   })
 
   const { data: pagosVencidos } = useQuery({
-    queryKey: ['pagos-vencidos'],
+    queryKey: queryKeys.pagos.vencidos(),
     queryFn:  () => api.get('/api/pagos/?estado=vencido&page_size=1').then((r) => r.data),
   })
 
   const { data: pagosPendientes } = useQuery({
-    queryKey: ['pagos-pendientes'],
+    queryKey: queryKeys.pagos.pendientes(),
     queryFn:  () => api.get('/api/pagos/?estado=pendiente&page_size=1').then((r) => r.data),
   })
 
   // ── Query para TenantTable (reacciona al filtro activo) ───────────────────
   const { data: tenantData, isLoading: tenantLoading } = useQuery({
-    queryKey: ['pagos-dashboard', tenantFilter],
+    queryKey: queryKeys.pagos.dashboard(tenantFilter),
     queryFn:  () => {
       const params = { page_size: 8 }
       if (tenantFilter !== 'all') params.estado = tenantFilter

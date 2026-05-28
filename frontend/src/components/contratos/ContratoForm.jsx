@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import api from '../../services/api'
+import { queryKeys } from '../../lib/queryKeys'
 
 const schema = z.object({
   habitacion:    z.coerce.number().int().min(1, 'Seleccioná una habitación'),
@@ -41,12 +42,12 @@ export default function ContratoForm({ defaultValues, onSubmit, isLoading, apiEr
   })
 
   const { data: habitaciones } = useQuery({
-    queryKey: ['habitaciones-select'],
+    queryKey: queryKeys.habitaciones.select(),
     queryFn: () => api.get('/api/habitaciones/?page_size=200').then((r) => r.data.results),
   })
 
   const { data: inquilinos } = useQuery({
-    queryKey: ['inquilinos-select'],
+    queryKey: queryKeys.inquilinos.select(),
     queryFn: () => api.get('/api/inquilinos/?page_size=200').then((r) => r.data.results),
   })
 

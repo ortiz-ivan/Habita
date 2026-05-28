@@ -11,6 +11,7 @@ import { SkeletonGrid } from '../components/ui/Skeleton'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useDebounce } from '../hooks/useDebounce'
 import { Chip } from '../components/ui/Chip'
+import { queryKeys } from '../lib/queryKeys'
 
 const estadoConfig = {
   pagado:    { label: 'Pagado',    dot: '#7dc947', bg: '#0a1f00', text: '#7dc947' },
@@ -235,14 +236,14 @@ export default function PagosPage() {
   }
 
   const { data, isLoading } = useQuery({
-    queryKey: ['pagos', filters],
+    queryKey: queryKeys.pagos.list(filters),
     queryFn:  () => api.get('/api/pagos/', { params: filters }).then((r) => r.data),
   })
 
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ['pagos'] })
-    qc.invalidateQueries({ queryKey: ['pagos-pendientes'] })
-    qc.invalidateQueries({ queryKey: ['pagos-vencidos'] })
+    qc.invalidateQueries({ queryKey: queryKeys.pagos.all() })
+    qc.invalidateQueries({ queryKey: queryKeys.pagos.pendientes() })
+    qc.invalidateQueries({ queryKey: queryKeys.pagos.vencidos() })
   }
 
   const createMutation = useMutation({

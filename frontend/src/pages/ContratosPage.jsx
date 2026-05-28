@@ -10,6 +10,7 @@ import { SkeletonGrid } from '../components/ui/Skeleton'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useDebounce } from '../hooks/useDebounce'
 import { Chip } from '../components/ui/Chip'
+import { queryKeys } from '../lib/queryKeys'
 
 const estadoConfig = {
   activo:     { label: 'Activo',     dot: '#7dc947', bg: '#0a1f00', text: '#7dc947' },
@@ -192,14 +193,14 @@ export default function ContratosPage() {
   }
 
   const { data, isLoading } = useQuery({
-    queryKey: ['contratos', filters],
+    queryKey: queryKeys.contratos.list(filters),
     queryFn:  () => api.get('/api/contratos/', { params: filters }).then((r) => r.data),
   })
 
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ['contratos'] })
-    qc.invalidateQueries({ queryKey: ['contratos-select'] })
-    qc.invalidateQueries({ queryKey: ['habitaciones'] })
+    qc.invalidateQueries({ queryKey: queryKeys.contratos.all() })
+    qc.invalidateQueries({ queryKey: queryKeys.contratos.select() })
+    qc.invalidateQueries({ queryKey: queryKeys.habitaciones.all() })
   }
 
   const createMutation = useMutation({

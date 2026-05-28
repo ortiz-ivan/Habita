@@ -10,6 +10,7 @@ import { SkeletonGrid } from '../components/ui/Skeleton'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useDebounce } from '../hooks/useDebounce'
 import { Chip } from '../components/ui/Chip'
+import { queryKeys } from '../lib/queryKeys'
 
 const estadoConfig = {
   disponible:    { label: 'Disponible',    dot: '#7dc947', bg: '#0a1f00', text: '#7dc947' },
@@ -194,12 +195,12 @@ export default function HabitacionesPage() {
   }
 
   const { data, isLoading } = useQuery({
-    queryKey: ['habitaciones', filters],
+    queryKey: queryKeys.habitaciones.list(filters),
     queryFn:  () => api.get('/api/habitaciones/', { params: filters }).then((r) => r.data),
   })
 
   const { data: allHabs } = useQuery({
-    queryKey: ['habitaciones-pisos'],
+    queryKey: queryKeys.habitaciones.pisos(),
     queryFn:  () => api.get('/api/habitaciones/', { params: { page_size: 200 } }).then((r) => r.data),
     staleTime: 2 * 60 * 1000,
   })
@@ -207,8 +208,8 @@ export default function HabitacionesPage() {
   const pisosOpciones = [...new Set((allHabs?.results ?? []).map((h) => h.piso))].sort((a, b) => a - b)
 
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ['habitaciones'] })
-    qc.invalidateQueries({ queryKey: ['habitaciones-pisos'] })
+    qc.invalidateQueries({ queryKey: queryKeys.habitaciones.all() })
+    qc.invalidateQueries({ queryKey: queryKeys.habitaciones.pisos() })
   }
 
   const createMutation = useMutation({

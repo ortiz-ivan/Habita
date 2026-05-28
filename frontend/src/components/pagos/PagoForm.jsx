@@ -14,15 +14,15 @@ const schema = z.object({
   observacion: z.string().optional().default(''),
 })
 
-const inp = 'w-full border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm bg-white text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#D85A30] focus:border-[#D85A30] transition-all'
+const inp = 'w-full border border-[#2a2a2a] rounded px-3.5 py-2.5 text-sm bg-[#1a1a1a] text-[#e5e5e5] placeholder:text-[#555553] focus:outline-none focus:ring-2 focus:ring-[#D85A30] focus:border-[#D85A30] transition-all'
 const sel = `${inp} cursor-pointer`
 
 function Field({ label, error, children }) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-stone-700 mb-1.5">{label}</label>
+      <label className="block text-sm font-semibold mb-1.5" style={{ color: '#e5e5e5' }}>{label}</label>
       {children}
-      {error && <p className="text-xs mt-1.5 font-medium" style={{ color: '#A32D2D' }}>{error.message}</p>}
+      {error && <p className="text-xs mt-1.5 font-medium" style={{ color: '#f87171' }}>{error.message}</p>}
     </div>
   )
 }
@@ -41,7 +41,7 @@ export default function PagoForm({ defaultValues, onSubmit, isLoading, apiError 
   })
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
       <Field label="Contrato" error={errors.contrato}>
         <select {...register('contrato')} className={sel}>
           <option value="">Seleccionar...</option>
@@ -53,7 +53,7 @@ export default function PagoForm({ defaultValues, onSubmit, isLoading, apiError 
         </select>
       </Field>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <Field label="Monto (Gs.)" error={errors.monto}>
           <input {...register('monto')} type="number" className={inp} placeholder="1500000" />
         </Field>
@@ -62,7 +62,7 @@ export default function PagoForm({ defaultValues, onSubmit, isLoading, apiError 
         </Field>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <Field label="Método de pago" error={errors.metodo_pago}>
           <select {...register('metodo_pago')} className={sel}>
             <option value="efectivo">Efectivo</option>
@@ -86,13 +86,13 @@ export default function PagoForm({ defaultValues, onSubmit, isLoading, apiError 
       </Field>
 
       {apiError && (
-        <p className="text-sm font-medium" style={{ color: '#A32D2D' }}>{apiError}</p>
+        <p className="text-sm font-medium" style={{ color: '#f87171' }}>{apiError}</p>
       )}
 
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-2.5 rounded-xl text-sm font-semibold text-white cursor-pointer disabled:opacity-50 transition-colors mt-1"
+        className="w-full py-2.5 rounded text-sm font-semibold text-white cursor-pointer disabled:opacity-50 transition-colors mt-1"
         style={{ backgroundColor: '#D85A30' }}
         onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#C04E27' }}
         onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#D85A30' }}

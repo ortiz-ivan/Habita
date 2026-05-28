@@ -1,12 +1,12 @@
 const PALETTE = [
-  { bg: '#FAECE7', text: '#C04E27' },
-  { bg: '#F0FDF4', text: '#15803D' },
-  { bg: '#EFF6FF', text: '#1D4ED8' },
-  { bg: '#F5F3FF', text: '#6D28D9' },
-  { bg: '#FFF7ED', text: '#C2410C' },
-  { bg: '#F0FDFA', text: '#0F766E' },
-  { bg: '#FDF4FF', text: '#7E22CE' },
-  { bg: '#ECFDF5', text: '#065F46' },
+  { bg: '#2a1200', text: '#D85A30' },
+  { bg: '#0a1f00', text: '#7dc947' },
+  { bg: '#0d1a2e', text: '#60a5fa' },
+  { bg: '#1a0d2e', text: '#a78bfa' },
+  { bg: '#2a1400', text: '#FAC775' },
+  { bg: '#091a18', text: '#2dd4bf' },
+  { bg: '#1f0d2e', text: '#c084fc' },
+  { bg: '#041a10', text: '#34d399' },
 ]
 
 export function avatarColor(str = '') {

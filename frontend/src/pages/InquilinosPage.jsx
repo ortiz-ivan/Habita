@@ -10,8 +10,9 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { SkeletonGrid } from '../components/ui/Skeleton'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useDebounce } from '../hooks/useDebounce'
+import { Chip } from '../components/ui/Chip'
 
-const inpFilter = 'border border-stone-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#D85A30] text-stone-700 transition-all'
+const inpFilter = 'border border-[#2a2a2a] rounded px-3 py-2 text-sm bg-[#111111] focus:outline-none focus:ring-2 focus:ring-[#D85A30] text-[#e5e5e5] transition-all'
 
 const cardHover = {
   onMouseEnter: (e) => {
@@ -38,54 +39,65 @@ function Avatar({ nombre, apellido, size = 'md' }) {
 function InquilinoCard({ i, onEdit, onView }) {
   return (
     <div
-      className="bg-white rounded-2xl overflow-hidden flex flex-col cursor-default"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'transform 200ms ease, box-shadow 200ms ease' }}
+      className="rounded overflow-hidden flex flex-col cursor-default"
+      style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f', transition: 'transform 200ms ease, box-shadow 200ms ease' }}
       {...cardHover}
     >
-      <div className="px-5 pt-5 pb-4" style={{ backgroundColor: '#F5F0E8' }}>
+      <div className="px-5 pt-5 pb-4" style={{ backgroundColor: '#1a1a1a' }}>
         <div className="flex items-center gap-3">
           <Avatar nombre={i.nombre} apellido={i.apellido} size="lg" />
-          <div className="min-w-0">
-            <p className="font-bold text-base leading-tight truncate" style={{ color: '#1C1917' }}>
+          <div className="min-w-0 flex-1">
+            <p className="font-bold text-base leading-snug" style={{ color: '#f0f0f0' }}>
               {i.apellido}, {i.nombre}
             </p>
-            <p className="text-xs truncate mt-0.5" style={{ color: '#5F5E5A' }}>{i.email}</p>
+            <p className="text-xs truncate mt-0.5" style={{ color: '#888884' }}>{i.email}</p>
           </div>
         </div>
       </div>
 
-      <div className="px-5 py-4 flex-1 space-y-2.5 text-sm">
-        <div className="flex justify-between">
-          <span style={{ color: '#5F5E5A' }}>Documento</span>
-          <span className="font-semibold" style={{ color: '#1C1917' }}>{i.documento}</span>
-        </div>
-        <div className="flex justify-between">
-          <span style={{ color: '#5F5E5A' }}>Teléfono</span>
-          <span style={{ color: '#444441' }}>{i.telefono || '—'}</span>
-        </div>
-        <div className="flex justify-between">
-          <span style={{ color: '#5F5E5A' }}>Ingreso</span>
-          <span style={{ color: '#444441' }}>{i.fecha_ingreso}</span>
+      <div style={{ height: '1px', backgroundColor: '#1f1f1f' }} />
+
+      <div className="px-4 py-4 flex-1">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded px-3 py-2.5" style={{ backgroundColor: '#1a1a1a' }}>
+            <p className="text-[10px] font-medium uppercase tracking-wide mb-1" style={{ color: '#888884' }}>Documento</p>
+            <p className="text-sm font-bold" style={{ color: '#f0f0f0' }}>{i.documento}</p>
+          </div>
+          <div className="rounded px-3 py-2.5" style={{ backgroundColor: '#1a1a1a' }}>
+            <p className="text-[10px] font-medium uppercase tracking-wide mb-1" style={{ color: '#888884' }}>Teléfono</p>
+            <p className="text-sm font-semibold" style={{ color: '#e5e5e5' }}>{i.telefono || '—'}</p>
+          </div>
+          <div className="col-span-2 rounded px-3 py-2.5" style={{ backgroundColor: '#1a1a1a' }}>
+            <p className="text-[10px] font-medium uppercase tracking-wide mb-1" style={{ color: '#888884' }}>Fecha de ingreso</p>
+            <p className="text-sm font-semibold" style={{ color: '#e5e5e5' }}>{i.fecha_ingreso}</p>
+          </div>
         </div>
       </div>
 
-      <div className="px-4 pb-4 pt-1 flex gap-2">
+      <div className="px-4 pb-4 pt-2 flex gap-2">
         <button
           onClick={() => onView(i)}
-          className="flex-1 text-sm font-medium py-2 rounded-xl cursor-pointer transition-colors"
-          style={{ border: '1.5px solid #E0D8CC', color: '#5F5E5A', backgroundColor: 'transparent' }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F5F0E8'; e.currentTarget.style.color = '#1C1917' }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#5F5E5A' }}
+          className="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium py-2.5 rounded cursor-pointer transition-all"
+          style={{ border: '1px solid #2a2a2a', color: '#888884', backgroundColor: 'transparent' }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1a1a1a'; e.currentTarget.style.color = '#e5e5e5'; e.currentTarget.style.borderColor = '#3a3a3a' }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#888884'; e.currentTarget.style.borderColor = '#2a2a2a' }}
         >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 shrink-0">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+          </svg>
           Ver más
         </button>
         <button
           onClick={() => onEdit(i)}
-          className="flex-1 text-sm font-semibold py-2 rounded-xl text-white cursor-pointer"
+          className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-2.5 rounded text-white cursor-pointer transition-colors"
           style={{ backgroundColor: '#D85A30' }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#C04E27' }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#D85A30' }}
         >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 shrink-0">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+          </svg>
           Editar
         </button>
       </div>
@@ -99,8 +111,8 @@ function InquilinoDetail({ i, onEdit, onDelete }) {
       <div className="flex items-center gap-3 pb-2">
         <Avatar nombre={i.nombre} apellido={i.apellido} size="lg" />
         <div>
-          <p className="font-bold" style={{ color: '#1C1917' }}>{i.apellido}, {i.nombre}</p>
-          <p className="text-sm" style={{ color: '#5F5E5A' }}>{i.email}</p>
+          <p className="font-bold" style={{ color: '#f0f0f0' }}>{i.apellido}, {i.nombre}</p>
+          <p className="text-sm" style={{ color: '#888884' }}>{i.email}</p>
         </div>
       </div>
 
@@ -111,9 +123,9 @@ function InquilinoDetail({ i, onEdit, onDelete }) {
           { label: 'Fecha ingreso', value: i.fecha_ingreso },
           { label: 'C. emergencia', value: i.contacto_emergencia || '—' },
         ].map(({ label, value }) => (
-          <div key={label} className="rounded-xl px-3 py-2.5" style={{ backgroundColor: '#F5F0E8' }}>
-            <p className="text-xs font-medium mb-0.5" style={{ color: '#5F5E5A' }}>{label}</p>
-            <p className="font-semibold" style={{ color: '#1C1917' }}>{value}</p>
+          <div key={label} className="rounded px-3 py-2.5" style={{ backgroundColor: '#1a1a1a' }}>
+            <p className="text-xs font-medium mb-0.5" style={{ color: '#888884' }}>{label}</p>
+            <p className="font-semibold" style={{ color: '#f0f0f0' }}>{value}</p>
           </div>
         ))}
       </div>
@@ -121,7 +133,7 @@ function InquilinoDetail({ i, onEdit, onDelete }) {
       <div className="flex gap-2 pt-1">
         <button
           onClick={onEdit}
-          className="flex-1 text-white text-sm font-semibold py-2.5 rounded-xl cursor-pointer"
+          className="flex-1 text-white text-sm font-semibold py-2.5 rounded cursor-pointer"
           style={{ backgroundColor: '#D85A30' }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#C04E27' }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#D85A30' }}
@@ -130,9 +142,9 @@ function InquilinoDetail({ i, onEdit, onDelete }) {
         </button>
         <button
           onClick={onDelete}
-          className="flex-1 text-sm font-semibold py-2.5 rounded-xl cursor-pointer transition-colors"
-          style={{ border: '1.5px solid #A32D2D', color: '#A32D2D', backgroundColor: 'transparent' }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FCEBEB' }}
+          className="flex-1 text-sm font-semibold py-2.5 rounded cursor-pointer transition-colors"
+          style={{ border: '1.5px solid #A32D2D', color: '#f87171', backgroundColor: 'transparent' }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1f0000' }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
         >
           Eliminar
@@ -189,47 +201,63 @@ export default function InquilinosPage() {
     else            createMutation.mutate(data)
   }
 
-  const isSaving = createMutation.isPending || updateMutation.isPending
-  const count    = data?.count
+  const isSaving    = createMutation.isPending || updateMutation.isPending
+  const count       = data?.count
+  const activeChips = [
+    search && { key: 'search', isSearch: true, label: `"${search}"`, onRemove: () => setSearch('') },
+  ].filter(Boolean)
 
   return (
-    <div className="max-w-6xl">
+    <div>
       <PageHeader
-        title="Inquilinos"
         subtitle={!isLoading && count !== undefined ? `${count} inquilino${count !== 1 ? 's' : ''} registrado${count !== 1 ? 's' : ''}` : undefined}
         actionLabel="Nuevo inquilino"
         onAction={openCreate}
       />
 
-      <div
-        className="bg-white rounded-2xl px-4 py-3 mb-8 flex flex-wrap items-center gap-3"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
-      >
-        <div className="relative">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: '#5F5E5A' }}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-          </svg>
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nombre, apellido, documento o email..."
-            className={`${inpFilter} pl-9 w-80`}
-          />
-        </div>
-        {search && (
-          <button
-            onClick={() => setSearch('')}
-            className="ml-auto flex items-center gap-1.5 text-sm font-medium cursor-pointer transition-colors"
-            style={{ color: '#5F5E5A' }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#D85A30' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = '#5F5E5A' }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+      <div className="rounded mb-8" style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f' }}>
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3">
+          <div className="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: '#888884' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
             </svg>
-            Limpiar
-          </button>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por nombre, apellido, documento o email..."
+              className={`${inpFilter} pl-9 w-80`}
+            />
+          </div>
+          <div className="ml-auto flex items-center gap-4">
+            {!isLoading && count !== undefined && (
+              <span className="text-sm shrink-0" style={{ color: '#888884' }}>
+                {count} resultado{count !== 1 ? 's' : ''}
+              </span>
+            )}
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="flex items-center gap-1.5 text-sm font-medium cursor-pointer transition-colors shrink-0"
+                style={{ color: '#888884' }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#D85A30' }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#888884' }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+                Limpiar
+              </button>
+            )}
+          </div>
+        </div>
+        {activeChips.length > 0 && (
+          <>
+            <div style={{ height: '1px', backgroundColor: '#1f1f1f' }} />
+            <div className="flex items-center gap-2 flex-wrap px-4 py-2.5">
+              {activeChips.map((chip) => <Chip key={chip.key} {...chip} />)}
+            </div>
+          </>
         )}
       </div>
 
@@ -247,7 +275,7 @@ export default function InquilinosPage() {
           action={!search && (
             <button
               onClick={openCreate}
-              className="text-sm font-semibold px-5 py-2.5 rounded-xl text-white cursor-pointer"
+              className="text-sm font-semibold px-5 py-2.5 rounded text-white cursor-pointer"
               style={{ backgroundColor: '#D85A30' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#C04E27' }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#D85A30' }}
@@ -257,7 +285,7 @@ export default function InquilinosPage() {
           )}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {data.results.map((i) => (
             <InquilinoCard key={i.id} i={i} onEdit={openEdit} onView={setViewTarget} />
           ))}

@@ -1,33 +1,33 @@
 const config = {
   default: {
-    iconBg:  '#F5F0E8',
-    iconClr: '#5F5E5A',
-    valClr:  '#1C1917',
-    barClr:  '#5F5E5A',
+    iconBg:  '#1a1a1a',
+    iconClr: '#888884',
+    valClr:  '#f0f0f0',
+    barClr:  '#888884',
   },
   brand: {
-    iconBg:  '#FAECE7',
+    iconBg:  '#2a1200',
     iconClr: '#D85A30',
     valClr:  '#D85A30',
     barClr:  '#D85A30',
   },
   warning: {
-    iconBg:  '#FAEEDA',
-    iconClr: '#633806',
-    valClr:  '#633806',
+    iconBg:  '#2a1400',
+    iconClr: '#FAC775',
+    valClr:  '#FAC775',
     barClr:  '#FAC775',
   },
   danger: {
-    iconBg:  '#FCEBEB',
-    iconClr: '#A32D2D',
-    valClr:  '#A32D2D',
-    barClr:  '#A32D2D',
+    iconBg:  '#1f0000',
+    iconClr: '#f87171',
+    valClr:  '#f87171',
+    barClr:  '#f87171',
   },
   success: {
-    iconBg:  '#EAF3DE',
-    iconClr: '#3B6D11',
-    valClr:  '#3B6D11',
-    barClr:  '#639922',
+    iconBg:  '#0a1f00',
+    iconClr: '#7dc947',
+    valClr:  '#7dc947',
+    barClr:  '#7dc947',
   },
 }
 
@@ -37,9 +37,9 @@ export function MetricCard({ label, value, color = 'default', icon, progress }) 
 
   return (
     <div
-      className="bg-white rounded-xl px-4 py-3.5 cursor-default transition-shadow duration-200"
-      style={{ border: '1px solid #E8E4DC' }}
-      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)' }}
+      className="rounded-xl px-4 py-3.5 cursor-default transition-shadow duration-200"
+      style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f' }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.4)' }}
       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none' }}
     >
       {icon && (
@@ -51,7 +51,7 @@ export function MetricCard({ label, value, color = 'default', icon, progress }) 
         </div>
       )}
 
-      <p className="text-[12px] mb-1" style={{ color: '#5F5E5A' }}>{label}</p>
+      <p className="text-[12px] mb-1" style={{ color: '#888884' }}>{label}</p>
       <p className="text-[22px] font-semibold leading-none" style={{ color: valClr }}>
         {value ?? '—'}
       </p>
@@ -60,7 +60,7 @@ export function MetricCard({ label, value, color = 'default', icon, progress }) 
         <div className="mt-3">
           <div
             className="w-full rounded-full overflow-hidden"
-            style={{ height: '3px', backgroundColor: '#F0EDE7' }}
+            style={{ height: '3px', backgroundColor: '#1a1a1a' }}
           >
             <div
               className="h-full rounded-full transition-all duration-700 ease-out"

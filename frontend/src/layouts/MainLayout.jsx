@@ -150,65 +150,79 @@ export default function MainLayout() {
   const monthLabel = currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1)
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: '#F5F0E8' }}>
-      {/* Sidebar cálido */}
+    <div className="flex h-screen overflow-hidden gap-4" style={{ backgroundColor: '#0a0a0a' }}>
+      {/* Sidebar */}
       <aside
         className="flex flex-col shrink-0 transition-all duration-300 overflow-hidden"
         style={{
           width: collapsed ? '56px' : '200px',
-          backgroundColor: '#F5F0E8',
+          backgroundColor: '#FAECE7',
           borderRight: '1px solid #E0D8CC',
         }}
       >
         {/* Brand */}
-        <div
-          className="flex items-center shrink-0 px-3"
-          style={{ height: '56px', borderBottom: '1px solid #E0D8CC' }}
-        >
+        <div className="shrink-0" style={{ height: '56px', borderBottom: '1px solid #E0D8CC' }}>
           {!collapsed ? (
-            <>
-              <div className="flex-1 pl-1">
-                <p className="text-[15px] font-semibold leading-tight" style={{ color: '#412402' }}>Habita</p>
+            <div className="flex items-center h-full px-3 gap-2">
+              <div
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] font-bold shrink-0"
+                style={{ backgroundColor: '#D85A30', color: '#FAECE7' }}
+              >
+                H
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[14px] font-semibold leading-tight" style={{ color: '#412402' }}>Habita</p>
                 <p className="text-[11px] leading-tight mt-[1px]" style={{ color: '#633806' }}>Gestión de alquileres</p>
               </div>
               <button
                 onClick={() => setCollapsed(true)}
-                className="p-1.5 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 rounded transition-colors cursor-pointer shrink-0"
                 style={{ color: '#5F5E5A' }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#EDE8DE'; e.currentTarget.style.color = '#5F5E5A' }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#5F5E5A' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#EDE8DE' }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                 aria-label="Colapsar menú"
               >
                 <IconChevronLeft />
               </button>
-            </>
+            </div>
           ) : (
             <button
               onClick={() => setCollapsed(false)}
-              className="mx-auto p-1.5 rounded-lg transition-colors cursor-pointer"
-              style={{ color: '#5F5E5A' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#EDE8DE'; e.currentTarget.style.color = '#5F5E5A' }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#5F5E5A' }}
+              className="w-full h-full flex items-center justify-center cursor-pointer"
               aria-label="Expandir menú"
             >
-              <IconChevronRight />
+              <div
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] font-bold"
+                style={{ backgroundColor: '#D85A30', color: '#FAECE7' }}
+              >
+                H
+              </div>
             </button>
           )}
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-[10px] py-3 overflow-y-auto">
-          {navSections.map((section) => (
+        <nav className="flex-1 px-2 py-2 overflow-y-auto">
+          {navSections.map((section, sectionIndex) => (
             <div key={section.label}>
+              {/* Divider between sections */}
+              {sectionIndex > 0 && (
+                <div className="px-1 py-2">
+                  <div style={{ height: '1px', backgroundColor: '#E0D8CC' }} />
+                </div>
+              )}
+
+              {/* Section label */}
               {!collapsed && (
                 <p
-                  className="text-[10px] tracking-[0.06em] uppercase px-[6px] mt-3 mb-1"
-                  style={{ color: '#5F5E5A' }}
+                  className="text-[10px] font-medium tracking-[0.07em] uppercase px-2 pb-1"
+                  style={{ color: '#5F5E5A', paddingTop: sectionIndex === 0 ? '4px' : '0' }}
                 >
                   {section.label}
                 </p>
               )}
-              {collapsed && <div className="mt-3 mb-1 border-t" style={{ borderColor: '#E0D8CC' }} />}
+              {collapsed && sectionIndex === 0 && <div className="pt-1" />}
+
               {section.items.map(({ to, label, Icon }) => (
                 <NavLink
                   key={to}
@@ -220,19 +234,19 @@ export default function MainLayout() {
                     gap: collapsed ? 0 : '9px',
                     justifyContent: collapsed ? 'center' : 'flex-start',
                     padding: collapsed ? '9px' : '8px 10px',
-                    borderRadius: '8px',
+                    borderRadius: '4px',
                     fontSize: '13px',
                     fontWeight: isActive ? 500 : 400,
                     textDecoration: 'none',
                     transition: 'background-color 120ms ease, color 120ms ease',
                     whiteSpace: 'nowrap',
                     marginBottom: '2px',
-                    backgroundColor: isActive ? '#FAEEDA' : 'transparent',
-                    color: isActive ? '#633806' : '#5F5E5A',
+                    backgroundColor: isActive ? '#D85A30' : 'transparent',
+                    color: isActive ? '#FFFFFF' : '#5F5E5A',
                   })}
                   onMouseEnter={(e) => {
                     if (e.currentTarget.getAttribute('aria-current') !== 'page') {
-                      e.currentTarget.style.backgroundColor = '#EDE8DE'
+                      e.currentTarget.style.backgroundColor = '#EDD9D0'
                     }
                   }}
                   onMouseLeave={(e) => {
@@ -243,7 +257,7 @@ export default function MainLayout() {
                 >
                   {({ isActive }) => (
                     <>
-                      <span style={{ display: 'flex', color: isActive ? '#633806' : '#5F5E5A' }}>
+                      <span style={{ display: 'flex', color: isActive ? '#FFFFFF' : '#5F5E5A' }}>
                         <Icon />
                       </span>
                       {!collapsed && <span>{label}</span>}
@@ -256,13 +270,13 @@ export default function MainLayout() {
         </nav>
 
         {/* Footer usuario */}
-        <div className="px-[10px] py-3" style={{ borderTop: '1px solid #E0D8CC' }}>
+        <div className="p-2" style={{ borderTop: '1px solid #E0D8CC' }}>
           {collapsed ? (
             <button
               onClick={handleLogout}
               title="Cerrar sesión"
               aria-label="Cerrar sesión"
-              className="w-full flex justify-center p-2 rounded-lg transition-colors cursor-pointer"
+              className="w-full flex justify-center p-2 rounded transition-colors cursor-pointer"
               style={{ color: '#5F5E5A' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FCEBEB'; e.currentTarget.style.color = '#A32D2D' }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#5F5E5A' }}
@@ -270,10 +284,10 @@ export default function MainLayout() {
               <IconLogout />
             </button>
           ) : (
-            <div>
-              <div className="flex items-center gap-[9px] px-[10px] py-2 rounded-lg">
+            <>
+              <div className="flex items-center gap-2 px-2 py-2 rounded-lg">
                 <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-medium shrink-0"
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0"
                   style={{ backgroundColor: '#D85A30', color: '#FAECE7' }}
                 >
                   {initials}
@@ -289,7 +303,7 @@ export default function MainLayout() {
               </div>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 w-full px-[10px] py-1.5 rounded-lg text-[12px] transition-colors cursor-pointer mt-0.5"
+                className="flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-[12px] transition-colors cursor-pointer"
                 style={{ color: '#5F5E5A' }}
                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FCEBEB'; e.currentTarget.style.color = '#A32D2D' }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#5F5E5A' }}
@@ -297,56 +311,56 @@ export default function MainLayout() {
                 <IconLogout />
                 <span>Cerrar sesión</span>
               </button>
-            </div>
+            </>
           )}
         </div>
       </aside>
 
       {/* Área principal */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden mr-4 mt-4">
         {/* Topbar */}
         <header
-          className="shrink-0 flex items-center px-5 gap-3"
+          className="shrink-0 flex items-center px-[5%]"
           style={{
             height: '56px',
-            backgroundColor: '#FFFFFF',
-            borderBottom: '1px solid #E0D8CC',
+            backgroundColor: '#111111',
+            borderBottom: '1px solid #1a1a1a',
           }}
         >
-          <div>
-            <h1 className="text-[15px] font-semibold leading-none" style={{ color: '#1C1917' }}>
-              {currentTitle}
-            </h1>
-            <p className="text-[12px] mt-[2px]" style={{ color: '#5F5E5A' }}>
-              {monthLabel}
-            </p>
+          {/* Izquierda — título de página */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div>
+              <h1 className="text-[15px] font-semibold leading-none" style={{ color: '#f0f0f0' }}>
+                {currentTitle}
+              </h1>
+              <p className="text-[11px] mt-[3px]" style={{ color: '#888884' }}>
+                {monthLabel}
+              </p>
+            </div>
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
-            {/* Registrar pago */}
-            <button
-              onClick={openPayModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-opacity hover:opacity-90 cursor-pointer"
-              style={{ backgroundColor: '#D85A30', color: '#FAECE7' }}
-            >
-              <IconPlus />
-              Registrar pago
-            </button>
+          {/* Separador flexible */}
+          <div className="flex-1" />
+
+          {/* Derecha — acciones */}
+          <div className="flex items-center gap-1.5">
+            {/* Divisor visual */}
+            <div className="w-px h-5 mr-2" style={{ backgroundColor: '#2a2a2a' }} />
 
             {/* Notificaciones */}
             <button
               aria-label="Ver notificaciones"
               onClick={() => navigate('/pagos?estado=vencido')}
-              className="relative w-[30px] h-[30px] flex items-center justify-center rounded-lg transition-colors cursor-pointer"
-              style={{ color: '#5F5E5A' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F0EDE7'; e.currentTarget.style.color = '#1C1917' }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#5F5E5A' }}
+              className="relative w-8 h-8 flex items-center justify-center rounded transition-colors cursor-pointer"
+              style={{ color: '#888884' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1a1a1a'; e.currentTarget.style.color = '#f0f0f0' }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#888884' }}
             >
               <IconBell />
               {unreadCount > 0 && (
                 <span
-                  className="absolute top-[5px] right-[5px] w-[7px] h-[7px] rounded-full"
-                  style={{ backgroundColor: '#D85A30', boxShadow: '0 0 0 1.5px #FFFFFF' }}
+                  className="absolute top-[6px] right-[6px] w-[7px] h-[7px] rounded-full"
+                  style={{ backgroundColor: '#D85A30', boxShadow: '0 0 0 1.5px #111111' }}
                 />
               )}
             </button>
@@ -355,18 +369,33 @@ export default function MainLayout() {
             <button
               aria-label="Buscar"
               onClick={() => navigate('/pagos')}
-              className="w-[30px] h-[30px] flex items-center justify-center rounded-lg transition-colors cursor-pointer"
-              style={{ color: '#5F5E5A' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F0EDE7'; e.currentTarget.style.color = '#1C1917' }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#5F5E5A' }}
+              className="w-8 h-8 flex items-center justify-center rounded transition-colors cursor-pointer"
+              style={{ color: '#888884' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1a1a1a'; e.currentTarget.style.color = '#f0f0f0' }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#888884' }}
             >
               <IconSearch />
+            </button>
+
+            {/* Divisor visual */}
+            <div className="w-px h-5 mx-2" style={{ backgroundColor: '#2a2a2a' }} />
+
+            {/* Registrar pago */}
+            <button
+              onClick={openPayModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors cursor-pointer"
+              style={{ backgroundColor: '#D85A30', color: '#FAECE7' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#C04E27' }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#D85A30' }}
+            >
+              <IconPlus />
+              Registrar pago
             </button>
           </div>
         </header>
 
         {/* Contenido */}
-        <main className="flex-1 overflow-y-auto p-5" style={{ backgroundColor: '#F1EFE8' }}>
+        <main className="flex-1 overflow-y-auto pt-8 pb-6 px-[5%]" style={{ backgroundColor: '#0a0a0a' }}>
           <div key={location.pathname} className="page-enter">
             <Outlet />
           </div>

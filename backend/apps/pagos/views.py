@@ -3,6 +3,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Pago
 from .serializers import PagoReadSerializer, PagoWriteSerializer
+from .filters import PagoFilter
 
 
 class PagoViewSet(ModelViewSet):
@@ -10,7 +11,7 @@ class PagoViewSet(ModelViewSet):
         'contrato', 'contrato__habitacion', 'contrato__inquilino'
     ).all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['estado', 'metodo_pago', 'contrato']
+    filterset_class = PagoFilter
     search_fields = ['contrato__inquilino__nombre', 'contrato__inquilino__apellido']
     ordering_fields = ['fecha_pago', 'monto', 'created_at']
     ordering = ['-fecha_pago']

@@ -19,33 +19,43 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
 
   if (!isOpen) return null
 
+  const maxW = size === 'lg' ? 'max-w-xl' : 'max-w-md'
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-enter"
-      style={{ backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }}
+      style={{ backgroundColor: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(4px)' }}
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-2xl w-full ${size === 'lg' ? 'max-w-2xl' : 'max-w-lg'} max-h-[90vh] overflow-y-auto modal-panel-enter`}
-        style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.10)' }}
+        className={`flex flex-col overflow-hidden rounded w-full ${maxW} max-h-[88vh] modal-panel-enter`}
+        style={{
+          backgroundColor: '#111111',
+          border: '1px solid #222222',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.65), 0 8px 24px rgba(0,0,0,0.4)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Acento coral */}
+        <div style={{ height: '2px', backgroundColor: '#D85A30', flexShrink: 0 }} />
+
+        {/* Header */}
         <div
-          className="flex items-center justify-between px-6 pt-5 pb-4"
-          style={{ borderBottom: '1px solid #F5F0E8' }}
+          className="flex items-center justify-between px-5 pt-4 pb-3.5 shrink-0"
+          style={{ borderBottom: '1px solid #1a1a1a' }}
         >
-          <h3 className="text-base font-semibold" style={{ color: '#1C1917' }}>{title}</h3>
+          <h3 className="text-[15px] font-semibold" style={{ color: '#f0f0f0' }}>{title}</h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors cursor-pointer"
-            style={{ color: '#5F5E5A' }}
+            className="w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer"
+            style={{ color: '#888884' }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#F5F0E8'
-              e.currentTarget.style.color = '#444441'
+              e.currentTarget.style.backgroundColor = '#1a1a1a'
+              e.currentTarget.style.color = '#e5e5e5'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = '#5F5E5A'
+              e.currentTarget.style.color = '#888884'
             }}
             aria-label="Cerrar"
           >
@@ -54,7 +64,9 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
             </svg>
           </button>
         </div>
-        <div className="px-6 py-5">{children}</div>
+
+        {/* Body */}
+        <div className="px-5 py-4 overflow-y-auto">{children}</div>
       </div>
     </div>
   )

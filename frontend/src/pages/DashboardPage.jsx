@@ -13,20 +13,19 @@ import { EmptyState } from '../components/ui/EmptyState'
 // ─── Configuraciones ────────────────────────────────────────────────────────
 
 const estadoHabConfig = {
-  disponible:    { label: 'Disponible',    dot: '#3B6D11', bg: '#EAF3DE', text: '#3B6D11' },
-  ocupada:       { label: 'Ocupada',       dot: '#A32D2D', bg: '#FCEBEB', text: '#A32D2D' },
-  reservada:     { label: 'Reservada',     dot: '#FAC775', bg: '#FAEEDA', text: '#633806' },
-  mantenimiento: { label: 'Mantenimiento', dot: '#5F5E5A', bg: '#F5F0E8', text: '#5F5E5A' },
+  disponible:    { label: 'Disponible',    dot: '#7dc947', bg: '#0a1f00', text: '#7dc947' },
+  ocupada:       { label: 'Ocupada',       dot: '#f87171', bg: '#1f0000', text: '#f87171' },
+  reservada:     { label: 'Reservada',     dot: '#FAC775', bg: '#2a1400', text: '#FAC775' },
+  mantenimiento: { label: 'Mantenimiento', dot: '#888884', bg: '#1a1a1a', text: '#888884' },
 }
 
-// El color del avatar coincide con el estado del pago (unidad visual con el badge)
 const avatarByStatus = {
-  pagado:       { bg: '#EAF3DE', text: '#3B6D11' },
-  pendiente:    { bg: '#FAEEDA', text: '#633806' },
-  por_vencer:   { bg: '#FAEEDA', text: '#633806' },
-  vencido:      { bg: '#FCEBEB', text: '#A32D2D' },
-  parcial:      { bg: '#FAEEDA', text: '#633806' },
-  sin_contrato: { bg: '#F5F0E8', text: '#5F5E5A' },
+  pagado:       { bg: '#0a1f00', text: '#7dc947' },
+  pendiente:    { bg: '#2a1400', text: '#FAC775' },
+  por_vencer:   { bg: '#2a1400', text: '#FAC775' },
+  vencido:      { bg: '#1f0000', text: '#f87171' },
+  parcial:      { bg: '#2a1400', text: '#FAC775' },
+  sin_contrato: { bg: '#1a1a1a', text: '#888884' },
 }
 
 const tenantFilters = [
@@ -84,26 +83,26 @@ function TenantRow({ pago }) {
 
   return (
     <div
-      className="flex items-center gap-2.5 px-4 py-[10px] transition-colors cursor-pointer"
-      style={{ borderBottom: '1px solid #EDE8DE' }}
-      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FDFCFA' }}
+      className="flex items-center gap-4 px-5 py-3.5 transition-colors cursor-pointer"
+      style={{ borderBottom: '1px solid #1a1a1a' }}
+      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#161616' }}
       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
     >
       <div
-        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-medium shrink-0"
+        className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-medium shrink-0"
         style={{ backgroundColor: bg, color: text }}
       >
         {initials}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium truncate" style={{ color: '#1C1917' }}>
+        <p className="text-[13px] font-medium truncate" style={{ color: '#f0f0f0' }}>
           {nombre || '—'}
         </p>
-        <p className="text-[11px]" style={{ color: '#5F5E5A' }}>
+        <p className="text-[12px] mt-0.5" style={{ color: '#888884' }}>
           Hab. {pago.contrato?.habitacion_numero} · {pago.fecha_pago}
         </p>
       </div>
-      <span className="text-[13px] font-medium shrink-0" style={{ color: '#444441' }}>
+      <span className="text-[13px] font-medium shrink-0" style={{ color: '#e5e5e5' }}>
         {formatGs(pago.monto)}
       </span>
       <PaymentStatusBadge status={pago.estado} />
@@ -163,13 +162,13 @@ export default function DashboardPage() {
   const tenantRows = tenantData?.results ?? []
 
   return (
-    <div className="max-w-6xl">
+    <div>
       {/* Saludo */}
       <div className="mb-5">
-        <h2 className="text-[17px] font-semibold" style={{ color: '#1C1917' }}>
+        <h2 className="text-[17px] font-semibold" style={{ color: '#f0f0f0' }}>
           Bienvenido, {user?.first_name || user?.username}
         </h2>
-        <p className="text-[13px] mt-0.5 capitalize" style={{ color: '#5F5E5A' }}>{user?.rol}</p>
+        <p className="text-[13px] mt-0.5 capitalize" style={{ color: '#888884' }}>{user?.rol}</p>
       </div>
 
       {/* Alertas */}
@@ -210,10 +209,18 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-4">
 
         {/* TenantTable */}
-        <div className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E8E4DC' }}>
+        <div className="flex flex-col gap-[38px]">
+          {/* FilterBar */}
+          <FilterBar
+            filters={tenantFilters}
+            active={tenantFilter}
+            onChange={setTenantFilter}
+          />
+
+          <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f' }}>
           {/* Header */}
-          <div className="flex items-center px-4 py-3" style={{ borderBottom: '1px solid #F0EDE7' }}>
-            <h2 className="text-[13px] font-medium" style={{ color: '#1C1917' }}>Inquilinos</h2>
+          <div className="flex items-center px-4 py-3" style={{ borderBottom: '1px solid #1a1a1a' }}>
+            <h2 className="text-[13px] font-medium" style={{ color: '#f0f0f0' }}>Inquilinos</h2>
             <button
               onClick={() => navigate('/pagos')}
               className="ml-auto text-[12px] hover:underline cursor-pointer"
@@ -223,17 +230,10 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {/* FilterBar */}
-          <FilterBar
-            filters={tenantFilters}
-            active={tenantFilter}
-            onChange={setTenantFilter}
-          />
-
           {/* Filas */}
           <div>
             {tenantLoading ? (
-              <div className="px-4 py-8 text-center text-[13px]" style={{ color: '#5F5E5A' }}>
+              <div className="px-4 py-8 text-center text-[13px]" style={{ color: '#888884' }}>
                 Cargando…
               </div>
             ) : tenantRows.length === 0 ? (
@@ -251,13 +251,14 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+        </div>
 
         {/* Grid de habitaciones */}
-        <div className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DC' }}>
+        <div className="rounded-xl p-4" style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f' }}>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-[13px] font-medium" style={{ color: '#1C1917' }}>Habitaciones</h2>
-              <p className="text-[11px] mt-[1px]" style={{ color: '#5F5E5A' }}>
+              <h2 className="text-[13px] font-medium" style={{ color: '#f0f0f0' }}>Habitaciones</h2>
+              <p className="text-[11px] mt-[1px]" style={{ color: '#888884' }}>
                 {ocupadas} de {total} ocupadas
               </p>
             </div>
@@ -267,7 +268,7 @@ export default function DashboardPage() {
                   const count = habs.filter((h) => h.estado === key).length
                   if (count === 0) return null
                   return (
-                    <span key={key} className="flex items-center gap-1 text-[11px]" style={{ color: '#5F5E5A' }}>
+                    <span key={key} className="flex items-center gap-1 text-[11px]" style={{ color: '#888884' }}>
                       <span className="w-[7px] h-[7px] rounded-full" style={{ backgroundColor: dot }} />
                       {count}
                     </span>
@@ -286,7 +287,7 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-2 gap-2">
               {habs.map((h) => {
-                const cfg = estadoHabConfig[h.estado] ?? { label: h.estado, dot: '#5F5E5A', bg: '#F5F0E8', text: '#5F5E5A' }
+                const cfg = estadoHabConfig[h.estado] ?? { label: h.estado, dot: '#888884', bg: '#1a1a1a', text: '#888884' }
                 return (
                   <div
                     key={h.id}

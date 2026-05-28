@@ -9,13 +9,19 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { SkeletonGrid } from '../components/ui/Skeleton'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useDebounce } from '../hooks/useDebounce'
+import { Chip } from '../components/ui/Chip'
 
 const estadoConfig = {
-  disponible:    { label: 'Disponible',    dot: '#3B6D11', bg: '#EAF3DE', text: '#3B6D11' },
-  ocupada:       { label: 'Ocupada',       dot: '#A32D2D', bg: '#FCEBEB', text: '#A32D2D' },
-  reservada:     { label: 'Reservada',     dot: '#FAC775', bg: '#FAEEDA', text: '#633806' },
-  mantenimiento: { label: 'Mantenimiento', dot: '#5F5E5A', bg: '#F5F0E8', text: '#5F5E5A' },
+  disponible:    { label: 'Disponible',    dot: '#7dc947', bg: '#0a1f00', text: '#7dc947' },
+  ocupada:       { label: 'Ocupada',       dot: '#f87171', bg: '#1f0000', text: '#f87171' },
+  reservada:     { label: 'Reservada',     dot: '#FAC775', bg: '#2a1400', text: '#FAC775' },
+  mantenimiento: { label: 'Mantenimiento', dot: '#888884', bg: '#1a1a1a', text: '#888884' },
 }
+
+const estadoPills = [
+  { id: '', label: 'Todos' },
+  ...Object.entries(estadoConfig).map(([id, cfg]) => ({ id, ...cfg })),
+]
 
 const cardHover = {
   onMouseEnter: (e) => {
@@ -28,26 +34,28 @@ const cardHover = {
   },
 }
 
-const inpFilter = 'border border-stone-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#D85A30] text-stone-700 transition-all'
+const inpFilter = 'border border-[#2a2a2a] rounded px-3 py-2 text-sm bg-[#111111] focus:outline-none focus:ring-2 focus:ring-[#D85A30] text-[#e5e5e5] transition-all'
 
 function HabitacionCard({ h, onEdit, onView }) {
   const cfg = estadoConfig[h.estado] ?? estadoConfig.mantenimiento
 
   return (
     <div
-      className="bg-white rounded-2xl overflow-hidden flex flex-col cursor-default"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'transform 200ms ease, box-shadow 200ms ease' }}
+      className="rounded overflow-hidden flex flex-col cursor-default"
+      style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f', transition: 'transform 200ms ease, box-shadow 200ms ease' }}
       {...cardHover}
     >
-      <div className="px-5 pt-5 pb-4" style={{ backgroundColor: cfg.bg }}>
-        <div className="flex items-start justify-between">
+      <div style={{ height: '3px', backgroundColor: cfg.dot }} />
+
+      <div className="px-5 pt-4 pb-3">
+        <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="text-xs font-medium mb-1" style={{ color: cfg.text, opacity: 0.65 }}>Piso {h.piso}</p>
-            <p className="text-2xl font-bold leading-none" style={{ color: cfg.text }}>#{h.numero}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: '#888884' }}>Piso {h.piso}</p>
+            <p className="text-2xl font-bold leading-none" style={{ color: '#f0f0f0' }}>#{h.numero}</p>
           </div>
           <span
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shrink-0"
-            style={{ backgroundColor: 'rgba(255,255,255,0.75)', color: cfg.text }}
+            style={{ backgroundColor: cfg.bg, color: cfg.text }}
           >
             <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cfg.dot }} />
             {cfg.label}
@@ -55,42 +63,53 @@ function HabitacionCard({ h, onEdit, onView }) {
         </div>
       </div>
 
-      <div className="px-5 py-4 flex-1 space-y-2.5 text-sm">
-        <div className="flex justify-between">
-          <span style={{ color: '#5F5E5A' }}>Precio mensual</span>
-          <span className="font-semibold" style={{ color: '#1C1917' }}>{formatGs(h.precio)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span style={{ color: '#5F5E5A' }}>Capacidad</span>
-          <span style={{ color: '#444441' }}>{h.capacidad} pers.</span>
-        </div>
-        {h.tiene_banio_privado && (
-          <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#3B6D11' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-              <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
-            </svg>
-            Baño privado
+      <div className="mx-5" style={{ height: '1px', backgroundColor: '#1f1f1f' }} />
+
+      <div className="px-4 py-4 flex-1">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded px-3 py-2.5" style={{ backgroundColor: '#1a1a1a' }}>
+            <p className="text-[10px] font-medium uppercase tracking-wide mb-1" style={{ color: '#888884' }}>Precio</p>
+            <p className="text-sm font-bold" style={{ color: '#f0f0f0' }}>{formatGs(h.precio)}</p>
           </div>
-        )}
+          <div className="rounded px-3 py-2.5" style={{ backgroundColor: '#1a1a1a' }}>
+            <p className="text-[10px] font-medium uppercase tracking-wide mb-1" style={{ color: '#888884' }}>Capacidad</p>
+            <p className="text-sm font-semibold" style={{ color: '#e5e5e5' }}>{h.capacidad} pers.</p>
+          </div>
+          {h.tiene_banio_privado && (
+            <div className="col-span-2 rounded px-3 py-2.5 flex items-center gap-2" style={{ backgroundColor: '#0a1f00' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0" style={{ color: '#7dc947' }}>
+                <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+              </svg>
+              <p className="text-xs font-medium" style={{ color: '#7dc947' }}>Baño privado incluido</p>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="px-4 pb-4 pt-1 flex gap-2">
+      <div className="px-4 pb-4 pt-2 flex gap-2">
         <button
           onClick={() => onView(h)}
-          className="flex-1 text-sm font-medium py-2 rounded-xl cursor-pointer transition-colors"
-          style={{ border: '1.5px solid #E0D8CC', color: '#5F5E5A', backgroundColor: 'transparent' }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F5F0E8'; e.currentTarget.style.color = '#1C1917' }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#5F5E5A' }}
+          className="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium py-2.5 rounded cursor-pointer transition-all"
+          style={{ border: '1px solid #2a2a2a', color: '#888884', backgroundColor: 'transparent' }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1a1a1a'; e.currentTarget.style.color = '#e5e5e5'; e.currentTarget.style.borderColor = '#3a3a3a' }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#888884'; e.currentTarget.style.borderColor = '#2a2a2a' }}
         >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 shrink-0">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+          </svg>
           Ver más
         </button>
         <button
           onClick={() => onEdit(h)}
-          className="flex-1 text-sm font-semibold py-2 rounded-xl text-white cursor-pointer"
+          className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-2.5 rounded text-white cursor-pointer transition-colors"
           style={{ backgroundColor: '#D85A30' }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#C04E27' }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#D85A30' }}
         >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 shrink-0">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+          </svg>
           Editar
         </button>
       </div>
@@ -110,12 +129,12 @@ function HabitacionDetail({ h, onEdit, onDelete }) {
           { label: 'Capacidad', value: `${h.capacidad} persona${h.capacidad !== 1 ? 's' : ''}` },
           { label: 'Baño privado', value: h.tiene_banio_privado ? 'Sí' : 'No' },
         ].map(({ label, value }) => (
-          <div key={label} className="rounded-xl px-3 py-2.5" style={{ backgroundColor: '#F5F0E8' }}>
-            <p className="text-xs font-medium mb-0.5" style={{ color: '#5F5E5A' }}>{label}</p>
-            <p className="font-semibold" style={{ color: '#1C1917' }}>{value}</p>
+          <div key={label} className="rounded px-3 py-2.5" style={{ backgroundColor: '#1a1a1a' }}>
+            <p className="text-xs font-medium mb-0.5" style={{ color: '#888884' }}>{label}</p>
+            <p className="font-semibold" style={{ color: '#f0f0f0' }}>{value}</p>
           </div>
         ))}
-        <div className="rounded-xl px-3 py-2.5" style={{ backgroundColor: cfg.bg }}>
+        <div className="rounded px-3 py-2.5" style={{ backgroundColor: cfg.bg }}>
           <p className="text-xs font-medium mb-0.5" style={{ color: cfg.text, opacity: 0.7 }}>Estado</p>
           <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: cfg.text }}>
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cfg.dot }} />
@@ -125,16 +144,16 @@ function HabitacionDetail({ h, onEdit, onDelete }) {
       </div>
 
       {h.descripcion && (
-        <div className="rounded-xl px-3 py-2.5 text-sm" style={{ backgroundColor: '#F5F0E8' }}>
-          <p className="text-xs font-medium mb-0.5" style={{ color: '#5F5E5A' }}>Descripción</p>
-          <p style={{ color: '#444441' }}>{h.descripcion}</p>
+        <div className="rounded px-3 py-2.5 text-sm" style={{ backgroundColor: '#1a1a1a' }}>
+          <p className="text-xs font-medium mb-0.5" style={{ color: '#888884' }}>Descripción</p>
+          <p style={{ color: '#e5e5e5' }}>{h.descripcion}</p>
         </div>
       )}
 
       <div className="flex gap-2 pt-1">
         <button
           onClick={onEdit}
-          className="flex-1 text-white text-sm font-semibold py-2.5 rounded-xl cursor-pointer"
+          className="flex-1 text-white text-sm font-semibold py-2.5 rounded cursor-pointer"
           style={{ backgroundColor: '#D85A30' }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#C04E27' }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#D85A30' }}
@@ -143,9 +162,9 @@ function HabitacionDetail({ h, onEdit, onDelete }) {
         </button>
         <button
           onClick={onDelete}
-          className="flex-1 text-sm font-semibold py-2.5 rounded-xl cursor-pointer transition-colors"
-          style={{ border: '1.5px solid #A32D2D', color: '#A32D2D', backgroundColor: 'transparent' }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FCEBEB' }}
+          className="flex-1 text-sm font-semibold py-2.5 rounded cursor-pointer transition-colors"
+          style={{ border: '1.5px solid #A32D2D', color: '#f87171', backgroundColor: 'transparent' }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1f0000' }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
         >
           Eliminar
@@ -179,7 +198,18 @@ export default function HabitacionesPage() {
     queryFn:  () => api.get('/api/habitaciones/', { params: filters }).then((r) => r.data),
   })
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['habitaciones'] })
+  const { data: allHabs } = useQuery({
+    queryKey: ['habitaciones-pisos'],
+    queryFn:  () => api.get('/api/habitaciones/', { params: { page_size: 200 } }).then((r) => r.data),
+    staleTime: 2 * 60 * 1000,
+  })
+
+  const pisosOpciones = [...new Set((allHabs?.results ?? []).map((h) => h.piso))].sort((a, b) => a - b)
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['habitaciones'] })
+    qc.invalidateQueries({ queryKey: ['habitaciones-pisos'] })
+  }
 
   const createMutation = useMutation({
     mutationFn: (data) => api.post('/api/habitaciones/', data),
@@ -211,60 +241,96 @@ export default function HabitacionesPage() {
   const isSaving   = createMutation.isPending || updateMutation.isPending
   const hayFiltros = search || estado || piso
   const count      = data?.count
+  const activeChips = [
+    search && { key: 'search', isSearch: true, label: `"${search}"`,                                                  onRemove: () => setSearch('') },
+    estado && { key: 'estado', dot: estadoConfig[estado]?.dot, color: estadoConfig[estado]?.text, label: estadoConfig[estado]?.label, onRemove: () => setEstado('') },
+    piso   && { key: 'piso',   label: `Piso ${piso}`,                                                                 onRemove: () => setPiso('') },
+  ].filter(Boolean)
 
   return (
-    <div className="max-w-6xl">
+    <div>
       <PageHeader
-        title="Habitaciones"
         subtitle={!isLoading && count !== undefined ? `${count} habitación${count !== 1 ? 'es' : ''} registrada${count !== 1 ? 's' : ''}` : undefined}
         actionLabel="Nueva habitación"
         onAction={openCreate}
       />
 
-      <div
-        className="bg-white rounded-2xl px-4 py-3 mb-8 flex flex-wrap items-center gap-3"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
-      >
-        <div className="relative">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: '#5F5E5A' }}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-          </svg>
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por número o descripción..."
-            className={`${inpFilter} pl-9 w-64`}
-          />
-        </div>
-        <select value={estado} onChange={(e) => setEstado(e.target.value)} className={inpFilter}>
-          <option value="">Todos los estados</option>
-          <option value="disponible">Disponible</option>
-          <option value="ocupada">Ocupada</option>
-          <option value="reservada">Reservada</option>
-          <option value="mantenimiento">Mantenimiento</option>
-        </select>
-        <input
-          type="number"
-          value={piso}
-          onChange={(e) => setPiso(e.target.value)}
-          placeholder="Piso"
-          min="1"
-          className={`${inpFilter} w-24`}
-        />
-        {hayFiltros && (
-          <button
-            onClick={() => { setSearch(''); setEstado(''); setPiso('') }}
-            className="ml-auto flex items-center gap-1.5 text-sm font-medium cursor-pointer transition-colors"
-            style={{ color: '#5F5E5A' }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#D85A30' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = '#5F5E5A' }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+      <div className="rounded mb-8" style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f' }}>
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3">
+          <div className="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: '#888884' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
             </svg>
-            Limpiar
-          </button>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por número o descripción..."
+              className={`${inpFilter} pl-9 w-64`}
+            />
+          </div>
+          <select value={piso} onChange={(e) => setPiso(e.target.value)} className={inpFilter}>
+            <option value="">Todos los pisos</option>
+            {pisosOpciones.map((p) => (
+              <option key={p} value={String(p)}>Piso {p}</option>
+            ))}
+          </select>
+          <div className="ml-auto flex items-center gap-4">
+            {!isLoading && count !== undefined && (
+              <span className="text-sm shrink-0" style={{ color: '#888884' }}>
+                {count} resultado{count !== 1 ? 's' : ''}
+              </span>
+            )}
+            {hayFiltros && (
+              <button
+                onClick={() => { setSearch(''); setEstado(''); setPiso('') }}
+                className="flex items-center gap-1.5 text-sm font-medium cursor-pointer transition-colors shrink-0"
+                style={{ color: '#888884' }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#D85A30' }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#888884' }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+                Limpiar
+              </button>
+            )}
+          </div>
+        </div>
+        <div style={{ height: '1px', backgroundColor: '#1f1f1f' }} />
+        <div className="flex items-center gap-1 flex-wrap px-4 py-2.5">
+          {estadoPills.map((pill) => {
+            const isActive = estado === pill.id
+            const activeStyle = pill.id === ''
+              ? { backgroundColor: '#D85A30', color: '#FFFFFF' }
+              : { backgroundColor: pill.bg, color: pill.text }
+            return (
+              <button
+                key={pill.id}
+                onClick={() => setEstado(pill.id)}
+                className="flex items-center gap-1.5 text-[12px] px-3 py-[5px] rounded-full font-medium transition-colors cursor-pointer"
+                style={isActive ? activeStyle : { color: '#888884', backgroundColor: 'transparent' }}
+                onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = '#1a1a1a' }}
+                onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent' }}
+              >
+                {pill.id && (
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ backgroundColor: isActive ? pill.dot : '#555553' }}
+                  />
+                )}
+                {pill.label}
+              </button>
+            )
+          })}
+        </div>
+        {activeChips.length > 0 && (
+          <>
+            <div style={{ height: '1px', backgroundColor: '#1f1f1f' }} />
+            <div className="flex items-center gap-2 flex-wrap px-4 py-2.5">
+              {activeChips.map((chip) => <Chip key={chip.key} {...chip} />)}
+            </div>
+          </>
         )}
       </div>
 
@@ -282,7 +348,7 @@ export default function HabitacionesPage() {
           action={!hayFiltros && (
             <button
               onClick={openCreate}
-              className="text-sm font-semibold px-5 py-2.5 rounded-xl text-white cursor-pointer"
+              className="text-sm font-semibold px-5 py-2.5 rounded text-white cursor-pointer"
               style={{ backgroundColor: '#D85A30' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#C04E27' }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#D85A30' }}
@@ -292,7 +358,7 @@ export default function HabitacionesPage() {
           )}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {data.results.map((h) => (
             <HabitacionCard key={h.id} h={h} onEdit={openEdit} onView={setViewTarget} />
           ))}

@@ -18,24 +18,24 @@ const IconSuccess = () => (
 
 const alertConfig = {
   warning: {
-    bg:     '#2a1400',
-    border: '#FAC775',
-    text:   '#FAC775',
-    icon:   '#FAC775',
+    bg:     'var(--color-brand-amber-light)',
+    border: 'var(--color-brand-amber)',
+    text:   'var(--color-brand-amber)',
+    icon:   'var(--color-brand-amber)',
     Icon:   IconWarning,
   },
   danger: {
-    bg:     '#1f0000',
-    border: '#f87171',
-    text:   '#f87171',
-    icon:   '#f87171',
+    bg:     'var(--color-red-bg)',
+    border: 'var(--color-red-text)',
+    text:   'var(--color-red-text)',
+    icon:   'var(--color-red-text)',
     Icon:   IconDanger,
   },
   success: {
-    bg:     '#0a1f00',
-    border: '#7dc947',
-    text:   '#7dc947',
-    icon:   '#7dc947',
+    bg:     'var(--color-green-bg)',
+    border: 'var(--color-green-text)',
+    text:   'var(--color-green-text)',
+    icon:   'var(--color-green-text)',
     Icon:   IconSuccess,
   },
 }

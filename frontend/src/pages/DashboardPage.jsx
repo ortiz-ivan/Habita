@@ -1,34 +1,32 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import { habitacionesService } from '../services/habitacionesService'
-import { contratosService } from '../services/contratosService'
-import { pagosService } from '../services/pagosService'
 import { formatGs } from '../utils/format'
 import { AlertBanner } from '../components/ui/AlertBanner'
 import { MetricCard } from '../components/ui/MetricCard'
 import { PaymentStatusBadge } from '../components/ui/PaymentStatusBadge'
 import { FilterBar } from '../components/ui/FilterBar'
 import { EmptyState } from '../components/ui/EmptyState'
-import { queryKeys } from '../lib/queryKeys'
+import { useHabitacionesSummary } from '../hooks/queries/useHabitaciones'
+import { useContratosActivos } from '../hooks/queries/useContratos'
+import { usePagosVencidos, usePagosPendientes, usePagosDashboard } from '../hooks/queries/usePagos'
 
 // ─── Configuraciones ────────────────────────────────────────────────────────
 
 const estadoHabConfig = {
-  disponible:    { label: 'Disponible',    dot: '#7dc947', bg: '#0a1f00', text: '#7dc947' },
-  ocupada:       { label: 'Ocupada',       dot: '#f87171', bg: '#1f0000', text: '#f87171' },
-  reservada:     { label: 'Reservada',     dot: '#FAC775', bg: '#2a1400', text: '#FAC775' },
-  mantenimiento: { label: 'Mantenimiento', dot: '#888884', bg: '#1a1a1a', text: '#888884' },
+  disponible:    { label: 'Disponible',    dot: 'var(--color-green-text)',  bg: 'var(--color-green-bg)',          text: 'var(--color-green-text)' },
+  ocupada:       { label: 'Ocupada',       dot: 'var(--color-red-text)',    bg: 'var(--color-red-bg)',            text: 'var(--color-red-text)' },
+  reservada:     { label: 'Reservada',     dot: 'var(--color-brand-amber)', bg: 'var(--color-brand-amber-light)', text: 'var(--color-brand-amber)' },
+  mantenimiento: { label: 'Mantenimiento', dot: 'var(--color-stone-text)',  bg: 'var(--color-surface-2)',         text: 'var(--color-stone-text)' },
 }
 
 const avatarByStatus = {
-  pagado:       { bg: '#0a1f00', text: '#7dc947' },
-  pendiente:    { bg: '#2a1400', text: '#FAC775' },
-  por_vencer:   { bg: '#2a1400', text: '#FAC775' },
-  vencido:      { bg: '#1f0000', text: '#f87171' },
-  parcial:      { bg: '#2a1400', text: '#FAC775' },
-  sin_contrato: { bg: '#1a1a1a', text: '#888884' },
+  pagado:       { bg: 'var(--color-green-bg)',          text: 'var(--color-green-text)' },
+  pendiente:    { bg: 'var(--color-brand-amber-light)', text: 'var(--color-brand-amber)' },
+  por_vencer:   { bg: 'var(--color-brand-amber-light)', text: 'var(--color-brand-amber)' },
+  vencido:      { bg: 'var(--color-red-bg)',            text: 'var(--color-red-text)' },
+  parcial:      { bg: 'var(--color-brand-amber-light)', text: 'var(--color-brand-amber)' },
+  sin_contrato: { bg: 'var(--color-surface-2)',         text: 'var(--color-stone-text)' },
 }
 
 const tenantFilters = [
@@ -87,7 +85,7 @@ function TenantRow({ pago }) {
   return (
     <div
       className="flex items-center gap-4 px-5 py-3.5 transition-colors cursor-pointer"
-      style={{ borderBottom: '1px solid #1a1a1a' }}
+      style={{ borderBottom: '1px solid var(--color-surface-2)' }}
       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#161616' }}
       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
     >
@@ -98,14 +96,14 @@ function TenantRow({ pago }) {
         {initials}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium truncate" style={{ color: '#f0f0f0' }}>
+        <p className="text-[13px] font-medium truncate" style={{ color: 'var(--color-fg)' }}>
           {nombre || '—'}
         </p>
-        <p className="text-[12px] mt-0.5" style={{ color: '#888884' }}>
+        <p className="text-[12px] mt-0.5" style={{ color: 'var(--color-stone-text)' }}>
           Hab. {pago.contrato?.habitacion_numero} · {pago.fecha_pago}
         </p>
       </div>
-      <span className="text-[13px] font-medium shrink-0" style={{ color: '#e5e5e5' }}>
+      <span className="text-[13px] font-medium shrink-0" style={{ color: 'var(--color-stone-dark)' }}>
         {formatGs(pago.monto)}
       </span>
       <PaymentStatusBadge status={pago.estado} />
@@ -121,35 +119,11 @@ export default function DashboardPage() {
   const [tenantFilter, setTenantFilter] = useState('all')
 
   // ── Queries para métricas ─────────────────────────────────────────────────
-  const { data: habitaciones } = useQuery({
-    queryKey: queryKeys.habitaciones.all(),
-    queryFn:  () => habitacionesService.list({ page_size: 100 }),
-  })
-
-  const { data: contratos } = useQuery({
-    queryKey: queryKeys.contratos.activos(),
-    queryFn:  () => contratosService.list({ estado: 'activo', page_size: 100 }),
-  })
-
-  const { data: pagosVencidos } = useQuery({
-    queryKey: queryKeys.pagos.vencidos(),
-    queryFn:  () => pagosService.list({ estado: 'vencido', page_size: 1 }),
-  })
-
-  const { data: pagosPendientes } = useQuery({
-    queryKey: queryKeys.pagos.pendientes(),
-    queryFn:  () => pagosService.list({ estado: 'pendiente', page_size: 1 }),
-  })
-
-  // ── Query para TenantTable (reacciona al filtro activo) ───────────────────
-  const { data: tenantData, isLoading: tenantLoading } = useQuery({
-    queryKey: queryKeys.pagos.dashboard(tenantFilter),
-    queryFn:  () => {
-      const params = { page_size: 8 }
-      if (tenantFilter !== 'all') params.estado = tenantFilter
-      return pagosService.list(params)
-    },
-  })
+  const { data: habitaciones }                         = useHabitacionesSummary()
+  const { data: contratos }                            = useContratosActivos()
+  const { data: pagosVencidos }                        = usePagosVencidos()
+  const { data: pagosPendientes }                      = usePagosPendientes()
+  const { data: tenantData, isLoading: tenantLoading } = usePagosDashboard(tenantFilter)
 
   // ── Métricas ──────────────────────────────────────────────────────────────
   const habs        = habitaciones?.results ?? []
@@ -168,10 +142,10 @@ export default function DashboardPage() {
     <div>
       {/* Saludo */}
       <div className="mb-5">
-        <h2 className="text-[17px] font-semibold" style={{ color: '#f0f0f0' }}>
+        <h2 className="text-[17px] font-semibold" style={{ color: 'var(--color-fg)' }}>
           Bienvenido, {user?.first_name || user?.username}
         </h2>
-        <p className="text-[13px] mt-0.5 capitalize" style={{ color: '#888884' }}>{user?.rol}</p>
+        <p className="text-[13px] mt-0.5 capitalize" style={{ color: 'var(--color-stone-text)' }}>{user?.rol}</p>
       </div>
 
       {/* Alertas */}
@@ -220,14 +194,14 @@ export default function DashboardPage() {
             onChange={setTenantFilter}
           />
 
-          <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f' }}>
+          <div className="rounded-xl overflow-hidden bg-surface-1 border border-border" >
           {/* Header */}
-          <div className="flex items-center px-4 py-3" style={{ borderBottom: '1px solid #1a1a1a' }}>
-            <h2 className="text-[13px] font-medium" style={{ color: '#f0f0f0' }}>Inquilinos</h2>
+          <div className="flex items-center px-4 py-3" style={{ borderBottom: '1px solid var(--color-surface-2)' }}>
+            <h2 className="text-[13px] font-medium" style={{ color: 'var(--color-fg)' }}>Inquilinos</h2>
             <button
               onClick={() => navigate('/pagos')}
               className="ml-auto text-[12px] hover:underline cursor-pointer"
-              style={{ color: '#D85A30' }}
+              style={{ color: 'var(--color-brand)' }}
             >
               Ver todos →
             </button>
@@ -236,7 +210,7 @@ export default function DashboardPage() {
           {/* Filas */}
           <div>
             {tenantLoading ? (
-              <div className="px-4 py-8 text-center text-[13px]" style={{ color: '#888884' }}>
+              <div className="px-4 py-8 text-center text-[13px]" style={{ color: 'var(--color-stone-text)' }}>
                 Cargando…
               </div>
             ) : tenantRows.length === 0 ? (
@@ -257,11 +231,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Grid de habitaciones */}
-        <div className="rounded-xl p-4" style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f' }}>
+        <div className="rounded-xl p-4 bg-surface-1 border border-border" >
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-[13px] font-medium" style={{ color: '#f0f0f0' }}>Habitaciones</h2>
-              <p className="text-[11px] mt-[1px]" style={{ color: '#888884' }}>
+              <h2 className="text-[13px] font-medium" style={{ color: 'var(--color-fg)' }}>Habitaciones</h2>
+              <p className="text-[11px] mt-[1px]" style={{ color: 'var(--color-stone-text)' }}>
                 {ocupadas} de {total} ocupadas
               </p>
             </div>
@@ -271,7 +245,7 @@ export default function DashboardPage() {
                   const count = habs.filter((h) => h.estado === key).length
                   if (count === 0) return null
                   return (
-                    <span key={key} className="flex items-center gap-1 text-[11px]" style={{ color: '#888884' }}>
+                    <span key={key} className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--color-stone-text)' }}>
                       <span className="w-[7px] h-[7px] rounded-full" style={{ backgroundColor: dot }} />
                       {count}
                     </span>
@@ -290,7 +264,7 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-2 gap-2">
               {habs.map((h) => {
-                const cfg = estadoHabConfig[h.estado] ?? { label: h.estado, dot: '#888884', bg: '#1a1a1a', text: '#888884' }
+                const cfg = estadoHabConfig[h.estado] ?? { label: h.estado, dot: 'var(--color-stone-text)', bg: 'var(--color-surface-2)', text: 'var(--color-stone-text)' }
                 return (
                   <div
                     key={h.id}

@@ -9,21 +9,21 @@ export function FilterBar({ filters, active, onChange }) {
           className="text-[13px] px-3.5 py-1.5 rounded-full transition-colors cursor-pointer"
           style={
             active === f.id
-              ? { backgroundColor: '#D85A30', color: '#FFFFFF', fontWeight: 600, border: '1px solid #D85A30' }
-              : { color: '#888884', backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }
+              ? { backgroundColor: 'var(--color-brand)', color: '#FFFFFF', fontWeight: 600, border: '1px solid var(--color-brand)' }
+              : { color: 'var(--color-stone-text)', backgroundColor: 'var(--color-surface-2)', border: '1px solid var(--color-border-strong)' }
           }
           onMouseEnter={(e) => {
             if (active !== f.id) {
               e.currentTarget.style.backgroundColor = '#222222'
-              e.currentTarget.style.color = '#e5e5e5'
+              e.currentTarget.style.color = 'var(--color-stone-dark)'
               e.currentTarget.style.borderColor = '#3a3a3a'
             }
           }}
           onMouseLeave={(e) => {
             if (active !== f.id) {
-              e.currentTarget.style.backgroundColor = '#1a1a1a'
-              e.currentTarget.style.color = '#888884'
-              e.currentTarget.style.borderColor = '#2a2a2a'
+              e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'
+              e.currentTarget.style.color = 'var(--color-stone-text)'
+              e.currentTarget.style.borderColor = 'var(--color-border-strong)'
             }
           }}
         >

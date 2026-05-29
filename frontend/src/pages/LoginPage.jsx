@@ -30,7 +30,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#0a0a0a' }}>
+    <div className="min-h-screen flex" style={{ backgroundColor: 'var(--color-body-bg)' }}>
       {/* Panel izquierdo brand */}
       <div
         className="hidden lg:flex flex-col justify-between w-[420px] shrink-0 p-10"
@@ -39,7 +39,7 @@ export default function LoginPage() {
         <div className="flex items-center gap-3">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: '#D85A30' }}
+            style={{ backgroundColor: 'var(--color-brand)' }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21" />
@@ -64,7 +64,7 @@ export default function LoginPage() {
             { value: '24/7', label: 'Disponible' },
           ].map(({ value, label }) => (
             <div key={label}>
-              <p className="text-lg font-bold" style={{ color: '#D85A30' }}>{value}</p>
+              <p className="text-lg font-bold" style={{ color: 'var(--color-brand)' }}>{value}</p>
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</p>
             </div>
           ))}
@@ -78,48 +78,48 @@ export default function LoginPage() {
           <div className="lg:hidden flex items-center gap-2.5 mb-8 justify-center">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: '#D85A30' }}
+              style={{ backgroundColor: 'var(--color-brand)' }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21" />
               </svg>
             </div>
-            <span className="text-xl font-bold" style={{ color: '#f0f0f0' }}>Habita</span>
+            <span className="text-xl font-bold" style={{ color: 'var(--color-fg)' }}>Habita</span>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-2xl font-bold mb-1" style={{ color: '#f0f0f0' }}>Iniciá sesión</h1>
-            <p className="text-sm" style={{ color: '#888884' }}>Sistema de gestión de habitaciones</p>
+            <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--color-fg)' }}>Iniciá sesión</h1>
+            <p className="text-sm" style={{ color: 'var(--color-stone-text)' }}>Sistema de gestión de habitaciones</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
             <div>
-              <label className="block text-sm font-semibold mb-2" style={{ color: '#e5e5e5' }}>
+              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--color-stone-dark)' }}>
                 Usuario
               </label>
               <input
                 {...register('username')}
                 className="w-full rounded-xl px-4 py-3 text-sm transition-all duration-150"
                 style={{
-                  border: errors.username ? '1.5px solid #f87171' : '1.5px solid #2a2a2a',
-                  backgroundColor: '#1a1a1a',
-                  color: '#e5e5e5',
+                  border: errors.username ? '1.5px solid var(--color-red-text)' : '1.5px solid var(--color-border-strong)',
+                  backgroundColor: 'var(--color-surface-2)',
+                  color: 'var(--color-stone-dark)',
                   outline: 'none',
                 }}
                 placeholder="admin"
                 autoFocus
-                onFocus={(e) => { if (!errors.username) e.target.style.border = '1.5px solid #D85A30' }}
-                onBlur={(e) => { if (!errors.username) e.target.style.border = '1.5px solid #2a2a2a' }}
+                onFocus={(e) => { if (!errors.username) e.target.style.border = '1.5px solid var(--color-brand)' }}
+                onBlur={(e) => { if (!errors.username) e.target.style.border = '1.5px solid var(--color-border-strong)' }}
               />
               {errors.username && (
-                <p className="text-xs mt-1.5 font-medium" style={{ color: '#f87171' }}>
+                <p className="text-xs mt-1.5 font-medium" style={{ color: 'var(--color-red-text)' }}>
                   {errors.username.message}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-semibold mb-2" style={{ color: '#e5e5e5' }}>
+              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--color-stone-dark)' }}>
                 Contraseña
               </label>
               <div className="relative">
@@ -128,22 +128,22 @@ export default function LoginPage() {
                   type={showPass ? 'text' : 'password'}
                   className="w-full rounded-xl px-4 py-3 pr-11 text-sm transition-all duration-150"
                   style={{
-                    border: errors.password ? '1.5px solid #f87171' : '1.5px solid #2a2a2a',
-                    backgroundColor: '#1a1a1a',
-                    color: '#e5e5e5',
+                    border: errors.password ? '1.5px solid var(--color-red-text)' : '1.5px solid var(--color-border-strong)',
+                    backgroundColor: 'var(--color-surface-2)',
+                    color: 'var(--color-stone-dark)',
                     outline: 'none',
                   }}
                   placeholder="••••••••"
-                  onFocus={(e) => { if (!errors.password) e.target.style.border = '1.5px solid #D85A30' }}
-                  onBlur={(e) => { if (!errors.password) e.target.style.border = '1.5px solid #2a2a2a' }}
+                  onFocus={(e) => { if (!errors.password) e.target.style.border = '1.5px solid var(--color-brand)' }}
+                  onBlur={(e) => { if (!errors.password) e.target.style.border = '1.5px solid var(--color-border-strong)' }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass((s) => !s)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded cursor-pointer transition-colors"
-                  style={{ color: '#888884' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = '#e5e5e5' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = '#888884' }}
+                  style={{ color: 'var(--color-stone-text)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-stone-dark)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-stone-text)' }}
                   tabIndex={-1}
                   aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
@@ -160,7 +160,7 @@ export default function LoginPage() {
                 </button>
               </div>
               {errors.password && (
-                <p className="text-xs mt-1.5 font-medium" style={{ color: '#f87171' }}>
+                <p className="text-xs mt-1.5 font-medium" style={{ color: 'var(--color-red-text)' }}>
                   {errors.password.message}
                 </p>
               )}
@@ -169,7 +169,7 @@ export default function LoginPage() {
             {apiError && (
               <div
                 className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium"
-                style={{ backgroundColor: '#1f0000', color: '#f87171', border: '1px solid #f87171' }}
+                style={{ backgroundColor: 'var(--color-red-bg)', color: 'var(--color-red-text)', border: '1px solid var(--color-red-text)' }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0">
                   <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
@@ -182,9 +182,9 @@ export default function LoginPage() {
               type="submit"
               disabled={isSubmitting}
               className="w-full font-semibold rounded-xl py-3 text-sm text-white transition-all duration-150 cursor-pointer mt-1"
-              style={{ backgroundColor: isSubmitting ? '#E8927A' : '#D85A30' }}
+              style={{ backgroundColor: isSubmitting ? '#E8927A' : 'var(--color-brand)' }}
               onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.backgroundColor = '#C04E27' }}
-              onMouseLeave={(e) => { if (!isSubmitting) e.currentTarget.style.backgroundColor = '#D85A30' }}
+              onMouseLeave={(e) => { if (!isSubmitting) e.currentTarget.style.backgroundColor = 'var(--color-brand)' }}
             >
               {isSubmitting ? 'Iniciando sesión...' : 'Ingresar'}
             </button>

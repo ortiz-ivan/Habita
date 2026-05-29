@@ -28,34 +28,32 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
       onClick={onClose}
     >
       <div
-        className={`flex flex-col overflow-hidden rounded w-full ${maxW} max-h-[88vh] modal-panel-enter`}
+        className={`flex flex-col overflow-hidden rounded w-full ${maxW} max-h-[88vh] modal-panel-enter bg-surface-1`}
         style={{
-          backgroundColor: '#111111',
           border: '1px solid #222222',
           boxShadow: '0 32px 80px rgba(0,0,0,0.65), 0 8px 24px rgba(0,0,0,0.4)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Acento coral */}
-        <div style={{ height: '2px', backgroundColor: '#D85A30', flexShrink: 0 }} />
+        <div className="bg-brand shrink-0" style={{ height: '2px' }} />
 
         {/* Header */}
         <div
           className="flex items-center justify-between px-5 pt-4 pb-3.5 shrink-0"
-          style={{ borderBottom: '1px solid #1a1a1a' }}
+          style={{ borderBottom: '1px solid var(--color-surface-2)' }}
         >
-          <h3 className="text-[15px] font-semibold" style={{ color: '#f0f0f0' }}>{title}</h3>
+          <h3 className="text-[15px] font-semibold text-fg">{title}</h3>
           <button
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer"
-            style={{ color: '#888884' }}
+            className="w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer text-stone-text"
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#1a1a1a'
-              e.currentTarget.style.color = '#e5e5e5'
+              e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'
+              e.currentTarget.style.color = 'var(--color-stone-dark)'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = '#888884'
+              e.currentTarget.style.color = 'var(--color-stone-text)'
             }}
             aria-label="Cerrar"
           >

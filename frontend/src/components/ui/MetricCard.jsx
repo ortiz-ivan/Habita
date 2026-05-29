@@ -1,33 +1,33 @@
 const config = {
   default: {
-    iconBg:  '#1a1a1a',
-    iconClr: '#888884',
-    valClr:  '#f0f0f0',
-    barClr:  '#888884',
+    iconBg:  'var(--color-surface-2)',
+    iconClr: 'var(--color-stone-text)',
+    valClr:  'var(--color-fg)',
+    barClr:  'var(--color-stone-text)',
   },
   brand: {
     iconBg:  '#2a1200',
-    iconClr: '#D85A30',
-    valClr:  '#D85A30',
-    barClr:  '#D85A30',
+    iconClr: 'var(--color-brand)',
+    valClr:  'var(--color-brand)',
+    barClr:  'var(--color-brand)',
   },
   warning: {
-    iconBg:  '#2a1400',
-    iconClr: '#FAC775',
-    valClr:  '#FAC775',
-    barClr:  '#FAC775',
+    iconBg:  'var(--color-brand-amber-light)',
+    iconClr: 'var(--color-brand-amber)',
+    valClr:  'var(--color-brand-amber)',
+    barClr:  'var(--color-brand-amber)',
   },
   danger: {
-    iconBg:  '#1f0000',
-    iconClr: '#f87171',
-    valClr:  '#f87171',
-    barClr:  '#f87171',
+    iconBg:  'var(--color-red-bg)',
+    iconClr: 'var(--color-red-text)',
+    valClr:  'var(--color-red-text)',
+    barClr:  'var(--color-red-text)',
   },
   success: {
-    iconBg:  '#0a1f00',
-    iconClr: '#7dc947',
-    valClr:  '#7dc947',
-    barClr:  '#7dc947',
+    iconBg:  'var(--color-green-bg)',
+    iconClr: 'var(--color-green-text)',
+    valClr:  'var(--color-green-text)',
+    barClr:  'var(--color-green-text)',
   },
 }
 
@@ -37,8 +37,7 @@ export function MetricCard({ label, value, color = 'default', icon, progress }) 
 
   return (
     <div
-      className="rounded-xl px-4 py-3.5 cursor-default transition-shadow duration-200"
-      style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f' }}
+      className="rounded-xl px-4 py-3.5 cursor-default transition-shadow duration-200 bg-surface-1 border border-border"
       onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.4)' }}
       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none' }}
     >
@@ -51,7 +50,7 @@ export function MetricCard({ label, value, color = 'default', icon, progress }) 
         </div>
       )}
 
-      <p className="text-[12px] mb-1" style={{ color: '#888884' }}>{label}</p>
+      <p className="text-[12px] mb-1 text-stone-text">{label}</p>
       <p className="text-[22px] font-semibold leading-none" style={{ color: valClr }}>
         {value ?? '—'}
       </p>
@@ -59,8 +58,8 @@ export function MetricCard({ label, value, color = 'default', icon, progress }) 
       {hasProgress && (
         <div className="mt-3">
           <div
-            className="w-full rounded-full overflow-hidden"
-            style={{ height: '3px', backgroundColor: '#1a1a1a' }}
+            className="w-full rounded-full overflow-hidden bg-surface-2"
+            style={{ height: '3px' }}
           >
             <div
               className="h-full rounded-full transition-all duration-700 ease-out"

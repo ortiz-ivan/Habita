@@ -15,8 +15,8 @@ const SearchIcon = () => (
 export function Chip({ label, dot, color, isSearch, onRemove }) {
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2.5 py-[5px] rounded-full text-xs font-medium"
-      style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', color: color ?? '#e5e5e5' }}
+      className="inline-flex items-center gap-1.5 px-2.5 py-[5px] rounded-full text-xs font-medium bg-surface-2 border border-border-strong"
+      style={{ color: color ?? 'var(--color-stone-dark)' }}
     >
       {isSearch && <SearchIcon />}
       {dot && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: dot }} />}

@@ -1,14 +1,14 @@
 const config = {
-  pagado:       { label: 'Pagado',       bg: '#0a1f00', text: '#7dc947', dot: '#7dc947' },
-  pendiente:    { label: 'Pendiente',    bg: '#2a1400', text: '#FAC775', dot: '#FAC775' },
-  por_vencer:   { label: 'Por vencer',   bg: '#2a1400', text: '#FAC775', dot: '#FAC775' },
-  vencido:      { label: 'Vencido',      bg: '#1f0000', text: '#f87171', dot: '#f87171' },
-  sin_contrato: { label: 'Sin contrato', bg: '#1a1a1a', text: '#888884', dot: '#888884' },
-  parcial:      { label: 'Parcial',      bg: '#2a1400', text: '#FAC775', dot: '#FAC775' },
+  pagado:       { label: 'Pagado',       bg: 'var(--color-green-bg)',          text: 'var(--color-green-text)', dot: 'var(--color-green-text)' },
+  pendiente:    { label: 'Pendiente',    bg: 'var(--color-brand-amber-light)', text: 'var(--color-brand-amber)', dot: 'var(--color-brand-amber)' },
+  por_vencer:   { label: 'Por vencer',   bg: 'var(--color-brand-amber-light)', text: 'var(--color-brand-amber)', dot: 'var(--color-brand-amber)' },
+  vencido:      { label: 'Vencido',      bg: 'var(--color-red-bg)',            text: 'var(--color-red-text)',    dot: 'var(--color-red-text)' },
+  sin_contrato: { label: 'Sin contrato', bg: 'var(--color-surface-2)',         text: 'var(--color-stone-text)',  dot: 'var(--color-stone-text)' },
+  parcial:      { label: 'Parcial',      bg: 'var(--color-brand-amber-light)', text: 'var(--color-brand-amber)', dot: 'var(--color-brand-amber)' },
 }
 
 export function PaymentStatusBadge({ status }) {
-  const { label, bg, text, dot } = config[status] ?? { label: status, bg: '#1a1a1a', text: '#888884', dot: '#888884' }
+  const { label, bg, text, dot } = config[status] ?? { label: status, bg: 'var(--color-surface-2)', text: 'var(--color-stone-text)', dot: 'var(--color-stone-text)' }
 
   return (
     <span

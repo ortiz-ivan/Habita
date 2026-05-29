@@ -1,10 +1,9 @@
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery } from '@tanstack/react-query'
-import { queryKeys } from '../../lib/queryKeys'
-import { habitacionesService } from '../../services/habitacionesService'
-import { inquilinosService } from '../../services/inquilinosService'
+import { useHabitacionesSelect } from '../../hooks/queries/useHabitaciones'
+import { useInquilinosSelect } from '../../hooks/queries/useInquilinos'
+import { Button } from '../ui/Button'
 
 const schema = z.object({
   habitacion:    z.coerce.number().int().min(1, 'Seleccioná una habitación'),
@@ -17,15 +16,15 @@ const schema = z.object({
   observacion:   z.string().optional().default(''),
 })
 
-const inp = 'w-full border border-[#2a2a2a] rounded px-3.5 py-2.5 text-sm bg-[#1a1a1a] text-[#e5e5e5] placeholder:text-[#555553] focus:outline-none focus:ring-2 focus:ring-[#D85A30] focus:border-[#D85A30] transition-all'
+const inp = 'w-full border border-border-strong rounded px-3.5 py-2.5 text-sm bg-surface-2 text-stone-dark placeholder:text-[#555553] focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-all'
 const sel = `${inp} cursor-pointer`
 
 function Field({ label, error, children }) {
   return (
     <div>
-      <label className="block text-sm font-semibold mb-1.5" style={{ color: '#e5e5e5' }}>{label}</label>
+      <label className="block text-sm font-semibold mb-1.5 text-stone-dark">{label}</label>
       {children}
-      {error && <p className="text-xs mt-1.5 font-medium" style={{ color: '#f87171' }}>{error.message}</p>}
+      {error && <p className="text-xs mt-1.5 font-medium text-red-text">{error.message}</p>}
     </div>
   )
 }
@@ -42,15 +41,8 @@ export default function ContratoForm({ defaultValues, onSubmit, isLoading, apiEr
       : { estado: 'activo', deposito: 0, observacion: '' },
   })
 
-  const { data: habitaciones } = useQuery({
-    queryKey: queryKeys.habitaciones.select(),
-    queryFn: habitacionesService.listSelect,
-  })
-
-  const { data: inquilinos } = useQuery({
-    queryKey: queryKeys.inquilinos.select(),
-    queryFn: inquilinosService.listSelect,
-  })
+  const { data: habitaciones } = useHabitacionesSelect()
+  const { data: inquilinos }   = useInquilinosSelect()
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
@@ -109,19 +101,12 @@ export default function ContratoForm({ defaultValues, onSubmit, isLoading, apiEr
       </Field>
 
       {apiError && (
-        <p className="text-sm font-medium" style={{ color: '#f87171' }}>{apiError}</p>
+        <p className="text-sm font-medium text-red-text">{apiError}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="w-full py-2.5 rounded text-sm font-semibold text-white cursor-pointer disabled:opacity-50 transition-colors mt-1"
-        style={{ backgroundColor: '#D85A30' }}
-        onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#C04E27' }}
-        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#D85A30' }}
-      >
+      <Button type="submit" disabled={isLoading} className="w-full mt-1">
         {isLoading ? 'Guardando...' : 'Guardar'}
-      </button>
+      </Button>
     </form>
   )
 }

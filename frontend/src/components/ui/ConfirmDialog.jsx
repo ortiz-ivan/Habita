@@ -1,6 +1,6 @@
 import { Button } from './Button'
 
-export default function ConfirmDialog({ isOpen, onConfirm, onCancel, message, isLoading }) {
+export function ConfirmDialog({ isOpen, onConfirm, onCancel, message, isLoading }) {
   if (!isOpen) return null
 
   return (

@@ -1,13 +1,16 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import LoginPage from './pages/LoginPage'
 import MainLayout from './layouts/MainLayout'
-import DashboardPage from './pages/DashboardPage'
-import HabitacionesPage from './pages/HabitacionesPage'
-import InquilinosPage from './pages/InquilinosPage'
-import ContratosPage from './pages/ContratosPage'
-import PagosPage from './pages/PagosPage'
 import ProtectedRoute from './routes/ProtectedRoute'
+import { SkeletonGrid } from './components/ui/Skeleton'
+
+const DashboardPage    = lazy(() => import('./pages/DashboardPage'))
+const HabitacionesPage = lazy(() => import('./pages/HabitacionesPage'))
+const InquilinosPage   = lazy(() => import('./pages/InquilinosPage'))
+const ContratosPage    = lazy(() => import('./pages/ContratosPage'))
+const PagosPage        = lazy(() => import('./pages/PagosPage'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 1000 * 30 } },
@@ -28,11 +31,11 @@ export default function App() {
             }
           >
             <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard"    element={<DashboardPage />} />
-            <Route path="/habitaciones" element={<HabitacionesPage />} />
-            <Route path="/inquilinos"   element={<InquilinosPage />} />
-            <Route path="/contratos"    element={<ContratosPage />} />
-            <Route path="/pagos"        element={<PagosPage />} />
+            <Route path="/dashboard"    element={<Suspense fallback={<div className="pt-8"><SkeletonGrid /></div>}><DashboardPage /></Suspense>} />
+            <Route path="/habitaciones" element={<Suspense fallback={<div className="pt-8"><SkeletonGrid /></div>}><HabitacionesPage /></Suspense>} />
+            <Route path="/inquilinos"   element={<Suspense fallback={<div className="pt-8"><SkeletonGrid /></div>}><InquilinosPage /></Suspense>} />
+            <Route path="/contratos"    element={<Suspense fallback={<div className="pt-8"><SkeletonGrid /></div>}><ContratosPage /></Suspense>} />
+            <Route path="/pagos"        element={<Suspense fallback={<div className="pt-8"><SkeletonGrid /></div>}><PagosPage /></Suspense>} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

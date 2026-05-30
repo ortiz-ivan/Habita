@@ -88,9 +88,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = 'es-ar'
-# NOTE: moneda usada es Guaraní (Paraguay) — verificar si corresponde America/Asuncion
-TIME_ZONE = 'America/Argentina/Buenos_Aires'
+LANGUAGE_CODE = 'es-py'
+TIME_ZONE = 'America/Asuncion'
 USE_I18N = True
 USE_TZ = True
 

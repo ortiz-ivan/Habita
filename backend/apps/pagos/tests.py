@@ -55,17 +55,17 @@ class PagoAPITest(TestCase):
 
     def test_create_pago_requires_auth(self):
         anon = APIClient()
-        response = anon.post('/api/pagos/', self._pago_data(), format='json')
+        response = anon.post('/api/v1/pagos/', self._pago_data(), format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_pago_authenticated(self):
-        response = self.client.post('/api/pagos/', self._pago_data(), format='json')
+        response = self.client.post('/api/v1/pagos/', self._pago_data(), format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Pago.objects.count(), 1)
 
     def test_list_pagos(self):
         Pago.objects.create(**{**self._pago_data(), 'contrato': self.contrato})
-        response = self.client.get('/api/pagos/')
+        response = self.client.get('/api/v1/pagos/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
@@ -83,7 +83,7 @@ class PagoAPITest(TestCase):
             estado=Pago.Estado.VENCIDO,
         )
 
-        response = self.client.get('/api/pagos/?estado=vencido')
+        response = self.client.get('/api/v1/pagos/?estado=vencido')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['estado'], 'vencido')
@@ -95,7 +95,7 @@ class PagoAPITest(TestCase):
             metodo_pago=Pago.MetodoPago.EFECTIVO,
             estado=Pago.Estado.PENDIENTE,
         )
-        response = self.client.patch(f'/api/pagos/{pago.pk}/', {'estado': 'pagado'}, format='json')
+        response = self.client.patch(f'/api/v1/pagos/{pago.pk}/', {'estado': 'pagado'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         pago.refresh_from_db()
         self.assertEqual(pago.estado, Pago.Estado.PAGADO)
@@ -107,6 +107,6 @@ class PagoAPITest(TestCase):
             metodo_pago=Pago.MetodoPago.EFECTIVO,
             estado=Pago.Estado.PENDIENTE,
         )
-        response = self.client.delete(f'/api/pagos/{pago.pk}/')
+        response = self.client.delete(f'/api/v1/pagos/{pago.pk}/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Pago.objects.count(), 0)

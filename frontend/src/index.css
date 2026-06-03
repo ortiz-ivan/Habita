@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand:             #D85A30;
-  --color-brand-hover:       #C04E27;
+  --color-brand:             #E0613A;
+  --color-brand-hover:       #C9522E;
   --color-brand-light:       #FAECE7;
   --color-brand-amber:       #FAC775;
   --color-brand-amber-light: #2a1400;
@@ -12,7 +12,7 @@
   --color-body-bg:           #0a0a0a;
   --color-sidebar-border:    #E0D8CC;
   --color-sidebar-hover:     #EDD9D0;
-  --color-sidebar-active:    #D85A30;
+  --color-sidebar-active:    #E0613A;
   --color-sidebar-text:      #5F5E5A;
   --color-sidebar-active-text: #FFFFFF;
   --color-stone-text:        #888884;

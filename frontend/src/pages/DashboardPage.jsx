@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import { formatGs } from '../utils/format'
+import { formatGs, parseApiError } from '../utils/format'
 import { AlertBanner } from '../components/ui/AlertBanner'
 import { MetricCard } from '../components/ui/MetricCard'
 import { PaymentStatusBadge } from '../components/ui/PaymentStatusBadge'
 import { FilterBar } from '../components/ui/FilterBar'
 import { EmptyState } from '../components/ui/EmptyState'
+import { Modal } from '../components/ui/Modal'
+import PagoForm from '../components/pagos/PagoForm'
 import {
   IconHome,
   IconChart,
@@ -17,7 +19,7 @@ import {
 } from '../components/ui/icons'
 import { useHabitacionesSummary } from '../hooks/queries/useHabitaciones'
 import { useContratosActivos } from '../hooks/queries/useContratos'
-import { usePagosVencidos, usePagosPendientes, usePagosDashboard } from '../hooks/queries/usePagos'
+import { usePagosVencidos, usePagosPendientes, usePagosDashboard, useCreatePago } from '../hooks/queries/usePagos'
 
 // ─── Configuraciones ────────────────────────────────────────────────────────
 
@@ -44,9 +46,13 @@ const tenantFilters = [
   { id: 'vencido',   label: 'Vencidos'   },
 ]
 
+// TODO: reemplazar por histórico real (endpoint mensual)
+const dispSerie = [1, 2, 1, 1, 3, 2]
+const contratosSerie = [7, 8, 8, 9, 9, 9]
+
 // ─── TenantRow ───────────────────────────────────────────────────────────────
 
-function TenantRow({ pago }) {
+function TenantRow({ pago, onCobrar }) {
   const nombre   = pago.contrato?.inquilino_nombre ?? ''
   const words    = nombre.trim().split(' ').filter(Boolean)
   const initials = words.slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?'
@@ -76,7 +82,24 @@ function TenantRow({ pago }) {
       <span className="text-[13px] font-medium shrink-0" style={{ color: 'var(--color-stone-dark)' }}>
         {formatGs(pago.monto)}
       </span>
-      <PaymentStatusBadge status={pago.estado} />
+      <div className="w-[88px] flex justify-end shrink-0">
+        <PaymentStatusBadge status={pago.estado} />
+      </div>
+      {pago.estado !== 'pagado' ? (
+        <button
+          onClick={(e) => { e.stopPropagation(); onCobrar?.(pago) }}
+          className="text-[12px] font-semibold px-3 py-1.5 rounded-lg cursor-pointer shrink-0 whitespace-nowrap transition-colors"
+          style={{
+            border: '1px solid var(--color-brand)',
+            background: 'color-mix(in srgb, var(--color-brand) 13%, transparent)',
+            color: 'var(--color-brand)',
+          }}
+        >
+          Cobrar
+        </button>
+      ) : (
+        <div className="w-[58px] shrink-0" />
+      )}
     </div>
   )
 }
@@ -87,6 +110,20 @@ export default function DashboardPage() {
   const user     = useAuthStore((s) => s.user)
   const navigate = useNavigate()
   const [tenantFilter, setTenantFilter] = useState('all')
+
+  // ── Modal cobrar ──────────────────────────────────────────────────────────
+  const [pagoModal, setPagoModal] = useState({ open: false, defaultValues: null })
+  const [pagoApiError, setPagoApiError] = useState('')
+
+  const createPago = useCreatePago({
+    onSuccess: () => { setPagoModal({ open: false, defaultValues: null }); setPagoApiError('') },
+    onError:   (err) => setPagoApiError(parseApiError(err)),
+  })
+
+  const handleCobrar = (pago) => {
+    setPagoApiError('')
+    setPagoModal({ open: true, defaultValues: { contrato: pago.contrato?.id } })
+  }
 
   // ── Queries para métricas ─────────────────────────────────────────────────
   const { data: habitaciones }                         = useHabitacionesSummary()
@@ -102,9 +139,11 @@ export default function DashboardPage() {
   const total       = habs.length
   const ocupacion   = total ? Math.round((ocupadas / total) * 100) : 0
 
-  const vencidosCount    = pagosVencidos?.count   ?? 0
-  const pendientesCount  = pagosPendientes?.count  ?? 0
-  const pagosPendTotal   = pendientesCount + vencidosCount
+  const vencidosCount   = pagosVencidos?.count  ?? 0
+  const pendientesCount = pagosPendientes?.count ?? 0
+  const pagosPendTotal  = pendientesCount + vencidosCount
+
+  const montoVencido = (pagosVencidos?.results ?? []).reduce((acc, p) => acc + (p.monto ?? 0), 0)
 
   const tenantRows = tenantData?.results ?? []
 
@@ -122,7 +161,7 @@ export default function DashboardPage() {
       {vencidosCount > 0 && (
         <AlertBanner
           type="danger"
-          message={`${vencidosCount} pago${vencidosCount > 1 ? 's' : ''} vencido${vencidosCount > 1 ? 's' : ''} sin cobrar — acción urgente requerida`}
+          message={`${vencidosCount} pago${vencidosCount > 1 ? 's' : ''} vencido${vencidosCount > 1 ? 's' : ''} sin cobrar — ${formatGs(montoVencido)} pendientes de acción urgente`}
           actionLabel="Ver todos"
           onAction={() => navigate('/pagos?estado=vencido')}
         />
@@ -141,14 +180,34 @@ export default function DashboardPage() {
 
       {/* Métricas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <MetricCard label="Disponibles"      value={disponibles}      color="success" icon={<IconHome />} />
-        <MetricCard label="Ocupación"        value={`${ocupacion}%`}  color="brand"   icon={<IconChart />} progress={ocupacion} />
-        <MetricCard label="Contratos activos" value={contratos?.count} color="default" icon={<IconDoc />} />
+        <MetricCard
+          label="Disponibles"
+          value={disponibles}
+          color="success"
+          icon={<IconHome />}
+          spark={dispSerie}
+          delta={{ value: '+1', up: true }}
+        />
+        <MetricCard
+          label="Ocupación"
+          value={`${ocupacion}%`}
+          color="brand"
+          icon={<IconChart />}
+          progress={ocupacion}
+        />
+        <MetricCard
+          label="Contratos activos"
+          value={contratos?.count}
+          color="default"
+          icon={<IconDoc />}
+          spark={contratosSerie}
+        />
         <MetricCard
           label="Pagos pendientes"
           value={pagosPendTotal}
           color={vencidosCount > 0 ? 'danger' : 'warning'}
           icon={<IconMoney />}
+          delta={{ value: `${vencidosCount} vencidos`, up: false }}
         />
       </div>
 
@@ -157,51 +216,50 @@ export default function DashboardPage() {
 
         {/* TenantTable */}
         <div className="flex flex-col gap-[38px]">
-          {/* FilterBar */}
           <FilterBar
             filters={tenantFilters}
             active={tenantFilter}
             onChange={setTenantFilter}
           />
 
-          <div className="rounded-xl overflow-hidden bg-surface-1 border border-border" >
-          {/* Header */}
-          <div className="flex items-center px-4 py-3" style={{ borderBottom: '1px solid var(--color-surface-2)' }}>
-            <h2 className="text-[13px] font-medium" style={{ color: 'var(--color-fg)' }}>Inquilinos</h2>
-            <button
-              onClick={() => navigate('/pagos')}
-              className="ml-auto text-[12px] hover:underline cursor-pointer"
-              style={{ color: 'var(--color-brand)' }}
-            >
-              Ver todos →
-            </button>
-          </div>
+          <div className="rounded-2xl overflow-hidden bg-surface-1 border border-border">
+            {/* Header */}
+            <div className="flex items-center px-4 py-3" style={{ borderBottom: '1px solid var(--color-surface-2)' }}>
+              <h2 className="text-[13px] font-medium" style={{ color: 'var(--color-fg)' }}>Inquilinos</h2>
+              <button
+                onClick={() => navigate('/pagos')}
+                className="ml-auto text-[12px] hover:underline cursor-pointer"
+                style={{ color: 'var(--color-brand)' }}
+              >
+                Ver todos →
+              </button>
+            </div>
 
-          {/* Filas */}
-          <div>
-            {tenantLoading ? (
-              <div className="px-4 py-8 text-center text-[13px]" style={{ color: 'var(--color-stone-text)' }}>
-                Cargando…
-              </div>
-            ) : tenantRows.length === 0 ? (
-              <div className="py-8">
-                <EmptyState
-                  icon={<IconUsersEmpty />}
-                  title="Sin resultados"
-                  description="No hay pagos en este estado"
-                />
-              </div>
-            ) : (
-              tenantRows.map((p) => (
-                <TenantRow key={p.id} pago={p} />
-              ))
-            )}
+            {/* Filas */}
+            <div>
+              {tenantLoading ? (
+                <div className="px-4 py-8 text-center text-[13px]" style={{ color: 'var(--color-stone-text)' }}>
+                  Cargando…
+                </div>
+              ) : tenantRows.length === 0 ? (
+                <div className="py-8">
+                  <EmptyState
+                    icon={<IconUsersEmpty />}
+                    title="Sin resultados"
+                    description="No hay pagos en este estado"
+                  />
+                </div>
+              ) : (
+                tenantRows.map((p) => (
+                  <TenantRow key={p.id} pago={p} onCobrar={handleCobrar} />
+                ))
+              )}
+            </div>
           </div>
-        </div>
         </div>
 
         {/* Grid de habitaciones */}
-        <div className="rounded-xl p-4 bg-surface-1 border border-border" >
+        <div className="rounded-2xl p-4 bg-surface-1 border border-border">
           <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="text-[13px] font-medium" style={{ color: 'var(--color-fg)' }}>Habitaciones</h2>
@@ -258,6 +316,21 @@ export default function DashboardPage() {
         </div>
 
       </div>
+
+      {/* Modal — Cobrar pago rápido */}
+      <Modal
+        isOpen={pagoModal.open}
+        onClose={() => setPagoModal({ open: false, defaultValues: null })}
+        title="Registrar pago"
+        size="lg"
+      >
+        <PagoForm
+          defaultValues={pagoModal.defaultValues}
+          onSubmit={(data) => createPago.mutate(data)}
+          isLoading={createPago.isPending}
+          apiError={pagoApiError}
+        />
+      </Modal>
     </div>
   )
 }

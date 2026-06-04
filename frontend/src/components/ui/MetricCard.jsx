@@ -41,7 +41,7 @@ export function MetricCard({ label, value, color = 'default', icon, progress, sp
 
   return (
     <div
-      className="rounded-2xl px-4 py-4 cursor-default transition-shadow duration-200 bg-surface-1 border border-border"
+      className="rounded px-4 py-4 cursor-default transition-shadow duration-200 bg-surface-1 border border-border"
       onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.4)' }}
       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none' }}
     >
@@ -49,7 +49,7 @@ export function MetricCard({ label, value, color = 'default', icon, progress, sp
       <div className="flex items-center justify-between">
         {icon ? (
           <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+            className="w-9 h-9 rounded flex items-center justify-center shrink-0"
             style={{ backgroundColor: iconBg, color: iconClr }}
           >
             {icon}

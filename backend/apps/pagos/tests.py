@@ -110,3 +110,73 @@ class PagoAPITest(TestCase):
         response = self.client.delete(f'/api/v1/pagos/{pago.pk}/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Pago.objects.count(), 0)
+
+
+class PagoFiltrosFechaTest(TestCase):
+    """Cubre el PagoFilter: fecha_desde, fecha_hasta y metodo_pago."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = Usuario.objects.create_user(username='testuser2', password='pass1234')
+        self.client.force_authenticate(user=self.user)
+
+        hab = make_habitacion('201')
+        inq = make_inquilino(email='fdate@test.com', documento='800')
+        self.contrato = make_contrato(hab, inq)
+
+        hoy = datetime.date.today()
+        ayer = hoy - datetime.timedelta(days=1)
+        manana = hoy + datetime.timedelta(days=1)
+
+        Pago.objects.create(
+            contrato=self.contrato, monto=100_000, fecha_pago=ayer,
+            metodo_pago=Pago.MetodoPago.EFECTIVO, estado=Pago.Estado.PAGADO,
+        )
+        Pago.objects.create(
+            contrato=self.contrato, monto=200_000, fecha_pago=hoy,
+            metodo_pago=Pago.MetodoPago.TRANSFERENCIA, estado=Pago.Estado.PENDIENTE,
+        )
+        Pago.objects.create(
+            contrato=self.contrato, monto=300_000, fecha_pago=manana,
+            metodo_pago=Pago.MetodoPago.QR, estado=Pago.Estado.PENDIENTE,
+        )
+        self.hoy = hoy
+        self.ayer = ayer
+        self.manana = manana
+
+    def test_filter_fecha_desde_excluye_anteriores(self):
+        response = self.client.get(f'/api/v1/pagos/?fecha_desde={self.hoy}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)  # hoy + mañana
+
+    def test_filter_fecha_hasta_excluye_posteriores(self):
+        response = self.client.get(f'/api/v1/pagos/?fecha_hasta={self.hoy}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)  # ayer + hoy
+
+    def test_filter_rango_exacto_devuelve_un_dia(self):
+        response = self.client.get(f'/api/v1/pagos/?fecha_desde={self.hoy}&fecha_hasta={self.hoy}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_metodo_pago_transferencia(self):
+        response = self.client.get('/api/v1/pagos/?metodo_pago=transferencia')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['metodo_pago'], 'transferencia')
+
+    def test_filter_por_contrato(self):
+        hab2 = make_habitacion('301')
+        inq2 = make_inquilino(email='second@test.com', documento='700')
+        contrato2 = make_contrato(hab2, inq2)
+        Pago.objects.create(
+            contrato=contrato2, monto=500_000, fecha_pago=datetime.date.today(),
+            metodo_pago=Pago.MetodoPago.EFECTIVO, estado=Pago.Estado.PENDIENTE,
+        )
+        response = self.client.get(f'/api/v1/pagos/?contrato={self.contrato.pk}')
+        self.assertEqual(response.data['count'], 3)
+
+    def test_filter_fecha_sin_resultados_devuelve_cero(self):
+        futuro = self.manana + datetime.timedelta(days=30)
+        response = self.client.get(f'/api/v1/pagos/?fecha_desde={futuro}')
+        self.assertEqual(response.data['count'], 0)

@@ -88,7 +88,7 @@ function TenantRow({ pago, onCobrar }) {
       {pago.estado !== 'pagado' ? (
         <button
           onClick={(e) => { e.stopPropagation(); onCobrar?.(pago) }}
-          className="text-[12px] font-semibold px-3 py-1.5 rounded-lg cursor-pointer shrink-0 whitespace-nowrap transition-colors"
+          className="text-[12px] font-semibold px-3 py-1.5 rounded cursor-pointer shrink-0 whitespace-nowrap transition-colors"
           style={{
             border: '1px solid var(--color-brand)',
             background: 'color-mix(in srgb, var(--color-brand) 13%, transparent)',
@@ -222,7 +222,7 @@ export default function DashboardPage() {
             onChange={setTenantFilter}
           />
 
-          <div className="rounded-2xl overflow-hidden bg-surface-1 border border-border">
+          <div className="rounded overflow-hidden bg-surface-1 border border-border">
             {/* Header */}
             <div className="flex items-center px-4 py-3" style={{ borderBottom: '1px solid var(--color-surface-2)' }}>
               <h2 className="text-[13px] font-medium" style={{ color: 'var(--color-fg)' }}>Inquilinos</h2>
@@ -259,7 +259,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Grid de habitaciones */}
-        <div className="rounded-2xl p-4 bg-surface-1 border border-border">
+        <div className="rounded p-4 bg-surface-1 border border-border">
           <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="text-[13px] font-medium" style={{ color: 'var(--color-fg)' }}>Habitaciones</h2>
@@ -296,7 +296,7 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={h.id}
-                    className="rounded-lg px-3 py-2.5 cursor-default transition-transform duration-150"
+                    className="rounded px-3 py-2.5 cursor-default transition-transform duration-150"
                     style={{ backgroundColor: cfg.bg, borderLeft: `3px solid ${cfg.dot}` }}
                     onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}

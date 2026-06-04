@@ -99,7 +99,7 @@ export default function LoginPage() {
               </label>
               <input
                 {...register('username')}
-                className="w-full rounded-xl px-4 py-3 text-sm transition-all duration-150"
+                className="w-full rounded px-4 py-3 text-sm transition-all duration-150"
                 style={{
                   border: errors.username ? '1.5px solid var(--color-red-text)' : '1.5px solid var(--color-border-strong)',
                   backgroundColor: 'var(--color-surface-2)',
@@ -126,7 +126,7 @@ export default function LoginPage() {
                 <input
                   {...register('password')}
                   type={showPass ? 'text' : 'password'}
-                  className="w-full rounded-xl px-4 py-3 pr-11 text-sm transition-all duration-150"
+                  className="w-full rounded px-4 py-3 pr-11 text-sm transition-all duration-150"
                   style={{
                     border: errors.password ? '1.5px solid var(--color-red-text)' : '1.5px solid var(--color-border-strong)',
                     backgroundColor: 'var(--color-surface-2)',
@@ -168,7 +168,7 @@ export default function LoginPage() {
 
             {apiError && (
               <div
-                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-3 rounded text-sm font-medium"
                 style={{ backgroundColor: 'var(--color-red-bg)', color: 'var(--color-red-text)', border: '1px solid var(--color-red-text)' }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0">
@@ -181,7 +181,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full font-semibold rounded-xl py-3 text-sm text-white transition-all duration-150 cursor-pointer mt-1"
+              className="w-full font-semibold rounded py-3 text-sm text-white transition-all duration-150 cursor-pointer mt-1"
               style={{ backgroundColor: isSubmitting ? '#E8927A' : 'var(--color-brand)' }}
               onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.backgroundColor = '#C04E27' }}
               onMouseLeave={(e) => { if (!isSubmitting) e.currentTarget.style.backgroundColor = 'var(--color-brand)' }}

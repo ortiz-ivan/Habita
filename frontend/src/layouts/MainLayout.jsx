@@ -295,7 +295,7 @@ export default function MainLayout() {
 
             <div className="w-px h-5 mx-2" style={{ backgroundColor: 'var(--color-border-strong)' }} />
 
-            <Button onClick={quickPago.open} size="sm" className="rounded-lg text-[13px] font-medium px-3">
+            <Button onClick={quickPago.open} size="sm" className="text-[13px] font-medium px-3">
               <IconPlus />
               Registrar pago
             </Button>

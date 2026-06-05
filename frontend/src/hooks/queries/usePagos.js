@@ -16,6 +16,14 @@ export function usePagosList(filters) {
   })
 }
 
+export function usePagosSummary() {
+  return useQuery({
+    queryKey: queryKeys.pagos.all(),
+    queryFn:  () => pagosService.list({ page_size: 200 }),
+    staleTime: 2 * 60 * 1000,
+  })
+}
+
 export function usePagosVencidos() {
   return useQuery({
     queryKey: queryKeys.pagos.vencidos(),
@@ -43,10 +51,17 @@ export function usePagosDashboard(filter) {
   return useQuery({
     queryKey: queryKeys.pagos.dashboard(filter),
     queryFn:  () => {
-      const params = { page_size: 8 }
+      const params = { page_size: 5 }
       if (filter !== 'all') params.estado = filter
       return pagosService.list(params)
     },
+  })
+}
+
+export function usePagosResumen() {
+  return useQuery({
+    queryKey: queryKeys.pagos.resumen(),
+    queryFn:  pagosService.resumen,
   })
 }
 

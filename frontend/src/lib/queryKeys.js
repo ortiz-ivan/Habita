@@ -6,6 +6,7 @@ export const queryKeys = {
     vencidos:     () => ['pagos-vencidos'],
     vencidosCount:() => ['pagos-vencidos-count'],
     dashboard:    (filter) => ['pagos-dashboard', filter],
+    resumen:      () => ['pagos-resumen'],
   },
   habitaciones: {
     all:   () => ['habitaciones'],

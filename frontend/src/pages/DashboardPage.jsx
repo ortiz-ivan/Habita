@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import { formatGs, parseApiError } from '../utils/format'
+import { formatGs, formatDate, parseApiError } from '../utils/format'
 import { AlertBanner } from '../components/ui/AlertBanner'
 import { MetricCard } from '../components/ui/MetricCard'
 import { PaymentStatusBadge } from '../components/ui/PaymentStatusBadge'
@@ -19,15 +19,15 @@ import {
 } from '../components/ui/icons'
 import { useHabitacionesSummary } from '../hooks/queries/useHabitaciones'
 import { useContratosActivos } from '../hooks/queries/useContratos'
-import { usePagosVencidos, usePagosPendientes, usePagosDashboard, useCreatePago } from '../hooks/queries/usePagos'
+import { usePagosVencidos, usePagosPendientes, usePagosDashboard, usePagosResumen, useCreatePago } from '../hooks/queries/usePagos'
 
 // ─── Configuraciones ────────────────────────────────────────────────────────
 
 const estadoHabConfig = {
-  disponible:    { label: 'Disponible',    dot: 'var(--color-green-text)',  bg: 'var(--color-green-bg)',          text: 'var(--color-green-text)' },
-  ocupada:       { label: 'Ocupada',       dot: 'var(--color-red-text)',    bg: 'var(--color-red-bg)',            text: 'var(--color-red-text)' },
-  reservada:     { label: 'Reservada',     dot: 'var(--color-brand-amber)', bg: 'var(--color-brand-amber-light)', text: 'var(--color-brand-amber)' },
-  mantenimiento: { label: 'Mantenimiento', dot: 'var(--color-stone-text)',  bg: 'var(--color-surface-2)',         text: 'var(--color-stone-text)' },
+  disponible:    { label: 'Disponible',    dot: 'var(--color-green-text)',   bg: 'var(--color-green-bg)',          text: 'var(--color-green-text)' },
+  ocupada:       { label: 'Ocupada',       dot: 'var(--color-blue-text)',    bg: 'var(--color-blue-bg)',           text: 'var(--color-blue-text)' },
+  reservada:     { label: 'Reservada',     dot: 'var(--color-brand-amber)',  bg: 'var(--color-brand-amber-light)', text: 'var(--color-brand-amber)' },
+  mantenimiento: { label: 'Mantenimiento', dot: 'var(--color-yellow-text)',  bg: 'var(--color-yellow-bg)',         text: 'var(--color-yellow-text)' },
 }
 
 const avatarByStatus = {
@@ -49,6 +49,22 @@ const tenantFilters = [
 // TODO: reemplazar por histórico real (endpoint mensual)
 const dispSerie = [1, 2, 1, 1, 3, 2]
 const contratosSerie = [7, 8, 8, 9, 9, 9]
+
+// ─── SectionLabel ────────────────────────────────────────────────────────────
+
+function SectionLabel({ label }) {
+  return (
+    <div className="flex items-center gap-3 mb-5">
+      <span
+        className="text-[11px] font-medium uppercase tracking-[0.08em] shrink-0"
+        style={{ color: 'var(--color-stone-text)' }}
+      >
+        {label}
+      </span>
+      <div className="flex-1 h-px" style={{ backgroundColor: 'var(--color-border)' }} />
+    </div>
+  )
+}
 
 // ─── TenantRow ───────────────────────────────────────────────────────────────
 
@@ -76,7 +92,7 @@ function TenantRow({ pago, onCobrar }) {
           {nombre || '—'}
         </p>
         <p className="text-[12px] mt-0.5" style={{ color: 'var(--color-stone-text)' }}>
-          Hab. {pago.contrato?.habitacion_numero} · {pago.fecha_pago}
+          Hab. {pago.contrato?.habitacion_numero} · {formatDate(pago.fecha_pago)}
         </p>
       </div>
       <span className="text-[13px] font-medium shrink-0" style={{ color: 'var(--color-stone-dark)' }}>
@@ -130,6 +146,7 @@ export default function DashboardPage() {
   const { data: contratos }                            = useContratosActivos()
   const { data: pagosVencidos }                        = usePagosVencidos()
   const { data: pagosPendientes }                      = usePagosPendientes()
+  const { data: resumen }                              = usePagosResumen()
   const { data: tenantData, isLoading: tenantLoading } = usePagosDashboard(tenantFilter)
 
   // ── Métricas ──────────────────────────────────────────────────────────────
@@ -141,58 +158,90 @@ export default function DashboardPage() {
 
   const vencidosCount   = pagosVencidos?.count  ?? 0
   const pendientesCount = pagosPendientes?.count ?? 0
-  const pagosPendTotal  = pendientesCount + vencidosCount
 
-  const montoVencido = (pagosVencidos?.results ?? []).reduce((acc, p) => acc + (p.monto ?? 0), 0)
+  const montoVencido      = (pagosVencidos?.results ?? []).reduce((acc, p) => acc + (p.monto ?? 0), 0)
+  const ingresosMes       = resumen?.ingresos_mes          ?? 0
+  const ingresosMesAnt    = resumen?.ingresos_mes_anterior ?? 0
+  const montoAdeudado     = resumen?.monto_adeudado        ?? 0
+
+  const ingresosDeltas = (() => {
+    if (ingresosMesAnt === 0) return null
+    const pct = Math.round(((ingresosMes - ingresosMesAnt) / ingresosMesAnt) * 100)
+    return { value: `${pct >= 0 ? '+' : ''}${pct}% vs mes ant.`, up: pct >= 0 }
+  })()
 
   const tenantRows = tenantData?.results ?? []
 
   return (
     <div>
       {/* Saludo */}
-      <div className="mb-5">
-        <h2 className="text-[17px] font-semibold" style={{ color: 'var(--color-fg)' }}>
-          Bienvenido, {user?.first_name || user?.username}
-        </h2>
-        <p className="text-[13px] mt-0.5 capitalize" style={{ color: 'var(--color-stone-text)' }}>{user?.rol}</p>
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-1">
+          <h2 className="text-[17px] font-semibold" style={{ color: 'var(--color-fg)' }}>
+            Bienvenido, {user?.first_name || user?.username}
+          </h2>
+          {vencidosCount === 0 && pendientesCount === 0 && (
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
+              style={{ backgroundColor: 'var(--color-green-bg)', color: 'var(--color-green-text)' }}
+            >
+              <svg viewBox="0 0 12 12" fill="currentColor" className="w-2.5 h-2.5">
+                <path fillRule="evenodd" d="M10.22 2.47a.75.75 0 0 1 0 1.06l-5.5 5.5a.75.75 0 0 1-1.06 0l-2.5-2.5a.75.75 0 0 1 1.06-1.06L4.25 7.44l4.97-4.97a.75.75 0 0 1 1.06 0Z" clipRule="evenodd"/>
+              </svg>
+              Pagos al día
+            </span>
+          )}
+        </div>
+        <p className="text-[13px] capitalize" style={{ color: 'var(--color-stone-text)' }}>{user?.rol}</p>
       </div>
 
-      {/* Alertas */}
-      {vencidosCount > 0 && (
-        <AlertBanner
-          type="danger"
-          message={`${vencidosCount} pago${vencidosCount > 1 ? 's' : ''} vencido${vencidosCount > 1 ? 's' : ''} sin cobrar — ${formatGs(montoVencido)} pendientes de acción urgente`}
-          actionLabel="Ver todos"
-          onAction={() => navigate('/pagos?estado=vencido')}
-        />
-      )}
-      {pendientesCount > 0 && (
-        <AlertBanner
-          type="warning"
-          message={`${pendientesCount} pago${pendientesCount > 1 ? 's' : ''} pendiente${pendientesCount > 1 ? 's' : ''} por cobrar este mes`}
-          actionLabel="Ver todos"
-          onAction={() => navigate('/pagos?estado=pendiente')}
-        />
-      )}
-      {vencidosCount === 0 && pendientesCount === 0 && (
-        <AlertBanner type="success" message="Todos los pagos del mes están al día" />
+      {/* Separador */}
+      <div className="h-px mb-6" style={{ backgroundColor: 'var(--color-border)' }} />
+
+      {/* Alertas urgentes (solo si hay problemas) */}
+      {(vencidosCount > 0 || pendientesCount > 0) && (
+        <div className="mb-8">
+          {vencidosCount > 0 && (
+            <AlertBanner
+              type="danger"
+              message={`${vencidosCount} pago${vencidosCount > 1 ? 's' : ''} vencido${vencidosCount > 1 ? 's' : ''} sin cobrar — ${formatGs(montoVencido)} pendientes de acción urgente`}
+              actionLabel="Ver todos"
+              onAction={() => navigate('/pagos?estado=vencido')}
+            />
+          )}
+          {pendientesCount > 0 && (
+            <AlertBanner
+              type="warning"
+              message={`${pendientesCount} pago${pendientesCount > 1 ? 's' : ''} pendiente${pendientesCount > 1 ? 's' : ''} por cobrar este mes`}
+              actionLabel="Ver todos"
+              onAction={() => navigate('/pagos?estado=pendiente')}
+            />
+          )}
+        </div>
       )}
 
       {/* Métricas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+      <SectionLabel label="Resumen" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
         <MetricCard
-          label="Disponibles"
-          value={disponibles}
+          label="Ingresos del mes"
+          value={formatGs(ingresosMes)}
           color="success"
-          icon={<IconHome />}
-          spark={dispSerie}
-          delta={{ value: '+1', up: true }}
+          icon={<IconMoney />}
+          delta={ingresosDeltas}
+        />
+        <MetricCard
+          label="Pendiente de cobro"
+          value={formatGs(montoAdeudado)}
+          color={vencidosCount > 0 ? 'danger' : 'warning'}
+          icon={<IconChart />}
+          delta={vencidosCount > 0 ? { value: `${vencidosCount} vencido${vencidosCount > 1 ? 's' : ''}`, up: false } : undefined}
         />
         <MetricCard
           label="Ocupación"
           value={`${ocupacion}%`}
           color="brand"
-          icon={<IconChart />}
+          icon={<IconHome />}
           progress={ocupacion}
         />
         <MetricCard
@@ -202,20 +251,14 @@ export default function DashboardPage() {
           icon={<IconDoc />}
           spark={contratosSerie}
         />
-        <MetricCard
-          label="Pagos pendientes"
-          value={pagosPendTotal}
-          color={vencidosCount > 0 ? 'danger' : 'warning'}
-          icon={<IconMoney />}
-          delta={{ value: `${vencidosCount} vencidos`, up: false }}
-        />
       </div>
 
       {/* Fila inferior: TenantTable + Habitaciones */}
+      <SectionLabel label="Actividad" />
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-4">
 
         {/* TenantTable */}
-        <div className="flex flex-col gap-[38px]">
+        <div className="flex flex-col gap-3">
           <FilterBar
             filters={tenantFilters}
             active={tenantFilter}
@@ -225,7 +268,7 @@ export default function DashboardPage() {
           <div className="rounded overflow-hidden bg-surface-1 border border-border">
             {/* Header */}
             <div className="flex items-center px-4 py-3" style={{ borderBottom: '1px solid var(--color-surface-2)' }}>
-              <h2 className="text-[13px] font-medium" style={{ color: 'var(--color-fg)' }}>Inquilinos</h2>
+              <h2 className="text-[13px] font-medium" style={{ color: 'var(--color-fg)' }}>Últimos movimientos</h2>
               <button
                 onClick={() => navigate('/pagos')}
                 className="ml-auto text-[12px] hover:underline cursor-pointer"
@@ -250,7 +293,7 @@ export default function DashboardPage() {
                   />
                 </div>
               ) : (
-                tenantRows.map((p) => (
+                tenantRows.slice(0, 5).map((p) => (
                   <TenantRow key={p.id} pago={p} onCobrar={handleCobrar} />
                 ))
               )}
@@ -260,28 +303,25 @@ export default function DashboardPage() {
 
         {/* Grid de habitaciones */}
         <div className="rounded p-4 bg-surface-1 border border-border">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h2 className="text-[13px] font-medium" style={{ color: 'var(--color-fg)' }}>Habitaciones</h2>
-              <p className="text-[11px] mt-[1px]" style={{ color: 'var(--color-stone-text)' }}>
-                {ocupadas} de {total} ocupadas
-              </p>
+          <h2 className="text-[13px] font-medium mb-3" style={{ color: 'var(--color-fg)' }}>Habitaciones</h2>
+
+          {/* Resumen por estado */}
+          {total > 0 && (
+            <div className="space-y-1.5 mb-4 pb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+              {Object.entries(estadoHabConfig).map(([key, { label, dot }]) => {
+                const count = habs.filter((h) => h.estado === key).length
+                if (count === 0) return null
+                return (
+                  <div key={key} className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dot }} />
+                    <span className="text-[12px] flex-1" style={{ color: 'var(--color-stone-text)' }}>{label}</span>
+                    <span className="text-[13px] font-semibold" style={{ color: 'var(--color-fg)' }}>{count}</span>
+                  </div>
+                )
+              })}
             </div>
-            {total > 0 && (
-              <div className="flex items-center gap-2.5">
-                {Object.entries(estadoHabConfig).map(([key, { dot }]) => {
-                  const count = habs.filter((h) => h.estado === key).length
-                  if (count === 0) return null
-                  return (
-                    <span key={key} className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--color-stone-text)' }}>
-                      <span className="w-[7px] h-[7px] rounded-full" style={{ backgroundColor: dot }} />
-                      {count}
-                    </span>
-                  )
-                })}
-              </div>
-            )}
-          </div>
+          )}
+
 
           {total === 0 ? (
             <EmptyState
@@ -302,7 +342,7 @@ export default function DashboardPage() {
                     onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
                   >
                     <p className="text-[13px] font-semibold leading-tight" style={{ color: cfg.text }}>
-                      #{h.numero}
+                      N°{h.numero}
                     </p>
                     <p className="text-[10px] mt-0.5" style={{ color: cfg.dot }}>Piso {h.piso}</p>
                     <p className="text-[11px] mt-1 capitalize font-medium" style={{ color: cfg.text }}>
@@ -327,6 +367,7 @@ export default function DashboardPage() {
         <PagoForm
           defaultValues={pagoModal.defaultValues}
           onSubmit={(data) => createPago.mutate(data)}
+          onCancel={() => setPagoModal({ open: false, defaultValues: null })}
           isLoading={createPago.isPending}
           apiError={pagoApiError}
         />

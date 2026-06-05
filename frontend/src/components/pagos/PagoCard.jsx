@@ -1,5 +1,4 @@
-import { formatGs } from '../../utils/format'
-import { Button } from '../ui/Button'
+import { formatGs, formatDate } from '../../utils/format'
 import { estadoConfig, metodoStyle } from '../../lib/constants/pagos'
 
 const cardHover = {
@@ -38,53 +37,47 @@ export function PagoCard({ p, onEdit, onView }) {
     >
       <div style={{ height: '3px', backgroundColor: cfg.dot }} />
 
-      <div className="px-5 pt-4 pb-3">
-        <div className="flex items-center justify-between gap-2 mb-2">
+      {/* Encabezado: inquilino y habitación */}
+      <div className="px-5 pt-5 pb-4">
+        <p className="text-base font-bold leading-snug text-fg mb-1">{p.contrato.inquilino_nombre}</p>
+        <p className="text-[12px]" style={{ color: 'var(--color-stone-text)' }}>Hab. {p.contrato.habitacion_numero}</p>
+      </div>
+
+      <div className="mx-5 h-px bg-border" />
+
+      {/* Cuerpo: monto, fecha, método, estado */}
+      <div className="px-5 py-4 flex-1 flex flex-col gap-3">
+        <div>
+          <p className="text-xl font-bold leading-tight text-fg">{formatGs(p.monto)}</p>
+          <p className="text-[12px] mt-0.5" style={{ color: 'var(--color-stone-text)' }}>{formatDate(p.fecha_pago)}</p>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
           <span
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shrink-0"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold"
             style={{ backgroundColor: cfg.bg, color: cfg.text }}
           >
             <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cfg.dot }} />
             {cfg.label}
           </span>
-          <span className="text-xs font-bold shrink-0 text-stone-text">Hab. {p.contrato.habitacion_numero}</span>
-        </div>
-        <p className="text-base font-bold leading-snug text-fg">{p.contrato.inquilino_nombre}</p>
-      </div>
-
-      <div className="mx-5 h-px bg-border" />
-
-      <div className="px-4 py-4 flex-1">
-        <div className="space-y-2">
-          <div className="rounded px-3 py-3 bg-surface-2">
-            <p className="text-[10px] font-medium uppercase tracking-wide mb-0.5 text-stone-text">Monto</p>
-            <p className="text-lg font-bold text-fg">{formatGs(p.monto)}</p>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="rounded px-3 py-2.5 bg-surface-2">
-              <p className="text-[10px] font-medium uppercase tracking-wide mb-1 text-stone-text">Fecha</p>
-              <p className="text-sm font-semibold text-stone-dark">{p.fecha_pago}</p>
-            </div>
-            <div className="rounded px-3 py-2.5 bg-surface-2">
-              <p className="text-[10px] font-medium uppercase tracking-wide mb-1 text-stone-text">Método</p>
-              <span
-                className="px-2 py-0.5 rounded-lg text-xs font-semibold capitalize"
-                style={{ backgroundColor: met.bg, color: met.text }}
-              >
-                {p.metodo_pago}
-              </span>
-            </div>
-          </div>
+          <span
+            className="px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize"
+            style={{ backgroundColor: met.bg, color: met.text }}
+          >
+            {p.metodo_pago}
+          </span>
         </div>
       </div>
 
-      <div className="px-4 pb-4 pt-2 flex gap-2">
-        <Button variant="ghost" onClick={() => onView(p)} className="flex-1">
-          <IconEye /> Ver más
-        </Button>
-        <Button onClick={() => onEdit(p)} className="flex-1">
+      {/* Acciones */}
+      <div className="px-4 py-2 flex items-center gap-0.5" style={{ borderTop: '1px solid var(--color-border)' }}>
+        <button onClick={() => onView(p)} className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded cursor-pointer transition-colors" style={{ color: 'var(--color-stone-text)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-fg)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}>
+          <IconEye /> Ver
+        </button>
+        <div className="w-px h-3.5 mx-0.5 shrink-0" style={{ backgroundColor: 'var(--color-border-strong)' }} />
+        <button onClick={() => onEdit(p)} className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded cursor-pointer transition-colors" style={{ color: 'var(--color-stone-text)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-brand)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}>
           <IconEdit /> Editar
-        </Button>
+        </button>
       </div>
     </div>
   )

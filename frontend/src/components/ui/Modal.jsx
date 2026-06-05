@@ -19,7 +19,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
 
   if (!isOpen) return null
 
-  const maxW = size === 'lg' ? 'max-w-xl' : 'max-w-md'
+  const panelMaxW = size === 'lg' ? 'min(700px, 90vw)' : 'min(560px, 90vw)'
 
   return (
     <div
@@ -28,8 +28,9 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
       onClick={onClose}
     >
       <div
-        className={`flex flex-col overflow-hidden rounded w-full ${maxW} max-h-[88vh] modal-panel-enter bg-surface-1`}
+        className="flex flex-col overflow-hidden rounded w-full max-h-[88vh] modal-panel-enter bg-surface-1"
         style={{
+          maxWidth: panelMaxW,
           border: '1px solid #222222',
           boxShadow: '0 32px 80px rgba(0,0,0,0.65), 0 8px 24px rgba(0,0,0,0.4)',
         }}
@@ -64,7 +65,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
         </div>
 
         {/* Body */}
-        <div className="px-5 py-4 overflow-y-auto">{children}</div>
+        <div className="px-6 py-6 overflow-y-auto">{children}</div>
       </div>
     </div>
   )

@@ -41,7 +41,8 @@ export function MetricCard({ label, value, color = 'default', icon, progress, sp
 
   return (
     <div
-      className="rounded px-4 py-4 cursor-default transition-shadow duration-200 bg-surface-1 border border-border"
+      className="rounded px-4 py-4 cursor-default transition-shadow duration-200 bg-surface-1 border border-border flex flex-col"
+      style={{ minHeight: '148px' }}
       onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.4)' }}
       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none' }}
     >
@@ -74,19 +75,27 @@ export function MetricCard({ label, value, color = 'default', icon, progress, sp
         {value ?? '—'}
       </p>
 
-      {/* Sparkline gana al progress si viene */}
-      <div className="mt-3 h-[30px]">
+      {/* Sparkline / progress — empuja al fondo con mt-auto */}
+      <div className="mt-auto pt-3 h-[34px]">
         {hasSpark ? (
           <Sparkline data={spark} color={barClr} />
         ) : hasProgress ? (
-          <div className="w-full rounded-full overflow-hidden bg-surface-2" style={{ height: '3px' }}>
+          <div className="flex flex-col gap-1.5">
             <div
-              className="h-full rounded-full transition-all duration-700 ease-out"
-              style={{
-                width: `${Math.min(100, Math.max(0, progress))}%`,
-                backgroundColor: barClr,
-              }}
-            />
+              className="w-full rounded-full overflow-hidden"
+              style={{ height: '6px', backgroundColor: 'var(--color-border-strong)' }}
+            >
+              <div
+                className="h-full rounded-full transition-all duration-700 ease-out"
+                style={{
+                  width: `${Math.min(100, Math.max(0, progress))}%`,
+                  backgroundColor: barClr,
+                }}
+              />
+            </div>
+            <p className="text-[10px] text-right" style={{ color: 'var(--color-stone-text)' }}>
+              {progress}% ocupado
+            </p>
           </div>
         ) : null}
       </div>

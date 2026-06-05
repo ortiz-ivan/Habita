@@ -1,5 +1,4 @@
-import { formatGs } from '../../utils/format'
-import { Button } from '../ui/Button'
+import { formatGs, formatDate } from '../../utils/format'
 import { estadoConfig } from '../../lib/constants/habitaciones'
 
 const cardHover = {
@@ -37,52 +36,76 @@ export function HabitacionCard({ h, onEdit, onView }) {
     >
       <div style={{ height: '3px', backgroundColor: cfg.dot }} />
 
-      <div className="px-5 pt-4 pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-wide mb-1 text-stone-text">Piso {h.piso}</p>
-            <p className="text-2xl font-bold leading-none text-fg">#{h.numero}</p>
-          </div>
-          <span
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shrink-0"
-            style={{ backgroundColor: cfg.bg, color: cfg.text }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cfg.dot }} />
-            {cfg.label}
-          </span>
-        </div>
+      {/* Encabezado: número y piso */}
+      <div className="px-5 pt-5 pb-4">
+        <p className="text-2xl font-bold leading-none text-fg mb-1.5">N°{h.numero}</p>
+        <p className="text-[12px]" style={{ color: 'var(--color-stone-text)' }}>Piso {h.piso}</p>
       </div>
 
       <div className="mx-5 h-px bg-border" />
 
-      <div className="px-4 py-4 flex-1">
-        <div className="grid grid-cols-2 gap-2">
-          <div className="rounded px-3 py-2.5 bg-surface-2">
-            <p className="text-[10px] font-medium uppercase tracking-wide mb-1 text-stone-text">Precio</p>
-            <p className="text-sm font-bold text-fg">{formatGs(h.precio)}</p>
-          </div>
-          <div className="rounded px-3 py-2.5 bg-surface-2">
-            <p className="text-[10px] font-medium uppercase tracking-wide mb-1 text-stone-text">Capacidad</p>
-            <p className="text-sm font-semibold text-stone-dark">{h.capacidad} pers.</p>
-          </div>
-          {h.tiene_banio_privado && (
-            <div className="col-span-2 rounded px-3 py-2.5 flex items-center gap-2 bg-green-bg">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0 text-green-text">
-                <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
-              </svg>
-              <p className="text-xs font-medium text-green-text">Baño privado incluido</p>
-            </div>
-          )}
+      {/* Cuerpo: precio, capacidad, estado, beneficio */}
+      <div className="px-5 py-4 flex-1 flex flex-col gap-3">
+        <div>
+          <p className="text-[15px] font-bold leading-tight text-fg">{formatGs(h.precio)}</p>
+          <p className="text-[12px] mt-0.5" style={{ color: 'var(--color-stone-text)' }}>
+            {h.capacidad} persona{h.capacidad !== 1 ? 's' : ''}
+          </p>
         </div>
+
+        <span
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold w-fit"
+          style={{ backgroundColor: cfg.bg, color: cfg.text }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cfg.dot }} />
+          {cfg.label}
+        </span>
+
+        {h.tiene_banio_privado && (
+          <div className="flex items-center gap-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0 text-green-text">
+              <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+            </svg>
+            <p className="text-[12px] font-medium text-green-text">Baño privado incluido</p>
+          </div>
+        )}
       </div>
 
-      <div className="px-4 pb-4 pt-2 flex gap-2">
-        <Button variant="ghost" onClick={() => onView(h)} className="flex-1">
-          <IconEye /> Ver más
-        </Button>
-        <Button onClick={() => onEdit(h)} className="flex-1">
+      {/* Contrato activo */}
+      <div className="mx-5 h-px bg-border" />
+      <div className="px-5 py-3">
+        {h.contrato_activo ? (
+          <div>
+            <p className="text-[12px] font-semibold leading-tight text-fg">{h.contrato_activo.inquilino_nombre}</p>
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              {h.contrato_activo.fecha_fin && (
+                <span className="text-[11px]" style={{ color: 'var(--color-stone-text)' }}>
+                  Vence {formatDate(h.contrato_activo.fecha_fin)}
+                </span>
+              )}
+              {h.contrato_activo.pagos_pendientes > 0 ? (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-red-bg)', color: 'var(--color-red-text)' }}>
+                  {h.contrato_activo.pagos_pendientes} pendiente{h.contrato_activo.pagos_pendientes !== 1 ? 's' : ''}
+                </span>
+              ) : (
+                <span className="text-[11px] font-medium" style={{ color: 'var(--color-green-text)' }}>Al día</span>
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="text-[12px]" style={{ color: 'var(--color-stone-text)' }}>Sin contrato activo</p>
+        )}
+      </div>
+
+      {/* Acciones */}
+      <div className="px-4 py-2 flex items-center gap-0.5" style={{ borderTop: '1px solid var(--color-border)' }}>
+        <button onClick={() => onView(h)} className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded cursor-pointer transition-colors" style={{ color: 'var(--color-stone-text)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-fg)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}>
+          <IconEye /> Ver
+        </button>
+        <div className="w-px h-3.5 mx-0.5 shrink-0" style={{ backgroundColor: 'var(--color-border-strong)' }} />
+        <button onClick={() => onEdit(h)} className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded cursor-pointer transition-colors" style={{ color: 'var(--color-stone-text)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-brand)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}>
           <IconEdit /> Editar
-        </Button>
+        </button>
       </div>
     </div>
   )

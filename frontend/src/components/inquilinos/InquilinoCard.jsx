@@ -1,4 +1,4 @@
-import { Button } from '../ui/Button'
+import { formatDate } from '../../utils/format'
 import { avatarColor } from '../../utils/avatar'
 
 const cardHover = {
@@ -43,42 +43,47 @@ export function InquilinoCard({ i, onEdit, onView }) {
       style={{ transition: 'transform 200ms ease, box-shadow 200ms ease' }}
       {...cardHover}
     >
-      <div className="px-5 pt-5 pb-4 bg-surface-2">
+      {/* Encabezado: avatar + nombre + email */}
+      <div className="px-5 pt-5 pb-4">
         <div className="flex items-center gap-3">
           <Avatar nombre={i.nombre} apellido={i.apellido} size="lg" />
           <div className="min-w-0 flex-1">
             <p className="font-bold text-base leading-snug text-fg">{i.apellido}, {i.nombre}</p>
-            <p className="text-xs truncate mt-0.5 text-stone-text">{i.email}</p>
+            <p className="text-[12px] truncate mt-1" style={{ color: 'var(--color-stone-text)' }}>{i.email}</p>
           </div>
         </div>
       </div>
 
       <div className="h-px bg-border" />
 
-      <div className="px-4 py-4 flex-1">
-        <div className="grid grid-cols-2 gap-2">
-          <div className="rounded px-3 py-2.5 bg-surface-2">
-            <p className="text-[10px] font-medium uppercase tracking-wide mb-1 text-stone-text">Documento</p>
-            <p className="text-sm font-bold text-fg">{i.documento}</p>
+      {/* Cuerpo: documento, teléfono, ingreso */}
+      <div className="px-5 py-4 flex-1 flex flex-col gap-3">
+        <div>
+          <p className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--color-stone-text)' }}>Documento</p>
+          <p className="text-[14px] font-bold text-fg mt-0.5">{i.documento}</p>
+        </div>
+
+        <div className="flex gap-6">
+          <div>
+            <p className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--color-stone-text)' }}>Teléfono</p>
+            <p className="text-[13px] mt-0.5 text-stone-dark">{i.telefono || '—'}</p>
           </div>
-          <div className="rounded px-3 py-2.5 bg-surface-2">
-            <p className="text-[10px] font-medium uppercase tracking-wide mb-1 text-stone-text">Teléfono</p>
-            <p className="text-sm font-semibold text-stone-dark">{i.telefono || '—'}</p>
-          </div>
-          <div className="col-span-2 rounded px-3 py-2.5 bg-surface-2">
-            <p className="text-[10px] font-medium uppercase tracking-wide mb-1 text-stone-text">Fecha de ingreso</p>
-            <p className="text-sm font-semibold text-stone-dark">{i.fecha_ingreso}</p>
+          <div>
+            <p className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--color-stone-text)' }}>Ingreso</p>
+            <p className="text-[13px] mt-0.5 text-stone-dark">{formatDate(i.fecha_ingreso)}</p>
           </div>
         </div>
       </div>
 
-      <div className="px-4 pb-4 pt-2 flex gap-2">
-        <Button variant="ghost" onClick={() => onView(i)} className="flex-1">
-          <IconEye /> Ver más
-        </Button>
-        <Button onClick={() => onEdit(i)} className="flex-1">
+      {/* Acciones */}
+      <div className="px-4 py-2 flex items-center gap-0.5" style={{ borderTop: '1px solid var(--color-border)' }}>
+        <button onClick={() => onView(i)} className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded cursor-pointer transition-colors" style={{ color: 'var(--color-stone-text)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-fg)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}>
+          <IconEye /> Ver
+        </button>
+        <div className="w-px h-3.5 mx-0.5 shrink-0" style={{ backgroundColor: 'var(--color-border-strong)' }} />
+        <button onClick={() => onEdit(i)} className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded cursor-pointer transition-colors" style={{ color: 'var(--color-stone-text)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-brand)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}>
           <IconEdit /> Editar
-        </Button>
+        </button>
       </div>
     </div>
   )

@@ -1,5 +1,6 @@
-import { Button } from '../ui/Button'
+import { formatDate } from '../../utils/format'
 import { Avatar } from './InquilinoCard'
+import { InfoCard, DetailActions } from '../ui/ModalParts'
 
 export function InquilinoDetail({ i, onEdit, onDelete }) {
   return (
@@ -16,20 +17,14 @@ export function InquilinoDetail({ i, onEdit, onDelete }) {
         {[
           { label: 'Documento',     value: i.documento },
           { label: 'Teléfono',      value: i.telefono || '—' },
-          { label: 'Fecha ingreso', value: i.fecha_ingreso },
+          { label: 'Fecha ingreso', value: formatDate(i.fecha_ingreso) },
           { label: 'C. emergencia', value: i.contacto_emergencia || '—' },
         ].map(({ label, value }) => (
-          <div key={label} className="rounded px-3 py-2.5 bg-surface-2">
-            <p className="text-xs font-medium mb-0.5 text-stone-text">{label}</p>
-            <p className="font-semibold text-fg">{value}</p>
-          </div>
+          <InfoCard key={label} label={label} value={value} />
         ))}
       </div>
 
-      <div className="flex gap-2 pt-1">
-        <Button onClick={onEdit} className="flex-1">Editar</Button>
-        <Button variant="danger" onClick={onDelete} className="flex-1">Eliminar</Button>
-      </div>
+      <DetailActions onEdit={onEdit} onDelete={onDelete} />
     </div>
   )
 }

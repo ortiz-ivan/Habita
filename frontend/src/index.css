@@ -22,12 +22,17 @@
   --color-green-accent:      #7dc947;
   --color-red-bg:            #1f0000;
   --color-red-text:          #f87171;
+  /* estado habitaciones */
+  --color-blue-bg:     #0d1f38;
+  --color-blue-text:   #60a5fa;
+  --color-yellow-bg:   #1c1500;
+  --color-yellow-text: #fbbf24;
   /* dark surface system */
   --color-fg:                #f0f0f0;
   --color-surface-1:         #111111;
   --color-surface-2:         #1a1a1a;
   --color-border:            #1f1f1f;
-  --color-border-strong:     #2a2a2a;
+  --color-border-strong:     #374151;
   /* sidebar text */
   --color-sidebar-heading:   #412402;
   --color-sidebar-subtext:   #633806;
@@ -95,4 +100,12 @@ h1, h2, h3, h4, h5, h6 {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #ea6a3c;
+  box-shadow: 0 0 0 3px rgba(234, 106, 60, 0.15);
 }

@@ -9,6 +9,14 @@ export function useInquilinosList(filters) {
   })
 }
 
+export function useInquilinosSummary() {
+  return useQuery({
+    queryKey: queryKeys.inquilinos.all(),
+    queryFn:  () => inquilinosService.list({ page_size: 200 }),
+    staleTime: 2 * 60 * 1000,
+  })
+}
+
 export function useInquilinosSelect() {
   return useQuery({
     queryKey: queryKeys.inquilinos.select(),

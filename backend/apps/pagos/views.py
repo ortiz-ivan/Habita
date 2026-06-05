@@ -1,3 +1,8 @@
+import datetime
+from django.db.models import Sum
+from django.utils import timezone
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -20,3 +25,32 @@ class PagoViewSet(ModelViewSet):
         if self.action in ['create', 'update', 'partial_update']:
             return PagoWriteSerializer
         return PagoReadSerializer
+
+    @action(detail=False, methods=['get'])
+    def resumen(self, request):
+        hoy = timezone.now().date()
+        inicio_mes = hoy.replace(day=1)
+        fin_mes_anterior = inicio_mes - datetime.timedelta(days=1)
+        inicio_mes_anterior = fin_mes_anterior.replace(day=1)
+
+        ingresos_mes = Pago.objects.filter(
+            estado='pagado',
+            fecha_pago__gte=inicio_mes,
+            fecha_pago__lte=hoy,
+        ).aggregate(t=Sum('monto'))['t'] or 0
+
+        ingresos_mes_anterior = Pago.objects.filter(
+            estado='pagado',
+            fecha_pago__gte=inicio_mes_anterior,
+            fecha_pago__lte=fin_mes_anterior,
+        ).aggregate(t=Sum('monto'))['t'] or 0
+
+        monto_adeudado = Pago.objects.filter(
+            estado__in=['pendiente', 'vencido'],
+        ).aggregate(t=Sum('monto'))['t'] or 0
+
+        return Response({
+            'ingresos_mes':          ingresos_mes,
+            'ingresos_mes_anterior': ingresos_mes_anterior,
+            'monto_adeudado':        monto_adeudado,
+        })

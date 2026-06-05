@@ -16,6 +16,14 @@ export function useContratosList(filters) {
   })
 }
 
+export function useContratosSummary() {
+  return useQuery({
+    queryKey: queryKeys.contratos.all(),
+    queryFn:  () => contratosService.list({ page_size: 200 }),
+    staleTime: 2 * 60 * 1000,
+  })
+}
+
 export function useContratosActivos() {
   return useQuery({
     queryKey: queryKeys.contratos.activos(),

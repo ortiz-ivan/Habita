@@ -11,10 +11,36 @@ import { SkeletonGrid } from '../components/ui/Skeleton'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useDebounce } from '../hooks/useDebounce'
 import { Chip } from '../components/ui/Chip'
-import { usePagosList, useCreatePago, useUpdatePago, useDeletePago } from '../hooks/queries/usePagos'
+import { usePagosList, usePagosSummary, useCreatePago, useUpdatePago, useDeletePago } from '../hooks/queries/usePagos'
 import { estadoConfig, estadoPills, periodoPills, metodoLabel, periodoLabel, getPeriodoFechas } from '../lib/constants/pagos'
 
 const inpFilter = 'border border-border-strong rounded px-3 py-2 text-sm bg-surface-1 focus:outline-none focus:ring-2 focus:ring-brand text-stone-dark transition-all'
+
+function KpiCard({ label, value, dot, color, isLoading, onClick, active }) {
+  const base    = { backgroundColor: 'var(--color-surface-1)', borderColor: 'var(--color-border)' }
+  const active_ = { backgroundColor: color?.bg ?? 'var(--color-surface-2)', borderColor: color?.dot ?? 'var(--color-brand)' }
+  return (
+    <div
+      onClick={onClick}
+      className={`rounded border px-4 py-3 transition-all select-none ${onClick ? 'cursor-pointer' : ''}`}
+      style={active ? active_ : base}
+      onMouseEnter={(e) => { if (onClick && !active) e.currentTarget.style.backgroundColor = 'var(--color-surface-2)' }}
+      onMouseLeave={(e) => { if (onClick && !active) e.currentTarget.style.backgroundColor = 'var(--color-surface-1)' }}
+    >
+      <div className="flex items-center gap-1.5 mb-1.5">
+        {dot && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: dot }} />}
+        <p className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--color-stone-text)' }}>{label}</p>
+      </div>
+      {isLoading ? (
+        <div className="h-7 w-8 rounded animate-pulse" style={{ backgroundColor: 'var(--color-border-strong)' }} />
+      ) : (
+        <p className="text-[26px] font-bold leading-none tracking-tight" style={{ color: active && color ? color.text : 'var(--color-fg)' }}>
+          {value ?? '—'}
+        </p>
+      )}
+    </div>
+  )
+}
 
 export default function PagosPage() {
   const [modalOpen, setModalOpen]       = useState(false)
@@ -38,7 +64,16 @@ export default function PagosPage() {
     fecha_hasta: periodoDates.fecha_hasta || undefined,
   }
 
-  const { data, isLoading } = usePagosList(filters)
+  const { data, isLoading }                        = usePagosList(filters)
+  const { data: allPagos, isLoading: kpiLoading }  = usePagosSummary()
+  const allResults = allPagos?.results ?? []
+  const kpis = {
+    total:     allResults.length,
+    pagado:    allResults.filter(p => p.estado === 'pagado').length,
+    pendiente: allResults.filter(p => p.estado === 'pendiente').length,
+    vencido:   allResults.filter(p => p.estado === 'vencido').length,
+    parcial:   allResults.filter(p => p.estado === 'parcial').length,
+  }
 
   const createMutation = useCreatePago({
     onSuccess: () => setModalOpen(false),
@@ -76,15 +111,22 @@ export default function PagosPage() {
 
   return (
     <div>
-      <PageHeader
-        subtitle={!isLoading && count !== undefined ? `${count} pago${count !== 1 ? 's' : ''} registrado${count !== 1 ? 's' : ''}` : undefined}
-        actionLabel="Registrar pago"
-        onAction={openCreate}
-      />
+      <PageHeader actionLabel="Registrar pago" onAction={openCreate} />
+
+      {/* Mini KPIs */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+        <KpiCard label="Total"      value={kpis.total}     isLoading={kpiLoading} />
+        <KpiCard label="Pagados"    value={kpis.pagado}    dot={estadoConfig.pagado.dot}    color={estadoConfig.pagado}    isLoading={kpiLoading} onClick={() => setEstado(estado === 'pagado'    ? '' : 'pagado')}    active={estado === 'pagado'} />
+        <KpiCard label="Pendientes" value={kpis.pendiente} dot={estadoConfig.pendiente.dot} color={estadoConfig.pendiente} isLoading={kpiLoading} onClick={() => setEstado(estado === 'pendiente' ? '' : 'pendiente')} active={estado === 'pendiente'} />
+        <KpiCard label="Vencidos"   value={kpis.vencido}   dot={estadoConfig.vencido.dot}   color={estadoConfig.vencido}   isLoading={kpiLoading} onClick={() => setEstado(estado === 'vencido'   ? '' : 'vencido')}   active={estado === 'vencido'} />
+        <KpiCard label="Parciales"  value={kpis.parcial}   dot={estadoConfig.parcial.dot}   color={estadoConfig.parcial}   isLoading={kpiLoading} onClick={() => setEstado(estado === 'parcial'   ? '' : 'parcial')}   active={estado === 'parcial'} />
+      </div>
 
       <div className="rounded mb-8 bg-surface-1 border border-border">
-        <div className="flex flex-wrap items-center gap-3 px-4 py-3">
-          <div className="relative">
+
+        {/* Fila de búsqueda y filtros */}
+        <div className="flex flex-wrap items-center gap-3 px-6 py-4">
+          <div className="relative flex-1 min-w-[350px] max-w-xl">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-stone-text">
               <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
             </svg>
@@ -93,9 +135,10 @@ export default function PagosPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por nombre del inquilino..."
-              className={`${inpFilter} pl-9 w-64`}
+              className={`${inpFilter} pl-9 w-full`}
             />
           </div>
+
           <select value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className={inpFilter}>
             <option value="">Todos los métodos</option>
             <option value="efectivo">Efectivo</option>
@@ -103,29 +146,34 @@ export default function PagosPage() {
             <option value="tarjeta">Tarjeta</option>
             <option value="qr">QR</option>
           </select>
-          <div className="ml-auto flex items-center gap-4">
-            {!isLoading && count !== undefined && (
-              <span className="text-sm shrink-0 text-stone-text">
-                {count} resultado{count !== 1 ? 's' : ''}
-              </span>
-            )}
-            {hayFiltros && (
-              <button
-                onClick={() => { setSearch(''); setEstado(''); setMetodoPago(''); setPeriodo('') }}
-                className="flex items-center gap-1.5 text-sm font-medium cursor-pointer transition-colors shrink-0 text-stone-text"
-                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-brand)' }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-stone-text)' }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
-                Limpiar
-              </button>
-            )}
-          </div>
+
+          <div className="w-px h-5 self-center shrink-0" style={{ backgroundColor: 'var(--color-border-strong)' }} />
+
+          {!isLoading && count !== undefined && (
+            <span className="text-[13px] shrink-0" style={{ color: 'var(--color-stone-text)' }}>
+              {count} resultado{count !== 1 ? 's' : ''}
+            </span>
+          )}
+
+          {hayFiltros && (
+            <button
+              onClick={() => { setSearch(''); setEstado(''); setMetodoPago(''); setPeriodo('') }}
+              className="flex items-center gap-1.5 text-[13px] font-medium cursor-pointer transition-colors shrink-0"
+              style={{ color: 'var(--color-stone-text)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-brand)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-stone-text)' }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+              Limpiar
+            </button>
+          )}
         </div>
+
+        {/* Fila de pills de estado y período */}
         <div className="h-px bg-border" />
-        <div className="flex items-center gap-1 flex-wrap px-4 py-2.5">
+        <div className="flex items-center gap-1 flex-wrap px-6 py-3">
           {estadoPills.map((pill) => {
             const isActive = estado === pill.id
             const activeStyle = pill.id === ''
@@ -175,7 +223,7 @@ export default function PagosPage() {
         {activeChips.length > 0 && (
           <>
             <div className="h-px bg-border" />
-            <div className="flex items-center gap-2 flex-wrap px-4 py-2.5">
+            <div className="flex items-center gap-2 flex-wrap px-6 py-3">
               {activeChips.map((chip) => <Chip key={chip.key} {...chip} />)}
             </div>
           </>
@@ -198,14 +246,14 @@ export default function PagosPage() {
           )}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
           {data.results.map((p) => (
             <PagoCard key={p.id} p={p} onEdit={openEdit} onView={setViewTarget} />
           ))}
         </div>
       )}
 
-      <Modal isOpen={!!viewTarget} onClose={() => setViewTarget(null)} title={`Pago #${viewTarget?.id}`}>
+      <Modal isOpen={!!viewTarget} onClose={() => setViewTarget(null)} title={`Pago #${viewTarget?.id}`} size="lg">
         {viewTarget && (
           <PagoDetail
             p={viewTarget}
@@ -220,6 +268,7 @@ export default function PagosPage() {
           key={editTarget?.id ?? 'new'}
           defaultValues={editTarget}
           onSubmit={handleSubmit}
+          onCancel={() => setModalOpen(false)}
           isLoading={isSaving}
           apiError={apiError}
         />

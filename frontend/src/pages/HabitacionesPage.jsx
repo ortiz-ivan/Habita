@@ -16,6 +16,32 @@ import { estadoConfig, estadoPills } from '../lib/constants/habitaciones'
 
 const inpFilter = 'border border-border-strong rounded px-3 py-2 text-sm bg-surface-1 focus:outline-none focus:ring-2 focus:ring-brand text-stone-dark transition-all'
 
+function KpiCard({ label, value, dot, color, isLoading, onClick, active }) {
+  const base   = { backgroundColor: 'var(--color-surface-1)', borderColor: 'var(--color-border)' }
+  const active_ = { backgroundColor: color?.bg ?? 'var(--color-surface-2)', borderColor: color?.dot ?? 'var(--color-brand)' }
+  return (
+    <div
+      onClick={onClick}
+      className={`rounded border px-4 py-3 transition-all select-none ${onClick ? 'cursor-pointer' : ''}`}
+      style={active ? active_ : base}
+      onMouseEnter={(e) => { if (onClick && !active) e.currentTarget.style.backgroundColor = 'var(--color-surface-2)' }}
+      onMouseLeave={(e) => { if (onClick && !active) e.currentTarget.style.backgroundColor = 'var(--color-surface-1)' }}
+    >
+      <div className="flex items-center gap-1.5 mb-1.5">
+        {dot && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: dot }} />}
+        <p className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--color-stone-text)' }}>{label}</p>
+      </div>
+      {isLoading ? (
+        <div className="h-7 w-8 rounded animate-pulse" style={{ backgroundColor: 'var(--color-border-strong)' }} />
+      ) : (
+        <p className="text-[26px] font-bold leading-none tracking-tight" style={{ color: active && color ? color.text : 'var(--color-fg)' }}>
+          {value ?? '—'}
+        </p>
+      )}
+    </div>
+  )
+}
+
 export default function HabitacionesPage() {
   const [modalOpen, setModalOpen]       = useState(false)
   const [editTarget, setEditTarget]     = useState(null)
@@ -34,9 +60,17 @@ export default function HabitacionesPage() {
     piso:   piso            || undefined,
   }
 
-  const { data, isLoading }  = useHabitacionesList(filters)
-  const { data: allHabs }    = useHabitacionesPisos()
-  const pisosOpciones = [...new Set((allHabs?.results ?? []).map((h) => h.piso))].sort((a, b) => a - b)
+  const { data, isLoading }                      = useHabitacionesList(filters)
+  const { data: allHabs, isLoading: kpiLoading } = useHabitacionesPisos()
+  const allResults    = allHabs?.results ?? []
+  const pisosOpciones = [...new Set(allResults.map((h) => h.piso))].sort((a, b) => a - b)
+  const kpis = {
+    total:         allResults.length,
+    disponible:    allResults.filter(h => h.estado === 'disponible').length,
+    ocupada:       allResults.filter(h => h.estado === 'ocupada').length,
+    reservada:     allResults.filter(h => h.estado === 'reservada').length,
+    mantenimiento: allResults.filter(h => h.estado === 'mantenimiento').length,
+  }
 
   const createMutation = useCreateHabitacion({
     onSuccess: () => setModalOpen(false),
@@ -73,15 +107,22 @@ export default function HabitacionesPage() {
 
   return (
     <div>
-      <PageHeader
-        subtitle={!isLoading && count !== undefined ? `${count} habitación${count !== 1 ? 'es' : ''} registrada${count !== 1 ? 's' : ''}` : undefined}
-        actionLabel="Nueva habitación"
-        onAction={openCreate}
-      />
+      <PageHeader actionLabel="Nueva habitación" onAction={openCreate} />
+
+      {/* Mini KPIs */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+        <KpiCard label="Total"         value={kpis.total}         isLoading={kpiLoading} />
+        <KpiCard label="Disponibles"   value={kpis.disponible}    dot={estadoConfig.disponible.dot}    color={estadoConfig.disponible}    isLoading={kpiLoading} onClick={() => setEstado(estado === 'disponible'    ? '' : 'disponible')}    active={estado === 'disponible'} />
+        <KpiCard label="Ocupadas"      value={kpis.ocupada}       dot={estadoConfig.ocupada.dot}       color={estadoConfig.ocupada}       isLoading={kpiLoading} onClick={() => setEstado(estado === 'ocupada'       ? '' : 'ocupada')}       active={estado === 'ocupada'} />
+        <KpiCard label="Reservadas"    value={kpis.reservada}     dot={estadoConfig.reservada.dot}     color={estadoConfig.reservada}     isLoading={kpiLoading} onClick={() => setEstado(estado === 'reservada'     ? '' : 'reservada')}     active={estado === 'reservada'} />
+        <KpiCard label="Mantenimiento" value={kpis.mantenimiento} dot={estadoConfig.mantenimiento.dot} color={estadoConfig.mantenimiento} isLoading={kpiLoading} onClick={() => setEstado(estado === 'mantenimiento' ? '' : 'mantenimiento')} active={estado === 'mantenimiento'} />
+      </div>
 
       <div className="rounded mb-8 bg-surface-1 border border-border">
-        <div className="flex flex-wrap items-center gap-3 px-4 py-3">
-          <div className="relative">
+
+        {/* Fila de búsqueda y filtros */}
+        <div className="flex flex-wrap items-center gap-3 px-6 py-4">
+          <div className="relative flex-1 min-w-[350px] max-w-xl">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-stone-text">
               <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
             </svg>
@@ -90,38 +131,44 @@ export default function HabitacionesPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por número o descripción..."
-              className={`${inpFilter} pl-9 w-64`}
+              className={`${inpFilter} pl-9 w-full`}
             />
           </div>
+
           <select value={piso} onChange={(e) => setPiso(e.target.value)} className={inpFilter}>
             <option value="">Todos los pisos</option>
             {pisosOpciones.map((p) => (
               <option key={p} value={String(p)}>Piso {p}</option>
             ))}
           </select>
-          <div className="ml-auto flex items-center gap-4">
-            {!isLoading && count !== undefined && (
-              <span className="text-sm shrink-0 text-stone-text">
-                {count} resultado{count !== 1 ? 's' : ''}
-              </span>
-            )}
-            {hayFiltros && (
-              <button
-                onClick={() => { setSearch(''); setEstado(''); setPiso('') }}
-                className="flex items-center gap-1.5 text-sm font-medium cursor-pointer transition-colors shrink-0 text-stone-text"
-                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-brand)' }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-stone-text)' }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
-                Limpiar
-              </button>
-            )}
-          </div>
+
+          <div className="w-px h-5 self-center shrink-0" style={{ backgroundColor: 'var(--color-border-strong)' }} />
+
+          {!isLoading && count !== undefined && (
+            <span className="text-[13px] shrink-0" style={{ color: 'var(--color-stone-text)' }}>
+              {count} resultado{count !== 1 ? 's' : ''}
+            </span>
+          )}
+
+          {hayFiltros && (
+            <button
+              onClick={() => { setSearch(''); setEstado(''); setPiso('') }}
+              className="flex items-center gap-1.5 text-[13px] font-medium cursor-pointer transition-colors shrink-0"
+              style={{ color: 'var(--color-stone-text)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-brand)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-stone-text)' }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+              Limpiar
+            </button>
+          )}
         </div>
+
+        {/* Fila de pills de estado */}
         <div className="h-px bg-border" />
-        <div className="flex items-center gap-1 flex-wrap px-4 py-2.5">
+        <div className="flex items-center gap-1 flex-wrap px-6 py-3">
           {estadoPills.map((pill) => {
             const isActive = estado === pill.id
             const activeStyle = pill.id === ''
@@ -147,10 +194,11 @@ export default function HabitacionesPage() {
             )
           })}
         </div>
+
         {activeChips.length > 0 && (
           <>
             <div className="h-px bg-border" />
-            <div className="flex items-center gap-2 flex-wrap px-4 py-2.5">
+            <div className="flex items-center gap-2 flex-wrap px-6 py-3">
               {activeChips.map((chip) => <Chip key={chip.key} {...chip} />)}
             </div>
           </>
@@ -173,14 +221,14 @@ export default function HabitacionesPage() {
           )}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
           {data.results.map((h) => (
             <HabitacionCard key={h.id} h={h} onEdit={openEdit} onView={setViewTarget} />
           ))}
         </div>
       )}
 
-      <Modal isOpen={!!viewTarget} onClose={() => setViewTarget(null)} title={`Habitación ${viewTarget?.numero}`}>
+      <Modal isOpen={!!viewTarget} onClose={() => setViewTarget(null)} title={`Habitación ${viewTarget?.numero}`} size="lg">
         {viewTarget && (
           <HabitacionDetail
             h={viewTarget}
@@ -195,6 +243,7 @@ export default function HabitacionesPage() {
           key={editTarget?.id ?? 'new'}
           defaultValues={editTarget}
           onSubmit={handleSubmit}
+          onCancel={() => setModalOpen(false)}
           isLoading={isSaving}
           apiError={apiError}
         />

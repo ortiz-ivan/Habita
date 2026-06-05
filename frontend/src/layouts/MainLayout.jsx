@@ -22,18 +22,23 @@ import {
 
 const navSections = [
   {
-    label: 'Principal',
+    label: 'Operaciones',
     items: [
-      { to: '/dashboard',    label: 'Dashboard',    Icon: IconDashboard },
+      { to: '/dashboard', label: 'Dashboard', Icon: IconDashboard },
+    ],
+  },
+  {
+    label: 'Gestión',
+    items: [
       { to: '/habitaciones', label: 'Habitaciones', Icon: IconHabitaciones },
       { to: '/inquilinos',   label: 'Inquilinos',   Icon: IconInquilinos },
+      { to: '/contratos',    label: 'Contratos',    Icon: IconContratos },
     ],
   },
   {
     label: 'Finanzas',
     items: [
-      { to: '/pagos',     label: 'Pagos',     Icon: IconPagos },
-      { to: '/contratos', label: 'Contratos', Icon: IconContratos },
+      { to: '/pagos', label: 'Pagos', Icon: IconPagos },
     ],
   },
 ]
@@ -74,12 +79,12 @@ export default function MainLayout() {
   const monthLabel   = currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1)
 
   return (
-    <div className="flex h-screen overflow-hidden gap-4" style={{ backgroundColor: 'var(--color-body-bg)' }}>
+    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--color-body-bg)' }}>
       {/* Sidebar */}
       <aside
         className="flex flex-col shrink-0 transition-all duration-300 overflow-hidden"
         style={{
-          width: collapsed ? '56px' : '200px',
+          width: collapsed ? '56px' : '176px',
           backgroundColor: 'var(--color-sidebar-bg)',
           borderRight: '1px solid var(--color-sidebar-border)',
         }}
@@ -239,72 +244,76 @@ export default function MainLayout() {
       </aside>
 
       {/* Área principal */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden mr-4 mt-4">
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Topbar */}
         <header
-          className="shrink-0 flex items-center px-[5%]"
+          className="shrink-0"
           style={{
             height: '56px',
             backgroundColor: 'var(--color-surface-1)',
             borderBottom: '1px solid var(--color-surface-2)',
           }}
         >
-          <div className="flex items-center gap-3 min-w-0">
-            <div>
-              <h1 className="text-[15px] font-semibold leading-none" style={{ color: 'var(--color-fg)' }}>
-                {currentTitle}
-              </h1>
-              <p className="text-[11px] mt-[3px]" style={{ color: 'var(--color-stone-text)' }}>
-                {monthLabel}
-              </p>
+          <div className="flex items-center h-full max-w-[1600px] mx-auto px-10">
+            <div className="flex items-center gap-3 min-w-0">
+              <div>
+                <h1 className="text-[15px] font-semibold leading-none" style={{ color: 'var(--color-fg)' }}>
+                  {currentTitle}
+                </h1>
+                {location.pathname === '/dashboard' && (
+                  <p className="text-[11px] mt-[3px]" style={{ color: 'var(--color-stone-text)' }}>
+                    {monthLabel}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="flex-1" />
+            <div className="flex-1" />
 
-          <div className="flex items-center gap-1.5">
-            <div className="w-px h-5 mr-2" style={{ backgroundColor: 'var(--color-border-strong)' }} />
+            <div className="flex items-center gap-1.5">
+              <div className="w-px h-5 mr-2" style={{ backgroundColor: 'var(--color-border-strong)' }} />
 
-            <button
-              aria-label="Ver notificaciones"
-              onClick={() => navigate('/pagos?estado=vencido')}
-              className="relative w-8 h-8 flex items-center justify-center rounded transition-colors cursor-pointer"
-              style={{ color: 'var(--color-stone-text)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-fg)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}
-            >
-              <IconBell />
-              {unreadCount > 0 && (
-                <span
-                  className="absolute top-[6px] right-[6px] w-[7px] h-[7px] rounded-full"
-                  style={{ backgroundColor: 'var(--color-brand)', boxShadow: '0 0 0 1.5px var(--color-surface-1)' }}
-                />
-              )}
-            </button>
+              <button
+                aria-label="Ver notificaciones"
+                onClick={() => navigate('/pagos?estado=vencido')}
+                className="relative w-8 h-8 flex items-center justify-center rounded transition-colors cursor-pointer"
+                style={{ color: 'var(--color-stone-text)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-fg)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}
+              >
+                <IconBell />
+                {unreadCount > 0 && (
+                  <span
+                    className="absolute top-[6px] right-[6px] w-[7px] h-[7px] rounded-full"
+                    style={{ backgroundColor: 'var(--color-brand)', boxShadow: '0 0 0 1.5px var(--color-surface-1)' }}
+                  />
+                )}
+              </button>
 
-            <button
-              aria-label="Buscar"
-              onClick={() => navigate('/pagos')}
-              className="w-8 h-8 flex items-center justify-center rounded transition-colors cursor-pointer"
-              style={{ color: 'var(--color-stone-text)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-fg)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}
-            >
-              <IconSearch />
-            </button>
+              <button
+                aria-label="Buscar"
+                onClick={() => navigate('/pagos')}
+                className="w-8 h-8 flex items-center justify-center rounded transition-colors cursor-pointer"
+                style={{ color: 'var(--color-stone-text)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-fg)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}
+              >
+                <IconSearch />
+              </button>
 
-            <div className="w-px h-5 mx-2" style={{ backgroundColor: 'var(--color-border-strong)' }} />
+              <div className="w-px h-5 mx-2" style={{ backgroundColor: 'var(--color-border-strong)' }} />
 
-            <Button onClick={quickPago.open} size="sm" className="text-[13px] font-medium px-3">
-              <IconPlus />
-              Registrar pago
-            </Button>
+              <Button onClick={quickPago.open} size="sm" className="text-[13px] font-medium px-3">
+                <IconPlus />
+                Registrar pago
+              </Button>
+            </div>
           </div>
         </header>
 
         {/* Contenido */}
-        <main className="flex-1 overflow-y-auto pt-8 pb-6 px-[5%]" style={{ backgroundColor: 'var(--color-body-bg)' }}>
-          <div key={location.pathname} className="page-enter">
+        <main className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--color-body-bg)' }}>
+          <div key={location.pathname} className="page-enter max-w-[1600px] mx-auto px-10 pt-12 pb-8">
             <Outlet />
           </div>
         </main>
@@ -318,6 +327,7 @@ export default function MainLayout() {
       >
         <PagoForm
           onSubmit={(data) => quickPago.mutation.mutate(data)}
+          onCancel={quickPago.close}
           isLoading={quickPago.mutation.isPending}
           apiError={quickPago.apiError}
         />

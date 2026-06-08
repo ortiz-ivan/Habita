@@ -142,7 +142,7 @@ class Command(BaseCommand):
                 continue
             numeros_usados.add(numero)
 
-            precio_base = random.choice([280, 320, 350, 380, 420, 450, 500, 550])
+            precio_base = random.choice([400_000, 450_000, 500_000, 550_000, 600_000, 650_000, 700_000, 800_000])
             hab = Habitacion.objects.create(
                 numero=numero,
                 piso=piso,
@@ -224,7 +224,7 @@ class Command(BaseCommand):
                 hist_inicio = random_date(today - timedelta(days=900), today - timedelta(days=400))
                 hist_fin = hist_inicio + timedelta(days=random.randint(90, 270))
                 hist_estado = random.choice([Contrato.Estado.FINALIZADO, Contrato.Estado.CANCELADO])
-                hist_monto = hab.precio - random.randint(0, 50)
+                hist_monto = hab.precio - random.randint(0, 50_000)
                 hist_contrato = Contrato.objects.create(
                     habitacion=hab,
                     inquilino=random.choice(inquilinos),
@@ -254,7 +254,7 @@ class Command(BaseCommand):
                 contrato_fin = contrato_inicio + timedelta(days=random.randint(60, 120))
                 estado = Contrato.Estado.FINALIZADO
 
-            monto_mensual = hab.precio + random.randint(-30, 30)
+            monto_mensual = hab.precio + random.randint(-50_000, 50_000)
             contrato = Contrato.objects.create(
                 habitacion=hab,
                 inquilino=inquilino,

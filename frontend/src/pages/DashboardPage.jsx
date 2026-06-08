@@ -126,6 +126,7 @@ export default function DashboardPage() {
   const user     = useAuthStore((s) => s.user)
   const navigate = useNavigate()
   const [tenantFilter, setTenantFilter] = useState('all')
+  const [habPage, setHabPage] = useState(0)
 
   // ── Modal cobrar ──────────────────────────────────────────────────────────
   const [pagoModal, setPagoModal] = useState({ open: false, defaultValues: null })
@@ -180,7 +181,27 @@ export default function DashboardPage() {
           <h2 className="text-[17px] font-semibold" style={{ color: 'var(--color-fg)' }}>
             Bienvenido, {user?.first_name || user?.username}
           </h2>
-          {vencidosCount === 0 && pendientesCount === 0 && (
+          {vencidosCount > 0 ? (
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
+              style={{ backgroundColor: 'var(--color-red-bg)', color: 'var(--color-red-text)' }}
+            >
+              <svg viewBox="0 0 12 12" fill="currentColor" className="w-2.5 h-2.5">
+                <path fillRule="evenodd" d="M6 1a5 5 0 1 0 0 10A5 5 0 0 0 6 1ZM4.22 4.22a.75.75 0 0 1 1.06 0L6 4.94l.72-.72a.75.75 0 1 1 1.06 1.06L7.06 6l.72.72a.75.75 0 1 1-1.06 1.06L6 7.06l-.72.72a.75.75 0 0 1-1.06-1.06L4.94 6l-.72-.72a.75.75 0 0 1 0-1.06Z" clipRule="evenodd"/>
+              </svg>
+              {vencidosCount} pago{vencidosCount > 1 ? 's' : ''} vencido{vencidosCount > 1 ? 's' : ''}
+            </span>
+          ) : pendientesCount > 0 ? (
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
+              style={{ backgroundColor: 'var(--color-brand-amber-light)', color: 'var(--color-brand-amber)' }}
+            >
+              <svg viewBox="0 0 12 12" fill="currentColor" className="w-2.5 h-2.5">
+                <path fillRule="evenodd" d="M5.105 1.67c.394-.683 1.396-.683 1.79 0l4.5 7.794C11.787 10.148 11.29 11 10.5 11h-9c-.79 0-1.287-.852-.895-1.536l4.5-7.794ZM6 4.5a.75.75 0 0 0-.75.75v2a.75.75 0 0 0 1.5 0v-2A.75.75 0 0 0 6 4.5Zm0 5.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd"/>
+              </svg>
+              {pendientesCount} pendiente{pendientesCount > 1 ? 's' : ''}
+            </span>
+          ) : (
             <span
               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
               style={{ backgroundColor: 'var(--color-green-bg)', color: 'var(--color-green-text)' }}
@@ -198,27 +219,6 @@ export default function DashboardPage() {
       {/* Separador */}
       <div className="h-px mb-6" style={{ backgroundColor: 'var(--color-border)' }} />
 
-      {/* Alertas urgentes (solo si hay problemas) */}
-      {(vencidosCount > 0 || pendientesCount > 0) && (
-        <div className="mb-8">
-          {vencidosCount > 0 && (
-            <AlertBanner
-              type="danger"
-              message={`${vencidosCount} pago${vencidosCount > 1 ? 's' : ''} vencido${vencidosCount > 1 ? 's' : ''} sin cobrar — ${formatGs(montoVencido)} pendientes de acción urgente`}
-              actionLabel="Ver todos"
-              onAction={() => navigate('/pagos?estado=vencido')}
-            />
-          )}
-          {pendientesCount > 0 && (
-            <AlertBanner
-              type="warning"
-              message={`${pendientesCount} pago${pendientesCount > 1 ? 's' : ''} pendiente${pendientesCount > 1 ? 's' : ''} por cobrar este mes`}
-              actionLabel="Ver todos"
-              onAction={() => navigate('/pagos?estado=pendiente')}
-            />
-          )}
-        </div>
-      )}
 
       {/* Métricas */}
       <SectionLabel label="Resumen" />
@@ -329,30 +329,57 @@ export default function DashboardPage() {
               title="No hay habitaciones"
               description="Agregá la primera habitación"
             />
-          ) : (
-            <div className="grid grid-cols-2 gap-2">
-              {habs.map((h) => {
-                const cfg = estadoHabConfig[h.estado] ?? { label: h.estado, dot: 'var(--color-stone-text)', bg: 'var(--color-surface-2)', text: 'var(--color-stone-text)' }
-                return (
-                  <div
-                    key={h.id}
-                    className="rounded px-3 py-2.5 cursor-default transition-transform duration-150"
-                    style={{ backgroundColor: cfg.bg, borderLeft: `3px solid ${cfg.dot}` }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
-                  >
-                    <p className="text-[13px] font-semibold leading-tight" style={{ color: cfg.text }}>
-                      N°{h.numero}
-                    </p>
-                    <p className="text-[10px] mt-0.5" style={{ color: cfg.dot }}>Piso {h.piso}</p>
-                    <p className="text-[11px] mt-1 capitalize font-medium" style={{ color: cfg.text }}>
-                      {cfg.label}
-                    </p>
+          ) : (() => {
+            const PAGE_SIZE = 8
+            const totalPages = Math.ceil(habs.length / PAGE_SIZE)
+            const page = Math.min(habPage, totalPages - 1)
+            const pageHabs = habs.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+            return (
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  {pageHabs.map((h) => {
+                    const cfg = estadoHabConfig[h.estado] ?? { label: h.estado, dot: 'var(--color-stone-text)', bg: 'var(--color-surface-2)', text: 'var(--color-stone-text)' }
+                    return (
+                      <div
+                        key={h.id}
+                        className="rounded px-3 py-2.5 cursor-default transition-transform duration-150"
+                        style={{ backgroundColor: cfg.bg, borderLeft: `3px solid ${cfg.dot}` }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+                      >
+                        <p className="text-[13px] font-semibold leading-tight" style={{ color: cfg.text }}>N°{h.numero}</p>
+                        <p className="text-[10px] mt-0.5" style={{ color: cfg.dot }}>Piso {h.piso}</p>
+                        <p className="text-[11px] mt-1 capitalize font-medium" style={{ color: cfg.text }}>{cfg.label}</p>
+                      </div>
+                    )
+                  })}
+                </div>
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: '1px solid var(--color-border)' }}>
+                    <button
+                      onClick={() => setHabPage((p) => Math.max(0, p - 1))}
+                      disabled={page === 0}
+                      className="text-[11px] font-medium px-2 py-1 rounded disabled:opacity-30"
+                      style={{ color: 'var(--color-stone-text)' }}
+                    >
+                      ← Ant.
+                    </button>
+                    <span className="text-[11px]" style={{ color: 'var(--color-stone-text)' }}>
+                      {page + 1} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setHabPage((p) => Math.min(totalPages - 1, p + 1))}
+                      disabled={page === totalPages - 1}
+                      className="text-[11px] font-medium px-2 py-1 rounded disabled:opacity-30"
+                      style={{ color: 'var(--color-stone-text)' }}
+                    >
+                      Sig. →
+                    </button>
                   </div>
-                )
-              })}
-            </div>
-          )}
+                )}
+              </>
+            )
+          })()}
         </div>
 
       </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { parseApiError } from '../utils/format'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -12,6 +12,7 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { useDebounce } from '../hooks/useDebounce'
 import { Chip } from '../components/ui/Chip'
 import { usePagosList, usePagosSummary, useCreatePago, useUpdatePago, useDeletePago } from '../hooks/queries/usePagos'
+import { Pagination } from '../components/ui/Pagination'
 import { estadoConfig, estadoPills, periodoPills, metodoLabel, periodoLabel, getPeriodoFechas } from '../lib/constants/pagos'
 
 const inpFilter = 'border border-border-strong rounded px-3 py-2 text-sm bg-surface-1 focus:outline-none focus:ring-2 focus:ring-brand text-stone-dark transition-all'
@@ -53,7 +54,10 @@ export default function PagosPage() {
   const [estado, setEstado]         = useState('')
   const [metodoPago, setMetodoPago] = useState('')
   const [periodo, setPeriodo]       = useState('')
+  const [page, setPage]             = useState(1)
   const debouncedSearch             = useDebounce(search)
+
+  useEffect(() => { setPage(1) }, [debouncedSearch, estado, metodoPago, periodo])
 
   const periodoDates = getPeriodoFechas(periodo)
   const filters = {
@@ -62,6 +66,7 @@ export default function PagosPage() {
     metodo_pago: metodoPago               || undefined,
     fecha_desde: periodoDates.fecha_desde || undefined,
     fecha_hasta: periodoDates.fecha_hasta || undefined,
+    page:        page > 1 ? page          : undefined,
   }
 
   const { data, isLoading }                        = usePagosList(filters)
@@ -246,11 +251,14 @@ export default function PagosPage() {
           )}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
-          {data.results.map((p) => (
-            <PagoCard key={p.id} p={p} onEdit={openEdit} onView={setViewTarget} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+            {data.results.map((p) => (
+              <PagoCard key={p.id} p={p} onEdit={openEdit} onView={setViewTarget} />
+            ))}
+          </div>
+          <Pagination count={data.count} page={page} onChange={setPage} />
+        </>
       )}
 
       <Modal isOpen={!!viewTarget} onClose={() => setViewTarget(null)} title={`Pago #${viewTarget?.id}`} size="lg">

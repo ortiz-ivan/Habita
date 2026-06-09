@@ -15,8 +15,13 @@ class Pago(models.Model):
         TARJETA = 'tarjeta', 'Tarjeta'
         QR = 'qr', 'QR'
 
+    class Tipo(models.TextChoices):
+        ALQUILER = 'alquiler', 'Alquiler'
+        GARANTIA = 'garantia', 'Garantía'
+
     contrato = models.ForeignKey(Contrato, on_delete=models.PROTECT, related_name='pagos')
-    monto = models.PositiveIntegerField()
+    tipo     = models.CharField(max_length=10, choices=Tipo.choices, default=Tipo.ALQUILER)
+    monto    = models.PositiveIntegerField()
     fecha_pago = models.DateField()
     metodo_pago = models.CharField(max_length=15, choices=MetodoPago.choices)
     estado = models.CharField(max_length=12, choices=Estado.choices, default=Estado.PENDIENTE)

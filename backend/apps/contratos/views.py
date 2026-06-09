@@ -7,7 +7,7 @@ from . import services
 
 
 class ContratoViewSet(ModelViewSet):
-    queryset = Contrato.objects.select_related('habitacion', 'inquilino').all()
+    queryset = Contrato.objects.select_related('habitacion', 'inquilino').prefetch_related('pagos').all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['estado', 'habitacion', 'inquilino']
     search_fields = ['inquilino__nombre', 'inquilino__apellido', 'habitacion__numero']

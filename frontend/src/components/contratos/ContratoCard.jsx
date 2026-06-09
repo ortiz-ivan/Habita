@@ -48,9 +48,17 @@ export function ContratoCard({ c, onEdit, onView }) {
 
       {/* Cuerpo: monto mensual, fechas, estado */}
       <div className="px-5 py-4 flex-1 flex flex-col gap-3">
-        <div>
-          <p className="text-[15px] font-bold leading-tight text-fg">{formatGs(c.monto_mensual)}</p>
-          <p className="text-[12px] mt-0.5" style={{ color: 'var(--color-stone-text)' }}>mensual</p>
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-[15px] font-bold leading-tight text-fg">{formatGs(c.monto_mensual)}</p>
+            <p className="text-[12px] mt-0.5" style={{ color: 'var(--color-stone-text)' }}>mensual</p>
+          </div>
+          {c.deposito > 0 && (
+            <div className="text-right">
+              <p className="text-[13px] font-semibold leading-tight text-stone-dark">{formatGs(c.deposito)}</p>
+              <p className="text-[11px] mt-0.5" style={{ color: 'var(--color-stone-text)' }}>garantía</p>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-6">
@@ -64,13 +72,27 @@ export function ContratoCard({ c, onEdit, onView }) {
           </div>
         </div>
 
-        <span
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold w-fit"
-          style={{ backgroundColor: cfg.bg, color: cfg.text }}
-        >
-          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cfg.dot }} />
-          {cfg.label}
-        </span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold"
+            style={{ backgroundColor: cfg.bg, color: cfg.text }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cfg.dot }} />
+            {cfg.label}
+          </span>
+          {c.garantia_info && (
+            <span
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold"
+              style={c.garantia_info.cancelada
+                ? { backgroundColor: '#D1FAE5', color: '#065F46' }
+                : { backgroundColor: '#FEF3C7', color: '#92400E' }}
+            >
+              {c.garantia_info.cancelada
+                ? '✓ Garantía'
+                : `Garantía ${c.garantia_info.pagadas}/${c.garantia_info.total}`}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Acciones */}

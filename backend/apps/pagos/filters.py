@@ -8,4 +8,4 @@ class PagoFilter(django_filters.FilterSet):
 
     class Meta:
         model = Pago
-        fields = ['estado', 'metodo_pago', 'contrato', 'fecha_desde', 'fecha_hasta']
+        fields = ['estado', 'tipo', 'metodo_pago', 'contrato', 'fecha_desde', 'fecha_hasta']

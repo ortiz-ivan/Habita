@@ -1,9 +1,13 @@
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { formatGs } from '../../utils/format'
 import { useContratosSelect } from '../../hooks/queries/useContratos'
+import { pagosService } from '../../services/pagosService'
 import { FormField, FormSection, FormFooter, inputClass, selectClass } from '../ui/ModalParts'
+import { MoneyInput } from '../ui/MoneyInput'
 
 const schema = z.object({
   contrato:    z.coerce.number().int().min(1, 'Seleccioná un contrato'),
@@ -15,7 +19,7 @@ const schema = z.object({
 })
 
 export default function PagoForm({ defaultValues, onSubmit, onCancel, isLoading, apiError }) {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultValues
       ? { ...defaultValues, contrato: defaultValues.contrato?.id ?? defaultValues.contrato }
@@ -23,6 +27,28 @@ export default function PagoForm({ defaultValues, onSubmit, onCancel, isLoading,
   })
 
   const { data: contratos } = useContratosSelect()
+
+  const selectedContratoId = watch('contrato')
+
+  const { data: garantiasPendientes } = useQuery({
+    queryKey: ['pagos-garantia-pendiente', selectedContratoId],
+    queryFn:  () => pagosService.list({
+      contrato:  selectedContratoId,
+      tipo:      'garantia',
+      estado:    'pendiente',
+      ordering:  'fecha_pago',
+      page_size: 1,
+    }),
+    enabled: !!selectedContratoId && !defaultValues?.id,
+  })
+
+  useEffect(() => {
+    if (defaultValues?.id) return
+    const contrato = contratos?.find(c => c.id === Number(selectedContratoId))
+    if (!contrato) return
+    const garantia = garantiasPendientes?.results?.[0]?.monto ?? 0
+    setValue('monto', contrato.monto_mensual + garantia)
+  }, [selectedContratoId, garantiasPendientes, contratos])
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
@@ -43,7 +69,7 @@ export default function PagoForm({ defaultValues, onSubmit, onCancel, isLoading,
       <FormSection label="Detalle del pago">
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Monto (Gs.)" error={errors.monto}>
-            <input {...register('monto')} type="number" className={inputClass} placeholder="1500000" />
+            <MoneyInput name="monto" control={control} placeholder="1.500.000" />
           </FormField>
           <FormField label="Fecha de pago" error={errors.fecha_pago}>
             <input {...register('fecha_pago')} type="date" className={inputClass} />

@@ -1,5 +1,6 @@
-import { formatDate } from '../../utils/format'
+import { formatDate, formatGs } from '../../utils/format'
 import { avatarColor } from '../../utils/avatar'
+import { estadoConfig } from '../../lib/constants/contratos'
 
 const cardHover = {
   onMouseEnter: (e) => {
@@ -73,6 +74,41 @@ export function InquilinoCard({ i, onEdit, onView }) {
             <p className="text-[13px] mt-0.5 text-stone-dark">{formatDate(i.fecha_ingreso)}</p>
           </div>
         </div>
+
+        {i.contrato_activo && (() => {
+          const c = i.contrato_activo
+          const cfg = estadoConfig[c.estado] ?? estadoConfig.activo
+          return (
+            <div className="rounded px-3 py-2.5 flex flex-col gap-1.5" style={{ backgroundColor: 'var(--color-surface-2)' }}>
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] uppercase tracking-wide font-medium" style={{ color: 'var(--color-stone-text)' }}>Contrato activo</p>
+                <div className="flex items-center gap-1.5">
+                  {c.garantia_info && (
+                    <span
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                      style={c.garantia_info.cancelada
+                        ? { backgroundColor: '#D1FAE5', color: '#065F46' }
+                        : { backgroundColor: '#FEF3C7', color: '#92400E' }}
+                    >
+                      {c.garantia_info.cancelada ? '✓ Garantía' : `Garantía ${c.garantia_info.pagadas}/${c.garantia_info.total}`}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ backgroundColor: cfg.bg, color: cfg.text }}>
+                    <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: cfg.dot }} />
+                    {cfg.label}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[13px] font-semibold text-fg">Hab. {c.habitacion}</p>
+                <p className="text-[13px] font-semibold text-fg">{formatGs(c.monto_mensual)}<span className="text-[11px] font-normal ml-0.5" style={{ color: 'var(--color-stone-text)' }}>/mes</span></p>
+              </div>
+              {c.fecha_fin && (
+                <p className="text-[11px]" style={{ color: 'var(--color-stone-text)' }}>Vence {formatDate(c.fecha_fin)}</p>
+              )}
+            </div>
+          )
+        })()}
       </div>
 
       {/* Acciones */}

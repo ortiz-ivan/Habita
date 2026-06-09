@@ -254,7 +254,7 @@ export default function MainLayout() {
             borderBottom: '1px solid var(--color-surface-2)',
           }}
         >
-          <div className="flex items-center h-full max-w-[1600px] mx-auto px-10">
+          <div className="flex items-center h-full max-w-[1280px] mx-auto px-10">
             <div className="flex items-center gap-3 min-w-0">
               <div>
                 <h1 className="text-[15px] font-semibold leading-none" style={{ color: 'var(--color-fg)' }}>
@@ -313,7 +313,7 @@ export default function MainLayout() {
 
         {/* Contenido */}
         <main className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--color-body-bg)' }}>
-          <div key={location.pathname} className="page-enter max-w-[1600px] mx-auto px-10 pt-12 pb-8">
+          <div key={location.pathname} className="page-enter max-w-[1280px] mx-auto px-10 pt-12 pb-8">
             <Outlet />
           </div>
         </main>

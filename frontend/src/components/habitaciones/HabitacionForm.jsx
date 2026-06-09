@@ -1,4 +1,5 @@
 import { useForm, Controller } from 'react-hook-form'
+import { MoneyInput } from '../ui/MoneyInput'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Switch } from '../ui/Switch'
@@ -34,7 +35,7 @@ export default function HabitacionForm({ defaultValues, onSubmit, onCancel, isLo
         </div>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Precio (Gs.)" error={errors.precio}>
-            <input {...register('precio')} type="number" className={inputClass} placeholder="1500000" />
+            <MoneyInput name="precio" control={control} placeholder="1.500.000" />
           </FormField>
           <FormField label="Capacidad" error={errors.capacidad}>
             <input {...register('capacidad')} type="number" className={inputClass} placeholder="1" />

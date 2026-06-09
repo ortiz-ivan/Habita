@@ -15,7 +15,7 @@ export function ContratoDetail({ c, onEdit, onDelete }) {
           { label: 'Fecha inicio', value: formatDate(c.fecha_inicio) },
           { label: 'Fecha fin',    value: c.fecha_fin ? formatDate(c.fecha_fin) : '—' },
           { label: 'Mensual',      value: formatGs(c.monto_mensual) },
-          { label: 'Depósito',     value: formatGs(c.deposito ?? 0) },
+          { label: 'Garantía',     value: formatGs(c.deposito ?? 0) },
         ].map(({ label, value }) => (
           <InfoCard key={label} label={label} value={value} />
         ))}
@@ -29,6 +29,19 @@ export function ContratoDetail({ c, onEdit, onDelete }) {
             {cfg.label}
           </span>
         </InfoCard>
+        {c.garantia_info && (
+          <InfoCard
+            label="Garantía"
+            style={c.garantia_info.cancelada ? { backgroundColor: '#D1FAE5' } : { backgroundColor: '#FEF3C7' }}
+            labelStyle={{ color: c.garantia_info.cancelada ? '#065F46' : '#92400E', opacity: 0.8 }}
+          >
+            <span className="font-bold text-sm" style={{ color: c.garantia_info.cancelada ? '#065F46' : '#92400E' }}>
+              {c.garantia_info.cancelada
+                ? `Cancelada (${c.garantia_info.total} ${c.garantia_info.total === 1 ? 'pago' : 'pagos'})`
+                : `${c.garantia_info.pagadas} de ${c.garantia_info.total} ${c.garantia_info.total === 1 ? 'pago' : 'pagos'}`}
+            </span>
+          </InfoCard>
+        )}
       </div>
 
       {c.observacion && (

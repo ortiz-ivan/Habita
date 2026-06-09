@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { parseApiError } from '../utils/format'
+import { pagosService } from '../services/pagosService'
+import { queryKeys } from '../lib/queryKeys'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
@@ -74,9 +77,10 @@ export default function ContratosPage() {
     cancelado:  allResults.filter(c => c.estado === 'cancelado').length,
   }
 
+  const qc = useQueryClient()
+
   const createMutation = useCreateContrato({
-    onSuccess: () => setModalOpen(false),
-    onError:   (err) => setApiError(parseApiError(err)),
+    onError: (err) => setApiError(parseApiError(err)),
   })
 
   const updateMutation = useUpdateContrato({
@@ -92,10 +96,39 @@ export default function ContratosPage() {
   const openCreate = () => { setEditTarget(null); setApiError(''); setModalOpen(true) }
   const openEdit   = (c) => { setEditTarget(c);   setApiError(''); setViewTarget(null); setModalOpen(true) }
 
-  const handleSubmit = (data) => {
+  const handleSubmit = (data, cuotasGarantia = 1) => {
     setApiError('')
-    if (editTarget) updateMutation.mutate({ id: editTarget.id, data })
-    else            createMutation.mutate(data)
+    if (editTarget) {
+      updateMutation.mutate({ id: editTarget.id, data })
+    } else {
+      createMutation.mutate(data, {
+        onSuccess: (contrato) => {
+          setModalOpen(false)
+          if (contrato.deposito > 0) {
+            const total    = contrato.deposito
+            const n        = cuotasGarantia
+            const perCuota = Math.floor(total / n)
+            const base     = new Date(contrato.fecha_inicio)
+            const pagos    = Array.from({ length: n }, (_, i) => {
+              const fecha = new Date(base)
+              fecha.setMonth(fecha.getMonth() + i)
+              return pagosService.create({
+                contrato:    contrato.id,
+                tipo:        'garantia',
+                monto:       i === n - 1 ? total - perCuota * (n - 1) : perCuota,
+                fecha_pago:  fecha.toISOString().slice(0, 10),
+                metodo_pago: 'efectivo',
+                estado:      'pendiente',
+                observacion: n > 1 ? `Garantía — Cuota ${i + 1}/${n}` : 'Garantía',
+              })
+            })
+            Promise.all(pagos).then(() => {
+              qc.invalidateQueries({ queryKey: queryKeys.pagos.all() })
+            })
+          }
+        },
+      })
+    }
   }
 
   const isSaving   = createMutation.isPending || updateMutation.isPending

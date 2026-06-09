@@ -6,7 +6,7 @@ from .serializers import InquilinoSerializer
 
 
 class InquilinoViewSet(ModelViewSet):
-    queryset = Inquilino.objects.all()
+    queryset = Inquilino.objects.prefetch_related('contratos__pagos').all()
     serializer_class = InquilinoSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['fecha_ingreso']

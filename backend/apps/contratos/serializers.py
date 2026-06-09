@@ -18,12 +18,21 @@ class InquilinoBriefSerializer(serializers.ModelSerializer):
 
 
 class ContratoReadSerializer(serializers.ModelSerializer):
-    habitacion = HabitacionBriefSerializer(read_only=True)
-    inquilino = InquilinoBriefSerializer(read_only=True)
+    habitacion    = HabitacionBriefSerializer(read_only=True)
+    inquilino     = InquilinoBriefSerializer(read_only=True)
+    garantia_info = serializers.SerializerMethodField()
 
     class Meta:
         model = Contrato
         fields = '__all__'
+
+    def get_garantia_info(self, obj):
+        pagos = [p for p in obj.pagos.all() if p.tipo == 'garantia']
+        total = len(pagos)
+        if total == 0:
+            return None
+        pagadas = sum(1 for p in pagos if p.estado == 'pagado')
+        return {'total': total, 'pagadas': pagadas, 'cancelada': pagadas == total}
 
 
 class ContratoWriteSerializer(serializers.ModelSerializer):

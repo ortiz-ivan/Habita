@@ -14,6 +14,10 @@ export const queryKeys = {
     pisos: () => ['habitaciones-pisos'],
     select:() => ['habitaciones-select'],
   },
+  tiposHabitacion: {
+    all:  () => ['tipos-habitacion'],
+    list: () => ['tipos-habitacion', 'list'],
+  },
   inquilinos: {
     all:   () => ['inquilinos'],
     list:  (filters) => ['inquilinos', filters],

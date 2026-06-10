@@ -1,9 +1,10 @@
+import { createPortal } from 'react-dom'
 import { Button } from './Button'
 
 export function ConfirmDialog({ isOpen, onConfirm, onCancel, message, isLoading }) {
   if (!isOpen) return null
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-enter"
       style={{ backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(2px)' }}
@@ -35,6 +36,7 @@ export function ConfirmDialog({ isOpen, onConfirm, onCancel, message, isLoading 
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

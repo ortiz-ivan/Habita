@@ -8,12 +8,13 @@ import { HabitacionCard } from '../components/habitaciones/HabitacionCard'
 import { HabitacionDetail } from '../components/habitaciones/HabitacionDetail'
 import { EmptyState } from '../components/ui/EmptyState'
 import { SkeletonGrid } from '../components/ui/Skeleton'
-import { PageHeader } from '../components/ui/PageHeader'
 import { useDebounce } from '../hooks/useDebounce'
 import { Chip } from '../components/ui/Chip'
 import { useHabitacionesList, useHabitacionesPisos, useCreateHabitacion, useUpdateHabitacion, useDeleteHabitacion } from '../hooks/queries/useHabitaciones'
 import { Pagination } from '../components/ui/Pagination'
 import { estadoConfig, estadoPills } from '../lib/constants/habitaciones'
+import { TiposModal } from '../components/habitaciones/TiposModal'
+import { BulkCreateModal } from '../components/habitaciones/BulkCreateModal'
 
 const inpFilter = 'border border-border-strong rounded px-3 py-2 text-sm bg-surface-1 focus:outline-none focus:ring-2 focus:ring-brand text-stone-dark transition-all'
 
@@ -49,6 +50,8 @@ export default function HabitacionesPage() {
   const [viewTarget, setViewTarget]     = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [apiError, setApiError]         = useState('')
+  const [tiposOpen, setTiposOpen]       = useState(false)
+  const [bulkOpen, setBulkOpen]         = useState(false)
 
   const [search, setSearch] = useState('')
   const [estado, setEstado] = useState('')
@@ -112,7 +115,23 @@ export default function HabitacionesPage() {
 
   return (
     <div>
-      <PageHeader actionLabel="Nueva habitación" onAction={openCreate} />
+      <div className="flex items-center justify-between mb-6">
+        <div />
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setTiposOpen(true)} className="px-4">
+            Tipos
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setBulkOpen(true)} className="px-4">
+            Crear en lote
+          </Button>
+          <Button size="sm" onClick={openCreate} className="px-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Nueva habitación
+          </Button>
+        </div>
+      </div>
 
       {/* Mini KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
@@ -264,6 +283,9 @@ export default function HabitacionesPage() {
         onCancel={() => setDeleteTarget(null)}
         isLoading={deleteMutation.isPending}
       />
+
+      <TiposModal isOpen={tiposOpen} onClose={() => setTiposOpen(false)} />
+      <BulkCreateModal isOpen={bulkOpen} onClose={() => setBulkOpen(false)} />
     </div>
   )
 }

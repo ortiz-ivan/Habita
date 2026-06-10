@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
   useEffect(() => {
@@ -21,7 +22,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
 
   const panelMaxW = size === 'lg' ? 'min(700px, 90vw)' : 'min(560px, 90vw)'
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-enter"
       style={{ backgroundColor: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(4px)' }}
@@ -67,6 +68,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
         {/* Body */}
         <div className="px-6 py-6 overflow-y-auto">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

@@ -127,6 +127,7 @@ export default function DashboardPage() {
   const navigate = useNavigate()
   const [tenantFilter, setTenantFilter] = useState('all')
   const [habPage, setHabPage] = useState(0)
+  const [movPage, setMovPage] = useState(0)
 
   // ── Modal cobrar ──────────────────────────────────────────────────────────
   const [pagoModal, setPagoModal] = useState({ open: false, defaultValues: null })
@@ -262,7 +263,7 @@ export default function DashboardPage() {
           <FilterBar
             filters={tenantFilters}
             active={tenantFilter}
-            onChange={setTenantFilter}
+            onChange={(v) => { setTenantFilter(v); setMovPage(0) }}
           />
 
           <div className="rounded overflow-hidden bg-surface-1 border border-border">
@@ -292,11 +293,46 @@ export default function DashboardPage() {
                     description="No hay pagos en este estado"
                   />
                 </div>
-              ) : (
-                tenantRows.slice(0, 5).map((p) => (
-                  <TenantRow key={p.id} pago={p} onCobrar={handleCobrar} />
-                ))
-              )}
+              ) : (() => {
+                const MOV_PAGE_SIZE = 5
+                const movTotalPages = Math.ceil(tenantRows.length / MOV_PAGE_SIZE)
+                const movCurPage = Math.min(movPage, movTotalPages - 1)
+                const pageRows = tenantRows.slice(movCurPage * MOV_PAGE_SIZE, (movCurPage + 1) * MOV_PAGE_SIZE)
+                return (
+                  <>
+                    {pageRows.map((p) => (
+                      <TenantRow key={p.id} pago={p} onCobrar={handleCobrar} />
+                    ))}
+                    {movTotalPages > 1 && (
+                      <div className="flex items-center justify-between mx-3 mt-2 mb-2 px-2 py-2 rounded-lg" style={{ background: '#0f0f0f', border: '1px solid #1a1a1a' }}>
+                        <button
+                          onClick={() => setMovPage((p) => Math.max(0, p - 1))}
+                          disabled={movCurPage === 0}
+                          className="text-[11px] font-medium px-2.5 py-1 rounded-md disabled:opacity-35 transition-colors"
+                          style={{ color: '#e5e5e5', background: '#1a1a1a', border: '1px solid #2a2a2a', cursor: movCurPage === 0 ? 'not-allowed' : 'pointer' }}
+                          onMouseEnter={(e) => { if (movCurPage > 0) { e.currentTarget.style.background = '#222222'; e.currentTarget.style.borderColor = '#374151' } }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.borderColor = '#2a2a2a' }}
+                        >
+                          ← Ant.
+                        </button>
+                        <span className="text-[11px] font-medium px-2.5 py-1 rounded-md" style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#888884' }}>
+                          <span style={{ color: 'var(--color-brand)' }}>{movCurPage + 1}</span> / {movTotalPages}
+                        </span>
+                        <button
+                          onClick={() => setMovPage((p) => Math.min(movTotalPages - 1, p + 1))}
+                          disabled={movCurPage === movTotalPages - 1}
+                          className="text-[11px] font-medium px-2.5 py-1 rounded-md disabled:opacity-35 transition-colors"
+                          style={{ color: '#e5e5e5', background: '#1a1a1a', border: '1px solid #2a2a2a', cursor: movCurPage === movTotalPages - 1 ? 'not-allowed' : 'pointer' }}
+                          onMouseEnter={(e) => { if (movCurPage < movTotalPages - 1) { e.currentTarget.style.background = '#222222'; e.currentTarget.style.borderColor = '#374151' } }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.borderColor = '#2a2a2a' }}
+                        >
+                          Sig. →
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
             </div>
           </div>
         </div>
@@ -355,23 +391,27 @@ export default function DashboardPage() {
                   })}
                 </div>
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: '1px solid var(--color-border)' }}>
+                  <div className="flex items-center justify-between mt-3 pt-3 px-2 pb-2 rounded-lg" style={{ borderTop: '1px solid var(--color-border)', background: '#0f0f0f' }}>
                     <button
                       onClick={() => setHabPage((p) => Math.max(0, p - 1))}
                       disabled={page === 0}
-                      className="text-[11px] font-medium px-2 py-1 rounded disabled:opacity-30"
-                      style={{ color: 'var(--color-stone-text)' }}
+                      className="text-[11px] font-medium px-2.5 py-1 rounded-md disabled:opacity-35 transition-colors"
+                      style={{ color: '#e5e5e5', background: '#1a1a1a', border: '1px solid #2a2a2a', cursor: page === 0 ? 'not-allowed' : 'pointer' }}
+                      onMouseEnter={(e) => { if (page > 0) { e.currentTarget.style.background = '#222222'; e.currentTarget.style.borderColor = '#374151' } }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.borderColor = '#2a2a2a' }}
                     >
                       ← Ant.
                     </button>
-                    <span className="text-[11px]" style={{ color: 'var(--color-stone-text)' }}>
-                      {page + 1} / {totalPages}
+                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-md" style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#888884' }}>
+                      <span style={{ color: 'var(--color-brand)' }}>{page + 1}</span> / {totalPages}
                     </span>
                     <button
                       onClick={() => setHabPage((p) => Math.min(totalPages - 1, p + 1))}
                       disabled={page === totalPages - 1}
-                      className="text-[11px] font-medium px-2 py-1 rounded disabled:opacity-30"
-                      style={{ color: 'var(--color-stone-text)' }}
+                      className="text-[11px] font-medium px-2.5 py-1 rounded-md disabled:opacity-35 transition-colors"
+                      style={{ color: '#e5e5e5', background: '#1a1a1a', border: '1px solid #2a2a2a', cursor: page === totalPages - 1 ? 'not-allowed' : 'pointer' }}
+                      onMouseEnter={(e) => { if (page < totalPages - 1) { e.currentTarget.style.background = '#222222'; e.currentTarget.style.borderColor = '#374151' } }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = '#1a1a1a'; e.currentTarget.style.borderColor = '#2a2a2a' }}
                     >
                       Sig. →
                     </button>

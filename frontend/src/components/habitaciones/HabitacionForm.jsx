@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { MoneyInput } from '../ui/MoneyInput'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Switch } from '../ui/Switch'
 import { FormField, FormSection, FormFooter, inputClass, selectClass } from '../ui/ModalParts'
+import { useTiposHabitacion } from '../../hooks/queries/useHabitaciones'
 
 const schema = z.object({
   numero:              z.string().min(1, 'Requerido'),
@@ -16,13 +18,68 @@ const schema = z.object({
 })
 
 export default function HabitacionForm({ defaultValues, onSubmit, onCancel, isLoading, apiError }) {
-  const { register, handleSubmit, control, formState: { errors } } = useForm({
+  const { data: tipos = [] } = useTiposHabitacion()
+  const [selectedTipoId, setSelectedTipoId] = useState(defaultValues?.tipo ?? '')
+  const [autoFilled, setAutoFilled] = useState(false)
+
+  const { register, handleSubmit, control, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultValues ?? { estado: 'disponible', capacidad: 1, tiene_banio_privado: true, descripcion: '' },
   })
 
+  const handleTipoChange = (e) => {
+    const id = e.target.value ? Number(e.target.value) : ''
+    setSelectedTipoId(id)
+    if (id) {
+      const tipo = tipos.find((t) => t.id === id)
+      if (tipo) {
+        setValue('precio', tipo.precio, { shouldValidate: true })
+        setValue('capacidad', tipo.capacidad)
+        setValue('tiene_banio_privado', tipo.tiene_banio_privado)
+        setValue('descripcion', tipo.descripcion)
+        setAutoFilled(true)
+      }
+    } else {
+      setAutoFilled(false)
+    }
+  }
+
+  const doSubmit = (data) => onSubmit({ ...data, tipo: selectedTipoId || null })
+
+  const selectedTipo = tipos.find((t) => t.id === Number(selectedTipoId))
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+    <form onSubmit={handleSubmit(doSubmit)} className="flex flex-col gap-6">
+
+      {/* Tipo opcional */}
+      <FormSection label="Tipo de habitación">
+        <FormField label="Tipo (opcional)">
+          <select value={selectedTipoId} onChange={handleTipoChange} className={selectClass}>
+            <option value="">Sin tipo / manual</option>
+            {tipos.map((t) => (
+              <option key={t.id} value={t.id}>{t.nombre}</option>
+            ))}
+          </select>
+        </FormField>
+        {selectedTipo && (
+          <div className="flex flex-wrap gap-2">
+            {[
+              `Gs. ${Number(selectedTipo.precio).toLocaleString('es-PY')}`,
+              `${selectedTipo.capacidad} persona${selectedTipo.capacidad !== 1 ? 's' : ''}`,
+              selectedTipo.tiene_banio_privado ? 'Baño privado' : 'Baño compartido',
+            ].map((item) => (
+              <span key={item} className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: '#2a1200', color: 'var(--color-brand)' }}>
+                {item}
+              </span>
+            ))}
+          </div>
+        )}
+        {autoFilled && (
+          <p className="text-xs" style={{ color: 'var(--color-stone-text)' }}>
+            Campos completados automáticamente — podés modificarlos.
+          </p>
+        )}
+      </FormSection>
 
       <FormSection label="Información general">
         <div className="grid grid-cols-2 gap-4">

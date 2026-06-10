@@ -1,12 +1,22 @@
 from rest_framework import serializers
-from .models import Habitacion
+from .models import Habitacion, TipoHabitacion
+
+
+class TipoHabitacionSerializer(serializers.ModelSerializer):
+    habitaciones_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model  = TipoHabitacion
+        fields = '__all__'
+        read_only_fields = ['created_at', 'updated_at']
 
 
 class HabitacionSerializer(serializers.ModelSerializer):
     contrato_activo = serializers.SerializerMethodField()
+    tipo_nombre     = serializers.CharField(source='tipo.nombre', read_only=True)
 
     class Meta:
-        model = Habitacion
+        model  = Habitacion
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
@@ -22,9 +32,9 @@ class HabitacionSerializer(serializers.ModelSerializer):
         contrato = contratos[0]
         pagos_pendientes = contrato.pagos.filter(estado__in=['pendiente', 'vencido']).count()
         return {
-            'id': contrato.id,
+            'id':               contrato.id,
             'inquilino_nombre': f"{contrato.inquilino.apellido}, {contrato.inquilino.nombre}",
-            'fecha_fin': contrato.fecha_fin.isoformat() if contrato.fecha_fin else None,
-            'estado': contrato.estado,
+            'fecha_fin':        contrato.fecha_fin.isoformat() if contrato.fecha_fin else None,
+            'estado':           contrato.estado,
             'pagos_pendientes': pagos_pendientes,
         }

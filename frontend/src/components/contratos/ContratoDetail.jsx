@@ -1,9 +1,13 @@
 import { formatGs, formatDate } from '../../utils/format'
 import { estadoConfig } from '../../lib/constants/contratos'
-import { InfoCard, DetailActions } from '../ui/ModalParts'
+import { InfoCard } from '../ui/ModalParts'
+import { Button } from '../ui/Button'
 
-export function ContratoDetail({ c, onEdit, onDelete }) {
+const ESTADOS_ACTIVOS = new Set(['activo', 'moroso'])
+
+export function ContratoDetail({ c, onEdit, onDelete, onTerminar }) {
   const cfg = estadoConfig[c.estado] ?? estadoConfig.finalizado
+  const puedeTerminar = onTerminar && ESTADOS_ACTIVOS.has(c.estado)
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 text-sm">
@@ -50,7 +54,26 @@ export function ContratoDetail({ c, onEdit, onDelete }) {
         </InfoCard>
       )}
 
-      <DetailActions onEdit={onEdit} onDelete={onDelete} />
+      <div className="flex flex-col gap-2 pt-1">
+        {puedeTerminar && (
+          <button
+            onClick={() => onTerminar(c)}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-[13px] font-semibold cursor-pointer transition-all"
+            style={{ border: '1.5px solid var(--color-brand-amber)', color: 'var(--color-brand-amber)', backgroundColor: 'transparent' }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-brand-amber-light)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+            </svg>
+            Salida anticipada
+          </button>
+        )}
+        <div className="flex gap-2">
+          <Button onClick={onEdit} className="flex-1">Editar</Button>
+          <Button variant="danger" onClick={onDelete} className="flex-1">Eliminar</Button>
+        </div>
+      </div>
     </div>
   )
 }

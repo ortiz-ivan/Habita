@@ -12,6 +12,7 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { useDebounce } from '../hooks/useDebounce'
 import { Chip } from '../components/ui/Chip'
 import { usePagosList, usePagosSummary, useCreatePago, useUpdatePago, useDeletePago } from '../hooks/queries/usePagos'
+import { useContratosSelect } from '../hooks/queries/useContratos'
 import { Pagination } from '../components/ui/Pagination'
 import { estadoConfig, estadoPills, periodoPills, metodoLabel, periodoLabel, getPeriodoFechas } from '../lib/constants/pagos'
 
@@ -54,16 +55,22 @@ export default function PagosPage() {
   const [estado, setEstado]         = useState('')
   const [metodoPago, setMetodoPago] = useState('')
   const [periodo, setPeriodo]       = useState('')
+  const [contratoId, setContratoId] = useState('')
   const [page, setPage]             = useState(1)
   const debouncedSearch             = useDebounce(search)
 
-  useEffect(() => { setPage(1) }, [debouncedSearch, estado, metodoPago, periodo])
+  useEffect(() => { setPage(1) }, [debouncedSearch, estado, metodoPago, periodo, contratoId])
 
-  const periodoDates = getPeriodoFechas(periodo)
+  const { data: contratos } = useContratosSelect()
+  const selectedContrato = contratos?.find(c => c.id === Number(contratoId))
+  const diaInicio = selectedContrato ? parseInt(selectedContrato.fecha_inicio.split('-')[2], 10) : 1
+
+  const periodoDates = getPeriodoFechas(periodo, diaInicio)
   const filters = {
     search:      debouncedSearch          || undefined,
     estado:      estado                   || undefined,
     metodo_pago: metodoPago               || undefined,
+    contrato:    contratoId               || undefined,
     fecha_desde: periodoDates.fecha_desde || undefined,
     fecha_hasta: periodoDates.fecha_hasta || undefined,
     page:        page > 1 ? page          : undefined,
@@ -105,13 +112,17 @@ export default function PagosPage() {
   }
 
   const isSaving   = createMutation.isPending || updateMutation.isPending
-  const hayFiltros = search || estado || metodoPago || periodo
+  const hayFiltros = search || estado || metodoPago || periodo || contratoId
   const count      = data?.count
+  const contratoLabel = selectedContrato
+    ? `${selectedContrato.inquilino.apellido}, ${selectedContrato.inquilino.nombre} · Hab. ${selectedContrato.habitacion.numero}`
+    : ''
   const activeChips = [
-    search     && { key: 'search',     isSearch: true, label: `"${search}"`,                                                              onRemove: () => setSearch('') },
-    estado     && { key: 'estado',     dot: estadoConfig[estado]?.dot, color: estadoConfig[estado]?.text, label: estadoConfig[estado]?.label, onRemove: () => setEstado('') },
-    metodoPago && { key: 'metodoPago', label: metodoLabel[metodoPago]  ?? metodoPago,                                                     onRemove: () => setMetodoPago('') },
-    periodo    && { key: 'periodo',    label: periodoLabel[periodo]    ?? periodo,                                                         onRemove: () => setPeriodo('') },
+    search      && { key: 'search',     isSearch: true, label: `"${search}"`,                                                                    onRemove: () => setSearch('') },
+    estado      && { key: 'estado',     dot: estadoConfig[estado]?.dot, color: estadoConfig[estado]?.text, label: estadoConfig[estado]?.label,    onRemove: () => setEstado('') },
+    metodoPago  && { key: 'metodoPago', label: metodoLabel[metodoPago] ?? metodoPago,                                                             onRemove: () => setMetodoPago('') },
+    contratoId  && { key: 'contrato',   label: contratoLabel,                                                                                     onRemove: () => setContratoId('') },
+    periodo     && { key: 'periodo',    label: (periodoLabel[periodo] ?? periodo) + (diaInicio !== 1 ? ` · día ${diaInicio}` : ''),               onRemove: () => setPeriodo('') },
   ].filter(Boolean)
 
   return (
@@ -144,6 +155,15 @@ export default function PagosPage() {
             />
           </div>
 
+          <select value={contratoId} onChange={(e) => setContratoId(e.target.value)} className={inpFilter}>
+            <option value="">Todos los contratos</option>
+            {contratos?.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.inquilino.apellido}, {c.inquilino.nombre} · Hab. {c.habitacion.numero}
+              </option>
+            ))}
+          </select>
+
           <select value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className={inpFilter}>
             <option value="">Todos los métodos</option>
             <option value="efectivo">Efectivo</option>
@@ -162,7 +182,7 @@ export default function PagosPage() {
 
           {hayFiltros && (
             <button
-              onClick={() => { setSearch(''); setEstado(''); setMetodoPago(''); setPeriodo('') }}
+              onClick={() => { setSearch(''); setEstado(''); setMetodoPago(''); setPeriodo(''); setContratoId('') }}
               className="flex items-center gap-1.5 text-[13px] font-medium cursor-pointer transition-colors shrink-0"
               style={{ color: 'var(--color-stone-text)' }}
               onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-brand)' }}
@@ -229,7 +249,7 @@ export default function PagosPage() {
           <>
             <div className="h-px bg-border" />
             <div className="flex items-center gap-2 flex-wrap px-6 py-3">
-              {activeChips.map((chip) => <Chip key={chip.key} {...chip} />)}
+              {activeChips.map(({ key, ...rest }) => <Chip key={key} {...rest} />)}
             </div>
           </>
         )}

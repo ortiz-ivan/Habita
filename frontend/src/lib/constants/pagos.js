@@ -32,13 +32,30 @@ export const periodoLabel = {
   este_mes: 'Este mes', mes_anterior: 'Mes anterior', este_anio: 'Este año',
 }
 
-export function getPeriodoFechas(periodo) {
+export function getPeriodoFechas(periodo, diaInicio = 1) {
   const now = new Date()
   const y   = now.getFullYear()
   const m   = now.getMonth()
-  const fmt = (d) => d.toISOString().split('T')[0]
-  if (periodo === 'este_mes')     return { fecha_desde: fmt(new Date(y, m, 1)),     fecha_hasta: fmt(new Date(y, m + 1, 0)) }
-  if (periodo === 'mes_anterior') return { fecha_desde: fmt(new Date(y, m - 1, 1)), fecha_hasta: fmt(new Date(y, m, 0))     }
-  if (periodo === 'este_anio')    return { fecha_desde: `${y}-01-01`,               fecha_hasta: `${y}-12-31`               }
+  const d   = now.getDate()
+  const dia = Math.min(Math.max(diaInicio, 1), 28)
+  const fmt = (date) => date.toISOString().split('T')[0]
+
+  if (periodo === 'este_anio') return { fecha_desde: `${y}-01-01`, fecha_hasta: `${y}-12-31` }
+
+  // cycleOffset: 0 = el ciclo actual empezó este mes, -1 = empezó el mes pasado
+  const cycleOffset = d >= dia ? 0 : -1
+
+  if (periodo === 'este_mes') {
+    return {
+      fecha_desde: fmt(new Date(y, m + cycleOffset, dia)),
+      fecha_hasta: fmt(new Date(y, m + cycleOffset + 1, dia - 1)),
+    }
+  }
+  if (periodo === 'mes_anterior') {
+    return {
+      fecha_desde: fmt(new Date(y, m + cycleOffset - 1, dia)),
+      fecha_hasta: fmt(new Date(y, m + cycleOffset, dia - 1)),
+    }
+  }
   return {}
 }

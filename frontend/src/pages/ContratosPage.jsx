@@ -51,7 +51,10 @@ export default function ContratosPage() {
   const [editTarget, setEditTarget]     = useState(null)
   const [viewTarget, setViewTarget]     = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
-  const [apiError, setApiError]         = useState('')
+  const [terminaTarget, setTerminaTarget] = useState(null)
+  const [fechaSalida, setFechaSalida]     = useState('')
+  const [terminaError, setTerminaError]   = useState('')
+  const [apiError, setApiError]           = useState('')
 
   const [search, setSearch] = useState('')
   const [estado, setEstado] = useState('')
@@ -93,8 +96,24 @@ export default function ContratosPage() {
     onError:   (err) => { setDeleteTarget(null); alert(parseApiError(err)) },
   })
 
-  const openCreate = () => { setEditTarget(null); setApiError(''); setModalOpen(true) }
-  const openEdit   = (c) => { setEditTarget(c);   setApiError(''); setViewTarget(null); setModalOpen(true) }
+  const openCreate   = () => { setEditTarget(null); setApiError(''); setModalOpen(true) }
+  const openEdit     = (c) => { setEditTarget(c);   setApiError(''); setViewTarget(null); setModalOpen(true) }
+  const openTerminar = (c) => {
+    setViewTarget(null)
+    setTerminaTarget(c)
+    setFechaSalida(new Date().toISOString().slice(0, 10))
+    setTerminaError('')
+  }
+  const handleTerminar = () => {
+    setTerminaError('')
+    updateMutation.mutate(
+      { id: terminaTarget.id, data: { estado: 'cancelado', fecha_fin: fechaSalida } },
+      {
+        onSuccess: () => { setTerminaTarget(null) },
+        onError:   (err) => setTerminaError(parseApiError(err)),
+      }
+    )
+  }
 
   const handleSubmit = (data, cuotasGarantia = 1) => {
     setApiError('')
@@ -264,6 +283,7 @@ export default function ContratosPage() {
             c={viewTarget}
             onEdit={() => openEdit(viewTarget)}
             onDelete={() => setDeleteTarget(viewTarget)}
+            onTerminar={openTerminar}
           />
         )}
       </Modal>
@@ -286,6 +306,79 @@ export default function ContratosPage() {
         onCancel={() => setDeleteTarget(null)}
         isLoading={deleteMutation.isPending}
       />
+
+      {/* Modal salida anticipada */}
+      <Modal
+        isOpen={!!terminaTarget}
+        onClose={() => { setTerminaTarget(null); setTerminaError('') }}
+        title="Salida anticipada"
+        size="sm"
+      >
+        {terminaTarget && (
+          <div className="flex flex-col gap-5">
+
+            {/* Info del contrato */}
+            <div className="rounded-lg px-4 py-3" style={{ backgroundColor: 'var(--color-surface-2)' }}>
+              <p className="text-[14px] font-bold" style={{ color: 'var(--color-fg)' }}>
+                {terminaTarget.inquilino.apellido}, {terminaTarget.inquilino.nombre}
+              </p>
+              <p className="text-[12px] mt-0.5" style={{ color: 'var(--color-stone-text)' }}>
+                Hab. {terminaTarget.habitacion.numero} · Contrato #{terminaTarget.id}
+              </p>
+            </div>
+
+            {/* Fecha de salida */}
+            <div>
+              <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--color-stone-text)' }}>
+                Fecha de salida
+              </label>
+              <input
+                type="date"
+                value={fechaSalida}
+                onChange={(e) => setFechaSalida(e.target.value)}
+                min={terminaTarget.fecha_inicio}
+                className={inpFilter + ' w-full'}
+              />
+            </div>
+
+            {/* Aviso */}
+            <div
+              className="rounded-lg px-3 py-2.5 text-[12px] leading-relaxed"
+              style={{ backgroundColor: 'var(--color-brand-amber-light)', color: 'var(--color-brand-amber)', border: '1px solid var(--color-amber-border)' }}
+            >
+              El contrato pasará a <strong>Cancelado</strong> y la habitación quedará <strong>disponible</strong>. Los pagos pendientes se mantienen registrados.
+            </div>
+
+            {terminaError && (
+              <p
+                className="text-[13px] font-medium px-3 py-2 rounded-lg"
+                style={{ color: 'var(--color-red-text)', backgroundColor: 'var(--color-red-bg)', border: '1px solid var(--color-red-border)' }}
+              >
+                {terminaError}
+              </p>
+            )}
+
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => { setTerminaTarget(null); setTerminaError('') }}
+                className="flex-1"
+              >
+                Volver
+              </Button>
+              <Button
+                variant="danger-fill"
+                onClick={handleTerminar}
+                disabled={updateMutation.isPending || !fechaSalida}
+                className="flex-1"
+              >
+                {updateMutation.isPending ? 'Procesando...' : 'Confirmar salida'}
+              </Button>
+            </div>
+
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

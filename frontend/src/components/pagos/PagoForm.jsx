@@ -18,12 +18,14 @@ const schema = z.object({
   observacion: z.string().optional().default(''),
 })
 
+const NEW_DEFAULTS = { metodo_pago: 'efectivo', estado: 'pagado', observacion: '' }
+
 export default function PagoForm({ defaultValues, onSubmit, onCancel, isLoading, apiError }) {
   const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultValues
-      ? { ...defaultValues, contrato: defaultValues.contrato?.id ?? defaultValues.contrato }
-      : { metodo_pago: 'efectivo', estado: 'pagado', observacion: '' },
+      ? { ...NEW_DEFAULTS, ...defaultValues, contrato: defaultValues.contrato?.id ?? defaultValues.contrato }
+      : NEW_DEFAULTS,
   })
 
   const { data: contratos } = useContratosSelect()

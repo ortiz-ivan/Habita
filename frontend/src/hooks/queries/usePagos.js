@@ -7,6 +7,12 @@ function invalidatePagos(qc) {
   qc.invalidateQueries({ queryKey: queryKeys.pagos.pendientes() })
   qc.invalidateQueries({ queryKey: queryKeys.pagos.vencidos() })
   qc.invalidateQueries({ queryKey: queryKeys.pagos.vencidosCount() })
+  qc.invalidateQueries({ queryKey: ['pagos-dashboard'] })
+  qc.invalidateQueries({ queryKey: queryKeys.pagos.resumen() })
+  // garantia_info se calcula en el serializer de contratos, invalidar también
+  qc.invalidateQueries({ queryKey: queryKeys.contratos.all() })
+  qc.invalidateQueries({ queryKey: queryKeys.contratos.activos() })
+  qc.invalidateQueries({ queryKey: queryKeys.contratos.select() })
 }
 
 export function usePagosList(filters) {

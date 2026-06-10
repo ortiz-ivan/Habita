@@ -1,29 +1,42 @@
 // filters: [{ id, label }]
 export function FilterBar({ filters, active, onChange }) {
   return (
-    <div className="flex gap-2 px-1 py-1">
+    <div
+      className="inline-flex gap-1 p-1 rounded-lg"
+      style={{
+        backgroundColor: 'var(--color-surface-1)',
+        border: '1px solid var(--color-border)',
+      }}
+    >
       {filters.map((f) => (
         <button
           key={f.id}
           onClick={() => onChange(f.id)}
-          className="text-[13px] px-3.5 py-1.5 rounded-full transition-colors cursor-pointer"
+          className="text-[13px] px-3.5 py-1.5 rounded-md cursor-pointer transition-all"
           style={
             active === f.id
-              ? { backgroundColor: 'var(--color-brand)', color: '#FFFFFF', fontWeight: 600, border: '1px solid var(--color-brand)' }
-              : { color: 'var(--color-stone-text)', backgroundColor: 'var(--color-surface-2)', border: '1px solid var(--color-border-strong)' }
+              ? {
+                  backgroundColor: 'var(--color-surface-3)',
+                  color: 'var(--color-fg)',
+                  fontWeight: 600,
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.35)',
+                }
+              : {
+                  color: 'var(--color-stone-text)',
+                  fontWeight: 400,
+                  backgroundColor: 'transparent',
+                }
           }
           onMouseEnter={(e) => {
             if (active !== f.id) {
-              e.currentTarget.style.backgroundColor = '#222222'
+              e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'
               e.currentTarget.style.color = 'var(--color-stone-dark)'
-              e.currentTarget.style.borderColor = '#3a3a3a'
             }
           }}
           onMouseLeave={(e) => {
             if (active !== f.id) {
-              e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'
+              e.currentTarget.style.backgroundColor = 'transparent'
               e.currentTarget.style.color = 'var(--color-stone-text)'
-              e.currentTarget.style.borderColor = 'var(--color-border-strong)'
             }
           }}
         >

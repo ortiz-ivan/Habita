@@ -1,15 +1,31 @@
 export function EmptyState({ icon, title, description, action }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div
-        className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 text-brand"
-        style={{ background: 'linear-gradient(135deg, #2a1200 0%, #1a0d00 100%)' }}
-      >
-        {icon}
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      {/* Icon with radial glow halo */}
+      <div style={{ position: 'relative', marginBottom: '20px' }}>
+        <div style={{
+          position: 'absolute', inset: '-16px', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(224,97,58,0.10) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          width: '64px', height: '64px', borderRadius: '16px', position: 'relative',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'linear-gradient(135deg, rgba(224,97,58,0.14) 0%, rgba(201,82,46,0.06) 100%)',
+          border: '1px solid rgba(224,97,58,0.20)',
+          color: 'var(--color-brand)',
+          boxShadow: '0 4px 18px rgba(224,97,58,0.14)',
+        }}>
+          {icon}
+        </div>
       </div>
-      <p className="text-base font-semibold mb-1 text-stone-dark">{title}</p>
+      <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-fg)', marginBottom: '6px', letterSpacing: '-0.01em' }}>
+        {title}
+      </p>
       {description && (
-        <p className="text-sm mb-5 text-stone-text">{description}</p>
+        <p style={{ fontSize: '13px', color: 'var(--color-stone-text)', marginBottom: '20px', maxWidth: '280px', lineHeight: 1.55 }}>
+          {description}
+        </p>
       )}
       {action}
     </div>

@@ -118,13 +118,13 @@ export default function HabitacionesPage() {
       <div className="flex items-center justify-between mb-6">
         <div />
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setTiposOpen(true)} className="px-4">
+          <Button variant="ghost" onClick={() => setTiposOpen(true)} className="shrink-0 px-7 py-5">
             Tipos
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setBulkOpen(true)} className="px-4">
+          <Button variant="ghost" onClick={() => setBulkOpen(true)} className="shrink-0 px-7 py-5">
             Crear en lote
           </Button>
-          <Button size="sm" onClick={openCreate} className="px-4">
+          <Button onClick={openCreate} className="shrink-0 px-7 py-5">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
@@ -247,8 +247,16 @@ export default function HabitacionesPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
-            {data.results.map((h) => (
-              <HabitacionCard key={h.id} h={h} onEdit={openEdit} onView={setViewTarget} />
+            {data.results.map((h, i) => (
+              <div
+                key={h.id}
+                style={{
+                  animation: 'slide-up-fade 0.38s ease both',
+                  animationDelay: `${Math.min(i * 0.045, 0.36)}s`,
+                }}
+              >
+                <HabitacionCard h={h} onEdit={openEdit} onView={setViewTarget} />
+              </div>
             ))}
           </div>
           <Pagination count={data.count} page={page} onChange={setPage} />

@@ -1,57 +1,134 @@
 import { Sparkline } from './Sparkline'
 import { IconTrendUp } from './icons'
+import { useCountUp } from '../../hooks/useCountUp'
+
+function DonutRing({ value, color }) {
+  const r = 13
+  const cx = 18
+  const cy = 18
+  const circumference = 2 * Math.PI * r
+  const dash = (value / 100) * circumference
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <svg width="36" height="36" viewBox="0 0 36 36" style={{ flexShrink: 0, overflow: 'visible' }}>
+        <circle cx={cx} cy={cy} r={r} fill="none" strokeWidth="3.5" stroke="var(--color-border)" />
+        <circle
+          cx={cx} cy={cy} r={r}
+          fill="none" strokeWidth="3.5"
+          stroke={color}
+          strokeDasharray={`${dash} ${circumference - dash}`}
+          strokeDashoffset={circumference / 4}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dasharray 0.8s ease', transformOrigin: 'center' }}
+        />
+      </svg>
+      <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-stone-text)' }}>
+        <span style={{ color }}>{value}%</span> ocupado
+      </span>
+    </div>
+  )
+}
 
 const config = {
   default: {
-    iconBg:  'var(--color-surface-2)',
-    iconClr: 'var(--color-stone-text)',
-    valClr:  'var(--color-fg)',
-    barClr:  'var(--color-stone-text)',
+    iconGradient: 'linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%)',
+    iconBorder:   'rgba(255,255,255,0.06)',
+    iconClr:      'var(--color-stone-text)',
+    valClr:       'var(--color-fg)',
+    barClr:       'var(--color-stone-text)',
+    glowColor:    'rgba(0,0,0,0)',
+    hoverBorder:  'var(--color-border-strong)',
   },
   brand: {
-    iconBg:  '#2a1200',
-    iconClr: 'var(--color-brand)',
-    valClr:  'var(--color-brand)',
-    barClr:  'var(--color-brand)',
+    iconGradient: 'linear-gradient(135deg, rgba(224,97,58,0.22) 0%, rgba(201,82,46,0.12) 100%)',
+    iconBorder:   'rgba(224,97,58,0.20)',
+    iconClr:      'var(--color-brand)',
+    valClr:       'var(--color-brand)',
+    barClr:       'var(--color-brand)',
+    glowColor:    'rgba(224,97,58,0.07)',
+    hoverBorder:  'rgba(224,97,58,0.35)',
   },
   warning: {
-    iconBg:  'var(--color-brand-amber-light)',
-    iconClr: 'var(--color-brand-amber)',
-    valClr:  'var(--color-brand-amber)',
-    barClr:  'var(--color-brand-amber)',
+    iconGradient: 'linear-gradient(135deg, rgba(250,199,117,0.22) 0%, rgba(250,199,117,0.10) 100%)',
+    iconBorder:   'rgba(250,199,117,0.20)',
+    iconClr:      'var(--color-brand-amber)',
+    valClr:       'var(--color-brand-amber)',
+    barClr:       'var(--color-brand-amber)',
+    glowColor:    'rgba(250,199,117,0.06)',
+    hoverBorder:  'rgba(250,199,117,0.30)',
   },
   danger: {
-    iconBg:  'var(--color-red-bg)',
-    iconClr: 'var(--color-red-text)',
-    valClr:  'var(--color-red-text)',
-    barClr:  'var(--color-red-text)',
+    iconGradient: 'linear-gradient(135deg, rgba(248,113,113,0.22) 0%, rgba(248,113,113,0.10) 100%)',
+    iconBorder:   'rgba(248,113,113,0.20)',
+    iconClr:      'var(--color-red-text)',
+    valClr:       'var(--color-red-text)',
+    barClr:       'var(--color-red-text)',
+    glowColor:    'rgba(248,113,113,0.06)',
+    hoverBorder:  'rgba(248,113,113,0.30)',
   },
   success: {
-    iconBg:  'var(--color-green-bg)',
-    iconClr: 'var(--color-green-text)',
-    valClr:  'var(--color-green-text)',
-    barClr:  'var(--color-green-text)',
+    iconGradient: 'linear-gradient(135deg, rgba(125,201,71,0.22) 0%, rgba(125,201,71,0.10) 100%)',
+    iconBorder:   'rgba(125,201,71,0.20)',
+    iconClr:      'var(--color-green-text)',
+    valClr:       'var(--color-green-text)',
+    barClr:       'var(--color-green-text)',
+    glowColor:    'rgba(125,201,71,0.06)',
+    hoverBorder:  'rgba(125,201,71,0.30)',
   },
 }
 
-export function MetricCard({ label, value, color = 'default', icon, progress, spark, delta }) {
-  const { iconBg, iconClr, valClr, barClr } = config[color] ?? config.default
+export function MetricCard({ label, value, color = 'default', icon, progress, spark, delta, animated = false }) {
+  const { iconGradient, iconBorder, iconClr, valClr, barClr, glowColor, hoverBorder } = config[color] ?? config.default
   const hasProgress = typeof progress === 'number'
   const hasSpark = Array.isArray(spark) && spark.length > 1
+  const isNumber = typeof value === 'number'
+  const counted = useCountUp(isNumber ? value : 0, { enabled: animated && isNumber })
+  const displayValue = animated && isNumber ? counted : value
 
   return (
     <div
-      className="rounded px-4 py-4 cursor-default transition-shadow duration-200 bg-surface-1 border border-border flex flex-col"
-      style={{ minHeight: '148px' }}
-      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.4)' }}
-      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none' }}
+      className="rounded-xl px-5 py-5 cursor-default bg-surface-1 border border-border flex flex-col"
+      style={{
+        minHeight: '160px',
+        transition: 'all 220ms ease',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = `0 8px 24px rgba(0,0,0,0.45), 0 0 24px ${glowColor}`
+        e.currentTarget.style.transform = 'translateY(-2px)'
+        e.currentTarget.style.borderColor = hoverBorder
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = 'none'
+        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.borderColor = 'var(--color-border)'
+      }}
     >
+      {/* Glow background decorativo */}
+      <div style={{
+        position: 'absolute',
+        top: '-20px',
+        right: '-20px',
+        width: '100px',
+        height: '100px',
+        borderRadius: '50%',
+        background: glowColor,
+        filter: 'blur(30px)',
+        pointerEvents: 'none',
+      }} />
+
       {/* Fila superior: icono + delta */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between mb-4">
         {icon ? (
           <div
-            className="w-9 h-9 rounded flex items-center justify-center shrink-0"
-            style={{ backgroundColor: iconBg, color: iconClr }}
+            className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0"
+            style={{
+              background: iconGradient,
+              color: iconClr,
+              border: `1px solid ${iconBorder}`,
+            }}
           >
             {icon}
           </div>
@@ -59,8 +136,11 @@ export function MetricCard({ label, value, color = 'default', icon, progress, sp
 
         {delta && (
           <span
-            className="inline-flex items-center gap-[3px] text-[11px] font-semibold"
-            style={{ color: delta.up ? 'var(--color-green-text)' : 'var(--color-red-text)' }}
+            className="inline-flex items-center gap-[3px] text-[12px] font-semibold px-2 py-1 rounded-full"
+            style={{
+              background: delta.up ? 'var(--color-green-soft)' : 'var(--color-red-soft)',
+              color: delta.up ? 'var(--color-green-text)' : 'var(--color-red-text)',
+            }}
           >
             <span style={{ display: 'inline-flex', transform: delta.up ? 'none' : 'scaleY(-1)' }}>
               <IconTrendUp />
@@ -70,33 +150,25 @@ export function MetricCard({ label, value, color = 'default', icon, progress, sp
         )}
       </div>
 
-      <p className="text-[12px] mt-3 mb-1 text-stone-text">{label}</p>
-      <p className="text-[26px] font-bold leading-none tracking-tight" style={{ color: valClr }}>
-        {value ?? '—'}
+      <p
+        className="text-[11px] font-semibold uppercase tracking-[0.07em] mb-2"
+        style={{ color: 'var(--color-stone-text)' }}
+      >
+        {label}
+      </p>
+      <p
+        className="leading-none tracking-tight"
+        style={{ fontSize: '32px', fontWeight: 800, color: valClr, letterSpacing: '-0.03em' }}
+      >
+        {displayValue ?? '—'}
       </p>
 
-      {/* Sparkline / progress — empuja al fondo con mt-auto */}
-      <div className="mt-auto pt-3 h-[34px]">
+      {/* Sparkline / progress / ring */}
+      <div className="mt-auto pt-4" style={{ height: '36px' }}>
         {hasSpark ? (
           <Sparkline data={spark} color={barClr} />
         ) : hasProgress ? (
-          <div className="flex flex-col gap-1.5">
-            <div
-              className="w-full rounded-full overflow-hidden"
-              style={{ height: '6px', backgroundColor: 'var(--color-border-strong)' }}
-            >
-              <div
-                className="h-full rounded-full transition-all duration-700 ease-out"
-                style={{
-                  width: `${Math.min(100, Math.max(0, progress))}%`,
-                  backgroundColor: barClr,
-                }}
-              />
-            </div>
-            <p className="text-[10px] text-right" style={{ color: 'var(--color-stone-text)' }}>
-              {progress}% ocupado
-            </p>
-          </div>
+          <DonutRing value={Math.min(100, Math.max(0, progress))} color={barClr} />
         ) : null}
       </div>
     </div>

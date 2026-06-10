@@ -29,29 +29,35 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
       onClick={onClose}
     >
       <div
-        className="flex flex-col overflow-hidden rounded w-full max-h-[88vh] modal-panel-enter bg-surface-1"
+        className="flex flex-col overflow-hidden rounded-xl w-full max-h-[88vh] modal-panel-enter bg-surface-1"
         style={{
           maxWidth: panelMaxW,
-          border: '1px solid #222222',
-          boxShadow: '0 32px 80px rgba(0,0,0,0.65), 0 8px 24px rgba(0,0,0,0.4)',
+          border: '1px solid var(--color-border)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.70), 0 8px 32px rgba(0,0,0,0.45)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Acento coral */}
-        <div className="bg-brand shrink-0" style={{ height: '2px' }} />
+        {/* Acento coral — gradiente */}
+        <div
+          className="shrink-0"
+          style={{ height: '3px', background: 'linear-gradient(90deg, var(--color-brand) 0%, #FAC775 100%)' }}
+        />
 
         {/* Header */}
         <div
-          className="flex items-center justify-between px-5 pt-4 pb-3.5 shrink-0"
-          style={{ borderBottom: '1px solid var(--color-surface-2)' }}
+          className="flex items-center justify-between px-6 pt-4 pb-4 shrink-0"
+          style={{
+            borderBottom: '1px solid var(--color-border)',
+            background: 'linear-gradient(180deg, var(--color-surface-2) 0%, var(--color-surface-1) 100%)',
+          }}
         >
-          <h3 className="text-[15px] font-semibold text-fg">{title}</h3>
+          <h3 className="text-[16px] font-bold text-fg" style={{ letterSpacing: '-0.01em' }}>{title}</h3>
           <button
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer text-stone-text"
+            className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors cursor-pointer text-stone-text"
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'
-              e.currentTarget.style.color = 'var(--color-stone-dark)'
+              e.currentTarget.style.backgroundColor = 'var(--color-surface-3)'
+              e.currentTarget.style.color = 'var(--color-fg)'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent'

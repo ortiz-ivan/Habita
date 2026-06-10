@@ -54,10 +54,17 @@ const contratosSerie = [7, 8, 8, 9, 9, 9]
 
 function SectionLabel({ label }) {
   return (
-    <div className="flex items-center gap-3 mb-5">
+    <div className="flex items-center gap-2.5 mb-5">
+      <div style={{
+        width: '3px',
+        height: '14px',
+        borderRadius: '2px',
+        background: 'linear-gradient(180deg, var(--color-brand) 0%, #C9522E 100%)',
+        flexShrink: 0,
+      }} />
       <span
-        className="text-[11px] font-medium uppercase tracking-[0.08em] shrink-0"
-        style={{ color: 'var(--color-stone-text)' }}
+        className="text-[13px] font-semibold shrink-0"
+        style={{ color: 'var(--color-fg)', letterSpacing: '-0.01em' }}
       >
         {label}
       </span>
@@ -76,45 +83,58 @@ function TenantRow({ pago, onCobrar }) {
 
   return (
     <div
-      className="flex items-center gap-4 px-5 py-3.5 transition-colors cursor-pointer"
-      style={{ borderBottom: '1px solid var(--color-surface-2)' }}
-      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#161616' }}
+      className="flex items-center gap-3 px-5 py-3 transition-colors cursor-pointer"
+      style={{ borderBottom: '1px solid var(--color-border-subtle)' }}
+      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)' }}
       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
     >
       <div
-        className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-medium shrink-0"
-        style={{ backgroundColor: bg, color: text }}
+        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+        style={{ backgroundColor: bg, color: text, border: `1.5px solid ${text}33` }}
       >
         {initials}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium truncate" style={{ color: 'var(--color-fg)' }}>
+        <p className="text-[14px] font-semibold truncate" style={{ color: 'var(--color-fg)' }}>
           {nombre || '—'}
         </p>
         <p className="text-[12px] mt-0.5" style={{ color: 'var(--color-stone-text)' }}>
           Hab. {pago.contrato?.habitacion_numero} · {formatDate(pago.fecha_pago)}
         </p>
       </div>
-      <span className="text-[13px] font-medium shrink-0" style={{ color: 'var(--color-stone-dark)' }}>
+      <span
+        className="text-[14px] font-bold shrink-0"
+        style={{ color: 'var(--color-fg)', letterSpacing: '-0.01em' }}
+      >
         {formatGs(pago.monto)}
       </span>
-      <div className="w-[88px] flex justify-end shrink-0">
+      <div className="w-[92px] flex justify-end shrink-0">
         <PaymentStatusBadge status={pago.estado} />
       </div>
       {pago.estado !== 'pagado' ? (
         <button
           onClick={(e) => { e.stopPropagation(); onCobrar?.(pago) }}
-          className="text-[12px] font-semibold px-3 py-1.5 rounded cursor-pointer shrink-0 whitespace-nowrap transition-colors"
+          className="text-[12px] font-bold px-3 py-1.5 rounded-md cursor-pointer shrink-0 whitespace-nowrap"
           style={{
-            border: '1px solid var(--color-brand)',
-            background: 'color-mix(in srgb, var(--color-brand) 13%, transparent)',
-            color: 'var(--color-brand)',
+            background: 'linear-gradient(135deg, var(--color-brand) 0%, #C9522E 100%)',
+            color: '#fff',
+            border: 'none',
+            boxShadow: '0 2px 6px rgba(224,97,58,0.25)',
+            transition: 'all 150ms ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(224,97,58,0.40)'
+            e.currentTarget.style.transform = 'translateY(-1px)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = '0 2px 6px rgba(224,97,58,0.25)'
+            e.currentTarget.style.transform = 'translateY(0)'
           }}
         >
           Cobrar
         </button>
       ) : (
-        <div className="w-[58px] shrink-0" />
+        <div className="w-[62px] shrink-0" />
       )}
     </div>
   )
@@ -176,49 +196,71 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {/* Saludo */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-1">
-          <h2 className="text-[17px] font-semibold" style={{ color: 'var(--color-fg)' }}>
+      {/* Hero banner */}
+      <div
+        className="flex items-center gap-4 rounded-xl px-6 py-5 mb-8"
+        style={{
+          background: 'linear-gradient(135deg, rgba(224,97,58,0.07) 0%, rgba(224,97,58,0.03) 60%, transparent 100%)',
+          border: '1px solid rgba(224,97,58,0.12)',
+        }}
+      >
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+          style={{
+            background: 'linear-gradient(135deg, var(--color-brand) 0%, #FAC775 100%)',
+            boxShadow: '0 4px 16px rgba(224,97,58,0.30)',
+            color: '#fff',
+          }}
+        >
+          <span style={{ transform: 'scale(1.4)', display: 'flex' }}>
+            <IconHome />
+          </span>
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <h2
+            className="font-bold leading-tight"
+            style={{ fontSize: '20px', color: 'var(--color-fg)', letterSpacing: '-0.02em' }}
+          >
             Bienvenido, {user?.first_name || user?.username}
           </h2>
-          {vencidosCount > 0 ? (
-            <span
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
-              style={{ backgroundColor: 'var(--color-red-bg)', color: 'var(--color-red-text)' }}
-            >
-              <svg viewBox="0 0 12 12" fill="currentColor" className="w-2.5 h-2.5">
-                <path fillRule="evenodd" d="M6 1a5 5 0 1 0 0 10A5 5 0 0 0 6 1ZM4.22 4.22a.75.75 0 0 1 1.06 0L6 4.94l.72-.72a.75.75 0 1 1 1.06 1.06L7.06 6l.72.72a.75.75 0 1 1-1.06 1.06L6 7.06l-.72.72a.75.75 0 0 1-1.06-1.06L4.94 6l-.72-.72a.75.75 0 0 1 0-1.06Z" clipRule="evenodd"/>
-              </svg>
-              {vencidosCount} pago{vencidosCount > 1 ? 's' : ''} vencido{vencidosCount > 1 ? 's' : ''}
-            </span>
-          ) : pendientesCount > 0 ? (
-            <span
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
-              style={{ backgroundColor: 'var(--color-brand-amber-light)', color: 'var(--color-brand-amber)' }}
-            >
-              <svg viewBox="0 0 12 12" fill="currentColor" className="w-2.5 h-2.5">
-                <path fillRule="evenodd" d="M5.105 1.67c.394-.683 1.396-.683 1.79 0l4.5 7.794C11.787 10.148 11.29 11 10.5 11h-9c-.79 0-1.287-.852-.895-1.536l4.5-7.794ZM6 4.5a.75.75 0 0 0-.75.75v2a.75.75 0 0 0 1.5 0v-2A.75.75 0 0 0 6 4.5Zm0 5.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd"/>
-              </svg>
-              {pendientesCount} pendiente{pendientesCount > 1 ? 's' : ''}
-            </span>
-          ) : (
-            <span
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
-              style={{ backgroundColor: 'var(--color-green-bg)', color: 'var(--color-green-text)' }}
-            >
-              <svg viewBox="0 0 12 12" fill="currentColor" className="w-2.5 h-2.5">
-                <path fillRule="evenodd" d="M10.22 2.47a.75.75 0 0 1 0 1.06l-5.5 5.5a.75.75 0 0 1-1.06 0l-2.5-2.5a.75.75 0 0 1 1.06-1.06L4.25 7.44l4.97-4.97a.75.75 0 0 1 1.06 0Z" clipRule="evenodd"/>
-              </svg>
-              Pagos al día
-            </span>
-          )}
+          <p className="text-[13px] capitalize mt-1" style={{ color: 'var(--color-stone-text)' }}>
+            {user?.rol} · {new Date().toLocaleDateString('es-PY', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
         </div>
-        <p className="text-[13px] capitalize" style={{ color: 'var(--color-stone-text)' }}>{user?.rol}</p>
-      </div>
 
-      {/* Separador */}
-      <div className="h-px mb-6" style={{ backgroundColor: 'var(--color-border)' }} />
+        {vencidosCount > 0 ? (
+          <span
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold shrink-0"
+            style={{ backgroundColor: 'var(--color-red-bg)', color: 'var(--color-red-text)', border: '1px solid var(--color-red-border)' }}
+          >
+            <svg viewBox="0 0 12 12" fill="currentColor" className="w-3 h-3">
+              <path fillRule="evenodd" d="M6 1a5 5 0 1 0 0 10A5 5 0 0 0 6 1ZM4.22 4.22a.75.75 0 0 1 1.06 0L6 4.94l.72-.72a.75.75 0 1 1 1.06 1.06L7.06 6l.72.72a.75.75 0 1 1-1.06 1.06L6 7.06l-.72.72a.75.75 0 0 1-1.06-1.06L4.94 6l-.72-.72a.75.75 0 0 1 0-1.06Z" clipRule="evenodd"/>
+            </svg>
+            {vencidosCount} vencido{vencidosCount > 1 ? 's' : ''}
+          </span>
+        ) : pendientesCount > 0 ? (
+          <span
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold shrink-0"
+            style={{ backgroundColor: 'var(--color-brand-amber-light)', color: 'var(--color-brand-amber)', border: '1px solid var(--color-amber-border)' }}
+          >
+            <svg viewBox="0 0 12 12" fill="currentColor" className="w-3 h-3">
+              <path fillRule="evenodd" d="M5.105 1.67c.394-.683 1.396-.683 1.79 0l4.5 7.794C11.787 10.148 11.29 11 10.5 11h-9c-.79 0-1.287-.852-.895-1.536l4.5-7.794ZM6 4.5a.75.75 0 0 0-.75.75v2a.75.75 0 0 0 1.5 0v-2A.75.75 0 0 0 6 4.5Zm0 5.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd"/>
+            </svg>
+            {pendientesCount} pendiente{pendientesCount > 1 ? 's' : ''}
+          </span>
+        ) : (
+          <span
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold shrink-0"
+            style={{ backgroundColor: 'var(--color-green-bg)', color: 'var(--color-green-text)', border: '1px solid var(--color-green-border)' }}
+          >
+            <svg viewBox="0 0 12 12" fill="currentColor" className="w-3 h-3">
+              <path fillRule="evenodd" d="M10.22 2.47a.75.75 0 0 1 0 1.06l-5.5 5.5a.75.75 0 0 1-1.06 0l-2.5-2.5a.75.75 0 0 1 1.06-1.06L4.25 7.44l4.97-4.97a.75.75 0 0 1 1.06 0Z" clipRule="evenodd"/>
+            </svg>
+            Al día
+          </span>
+        )}
+      </div>
 
 
       {/* Métricas */}
@@ -251,6 +293,7 @@ export default function DashboardPage() {
           color="default"
           icon={<IconDoc />}
           spark={contratosSerie}
+          animated
         />
       </div>
 
@@ -266,17 +309,30 @@ export default function DashboardPage() {
             onChange={(v) => { setTenantFilter(v); setMovPage(0) }}
           />
 
-          <div className="rounded overflow-hidden bg-surface-1 border border-border">
+          <div className="rounded-xl overflow-hidden bg-surface-1 border border-border">
             {/* Header */}
-            <div className="flex items-center px-4 py-3" style={{ borderBottom: '1px solid var(--color-surface-2)' }}>
-              <h2 className="text-[13px] font-medium" style={{ color: 'var(--color-fg)' }}>Últimos movimientos</h2>
+            <div className="flex items-center px-5 py-3.5" style={{ borderBottom: '1px solid var(--color-border)' }}>
+              <h2 className="text-[14px] font-semibold" style={{ color: 'var(--color-fg)' }}>Últimos movimientos</h2>
               <button
                 onClick={() => navigate('/pagos')}
-                className="ml-auto text-[12px] hover:underline cursor-pointer"
-                style={{ color: 'var(--color-brand)' }}
+                className="ml-auto text-[12px] font-medium cursor-pointer"
+                style={{ color: 'var(--color-brand)', transition: 'opacity 150ms ease' }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7' }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
               >
                 Ver todos →
               </button>
+            </div>
+            {/* Columnas */}
+            <div
+              className="flex items-center gap-3 px-5 py-2"
+              style={{ borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface-0)' }}
+            >
+              <div style={{ width: '32px', flexShrink: 0 }} />
+              <span className="flex-1" style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-stone-text)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Inquilino</span>
+              <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-stone-text)', textTransform: 'uppercase', letterSpacing: '0.07em', width: '90px', textAlign: 'right', flexShrink: 0 }}>Monto</span>
+              <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-stone-text)', textTransform: 'uppercase', letterSpacing: '0.07em', width: '92px', textAlign: 'right', flexShrink: 0 }}>Estado</span>
+              <div style={{ width: '62px', flexShrink: 0 }} />
             </div>
 
             {/* Filas */}

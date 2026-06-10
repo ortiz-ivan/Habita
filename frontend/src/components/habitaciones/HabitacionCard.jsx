@@ -1,17 +1,6 @@
 import { formatGs, formatDate } from '../../utils/format'
 import { estadoConfig } from '../../lib/constants/habitaciones'
 
-const cardHover = {
-  onMouseEnter: (e) => {
-    e.currentTarget.style.transform = 'translateY(-3px)'
-    e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06)'
-  },
-  onMouseLeave: (e) => {
-    e.currentTarget.style.transform = 'translateY(0)'
-    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'
-  },
-}
-
 const IconEye = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 shrink-0">
     <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -30,15 +19,25 @@ export function HabitacionCard({ h, onEdit, onView }) {
 
   return (
     <div
-      className="rounded overflow-hidden flex flex-col cursor-default bg-surface-1 border border-border"
-      style={{ transition: 'transform 200ms ease, box-shadow 200ms ease' }}
-      {...cardHover}
+      className="rounded-xl overflow-hidden flex flex-col cursor-default bg-surface-1 border border-border"
+      style={{ transition: 'transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease' }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-3px)'
+        e.currentTarget.style.boxShadow = '0 16px 36px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.30)'
+        e.currentTarget.style.borderColor = 'var(--color-border-strong)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.boxShadow = 'none'
+        e.currentTarget.style.borderColor = 'var(--color-border)'
+      }}
     >
-      <div style={{ height: '3px', backgroundColor: cfg.dot }} />
+      {/* Gradient status bar */}
+      <div style={{ height: '4px', background: `linear-gradient(90deg, ${cfg.dot} 0%, ${cfg.dot}88 100%)`, flexShrink: 0 }} />
 
       {/* Encabezado: número y piso */}
       <div className="px-5 pt-5 pb-4">
-        <p className="text-2xl font-bold leading-none text-fg mb-1.5">N°{h.numero}</p>
+        <p className="leading-none text-fg" style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '5px' }}>N°{h.numero}</p>
         <p className="text-[12px]" style={{ color: 'var(--color-stone-text)' }}>Piso {h.piso}</p>
       </div>
 
@@ -99,11 +98,11 @@ export function HabitacionCard({ h, onEdit, onView }) {
 
       {/* Acciones */}
       <div className="px-4 py-2 flex items-center gap-0.5" style={{ borderTop: '1px solid var(--color-border)' }}>
-        <button onClick={() => onView(h)} className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded cursor-pointer transition-colors" style={{ color: 'var(--color-stone-text)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-fg)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}>
+        <button onClick={() => onView(h)} className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded-md cursor-pointer transition-all" style={{ color: 'var(--color-stone-text)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-fg)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}>
           <IconEye /> Ver
         </button>
         <div className="w-px h-3.5 mx-0.5 shrink-0" style={{ backgroundColor: 'var(--color-border-strong)' }} />
-        <button onClick={() => onEdit(h)} className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded cursor-pointer transition-colors" style={{ color: 'var(--color-stone-text)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-brand)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}>
+        <button onClick={() => onEdit(h)} className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded-md cursor-pointer transition-all" style={{ color: 'var(--color-stone-text)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-brand)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}>
           <IconEdit /> Editar
         </button>
       </div>

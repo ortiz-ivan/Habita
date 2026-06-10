@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import MainLayout from './layouts/MainLayout'
 import ProtectedRoute from './routes/ProtectedRoute'
 import { SkeletonGrid } from './components/ui/Skeleton'
+import { ToastContainer } from './components/ui/Toast'
 
 const DashboardPage    = lazy(() => import('./pages/DashboardPage'))
 const HabitacionesPage = lazy(() => import('./pages/HabitacionesPage'))
@@ -19,6 +20,7 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <ToastContainer />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />

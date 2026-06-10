@@ -14,7 +14,7 @@ export function PageHeader({ subtitle, actionLabel, onAction }) {
         : <div />
       }
       {actionLabel && (
-        <Button onClick={onAction} className="shrink-0 px-5">
+        <Button onClick={onAction} className="shrink-0 px-7 py-5">
           <IconPlus />
           {actionLabel}
         </Button>

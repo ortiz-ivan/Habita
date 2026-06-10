@@ -1,8 +1,19 @@
 const variants = {
   primary: {
-    base:  { backgroundColor: 'var(--color-brand)', color: '#FFFFFF' },
-    hover: { backgroundColor: 'var(--color-brand-hover)' },
-    leave: { backgroundColor: 'var(--color-brand)' },
+    base:  {
+      background: 'linear-gradient(135deg, var(--color-brand) 0%, #C9522E 100%)',
+      color: '#FFFFFF',
+      boxShadow: '0 2px 8px rgba(224,97,58,0.28)',
+      border: 'none',
+    },
+    hover: {
+      boxShadow: '0 4px 16px rgba(224,97,58,0.44)',
+      transform: 'translateY(-1px)',
+    },
+    leave: {
+      boxShadow: '0 2px 8px rgba(224,97,58,0.28)',
+      transform: 'translateY(0)',
+    },
   },
   ghost: {
     base:  { border: '1px solid var(--color-border-strong)', color: 'var(--color-stone-text)', backgroundColor: 'transparent' },
@@ -30,7 +41,7 @@ export function Button({ variant = 'primary', size = 'md', className = '', child
   const v = variants[variant]
   return (
     <button
-      className={`flex items-center justify-center gap-1.5 rounded font-semibold cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${sizes[size]} ${className}`}
+      className={`flex items-center justify-center gap-1.5 rounded-md font-semibold cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed ${sizes[size]} ${className}`}
       style={v.base}
       onMouseEnter={(e) => { if (!disabled) Object.assign(e.currentTarget.style, v.hover) }}
       onMouseLeave={(e) => { if (!disabled) Object.assign(e.currentTarget.style, v.leave) }}

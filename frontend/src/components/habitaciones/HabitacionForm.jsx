@@ -4,7 +4,7 @@ import { MoneyInput } from '../ui/MoneyInput'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Switch } from '../ui/Switch'
-import { FormField, FormSection, FormFooter, inputClass, selectClass } from '../ui/ModalParts'
+import { FormField, FormSection, FormFooter, inputClass, SelectInput } from '../ui/ModalParts'
 import { useTiposHabitacion } from '../../hooks/queries/useHabitaciones'
 
 const schema = z.object({
@@ -54,12 +54,12 @@ export default function HabitacionForm({ defaultValues, onSubmit, onCancel, isLo
       {/* Tipo opcional */}
       <FormSection label="Tipo de habitación">
         <FormField label="Tipo (opcional)">
-          <select value={selectedTipoId} onChange={handleTipoChange} className={selectClass}>
+          <SelectInput value={selectedTipoId} onChange={handleTipoChange}>
             <option value="">Sin tipo / manual</option>
             {tipos.map((t) => (
               <option key={t.id} value={t.id}>{t.nombre}</option>
             ))}
-          </select>
+          </SelectInput>
         </FormField>
         {selectedTipo && (
           <div className="flex flex-wrap gap-2">
@@ -102,12 +102,12 @@ export default function HabitacionForm({ defaultValues, onSubmit, onCancel, isLo
 
       <FormSection label="Configuración">
         <FormField label="Estado" error={errors.estado}>
-          <select {...register('estado')} className={selectClass}>
+          <SelectInput {...register('estado')}>
             <option value="disponible">Disponible</option>
             <option value="ocupada">Ocupada</option>
             <option value="reservada">Reservada</option>
             <option value="mantenimiento">Mantenimiento</option>
-          </select>
+          </SelectInput>
         </FormField>
         <Controller
           name="tiene_banio_privado"

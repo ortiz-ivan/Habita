@@ -15,8 +15,9 @@ import { Pagination } from '../components/ui/Pagination'
 import { estadoConfig, estadoPills } from '../lib/constants/habitaciones'
 import { TiposModal } from '../components/habitaciones/TiposModal'
 import { BulkCreateModal } from '../components/habitaciones/BulkCreateModal'
+import { SelectInput } from '../components/ui/ModalParts'
 
-const inpFilter = 'border border-border-strong rounded px-3 py-2 text-sm bg-surface-1 focus:outline-none focus:ring-2 focus:ring-brand text-stone-dark transition-all'
+const inpFilter = 'border border-border-strong rounded-lg px-3 py-2 text-[13px] bg-surface-2 text-stone-dark placeholder:text-[#55554f] focus:outline-none focus:ring-[3px] focus:ring-brand/15 focus:border-brand transition-all'
 
 function KpiCard({ label, value, dot, color, isLoading, onClick, active }) {
   const base   = { backgroundColor: 'var(--color-surface-1)', borderColor: 'var(--color-border)' }
@@ -159,12 +160,12 @@ export default function HabitacionesPage() {
             />
           </div>
 
-          <select value={piso} onChange={(e) => setPiso(e.target.value)} className={inpFilter}>
+          <SelectInput value={piso} onChange={(e) => setPiso(e.target.value)} className={inpFilter}>
             <option value="">Todos los pisos</option>
             {pisosOpciones.map((p) => (
               <option key={p} value={String(p)}>Piso {p}</option>
             ))}
-          </select>
+          </SelectInput>
 
           <div className="w-px h-5 self-center shrink-0" style={{ backgroundColor: 'var(--color-border-strong)' }} />
 

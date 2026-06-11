@@ -1,7 +1,28 @@
 import { Button } from './Button'
 
 export const inputClass = 'w-full border border-border-strong rounded-lg px-4 py-3 text-[14px] bg-surface-2 text-stone-dark placeholder:text-[#55554f] focus:outline-none focus:ring-[3px] focus:ring-brand/15 focus:border-brand transition-all'
-export const selectClass = `${inputClass} cursor-pointer`
+export const selectClass = `${inputClass} appearance-none cursor-pointer pr-10`
+
+const Chevron = () => (
+  <svg
+    className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none shrink-0"
+    style={{ color: 'var(--color-stone-text)' }}
+    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+  </svg>
+)
+
+export function SelectInput({ className, wrapperClassName = '', children, ...props }) {
+  return (
+    <div className={`relative ${wrapperClassName}`}>
+      <select className={`${className ?? selectClass} appearance-none cursor-pointer pr-10`} {...props}>
+        {children}
+      </select>
+      <Chevron />
+    </div>
+  )
+}
 
 export function FormField({ label, error, children }) {
   return (

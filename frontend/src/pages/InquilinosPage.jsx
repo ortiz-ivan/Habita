@@ -14,7 +14,7 @@ import { Chip } from '../components/ui/Chip'
 import { useInquilinosList, useInquilinosSummary, useCreateInquilino, useUpdateInquilino, useDeleteInquilino } from '../hooks/queries/useInquilinos'
 import { Pagination } from '../components/ui/Pagination'
 
-const inpFilter = 'border border-border-strong rounded px-3 py-2 text-sm bg-surface-1 focus:outline-none focus:ring-2 focus:ring-brand text-stone-dark transition-all'
+const inpFilter = 'border border-border-strong rounded-lg px-3 py-2 text-[13px] bg-surface-2 text-stone-dark placeholder:text-[#55554f] focus:outline-none focus:ring-[3px] focus:ring-brand/15 focus:border-brand transition-all'
 
 export default function InquilinosPage() {
   const [modalOpen, setModalOpen]       = useState(false)

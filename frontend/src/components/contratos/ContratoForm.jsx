@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useHabitacionesSelect, useCreateHabitacion } from '../../hooks/queries/useHabitaciones'
 import { useInquilinosSelect, useCreateInquilino } from '../../hooks/queries/useInquilinos'
 import { useContratosSummary } from '../../hooks/queries/useContratos'
-import { FormField, FormSection, FormFooter, inputClass, selectClass } from '../ui/ModalParts'
+import { FormField, FormSection, FormFooter, inputClass, SelectInput } from '../ui/ModalParts'
 import { MoneyInput } from '../ui/MoneyInput'
 import { Modal } from '../ui/Modal'
 import HabitacionForm from '../habitaciones/HabitacionForm'
@@ -98,14 +98,14 @@ export default function ContratoForm({ defaultValues, onSubmit, onCancel, isLoad
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Habitación" error={errors.habitacion}>
               <div className="flex items-center gap-2">
-                <select {...register('habitacion')} className={`${selectClass} min-w-0 flex-1`}>
+                <SelectInput {...register('habitacion')} wrapperClassName="min-w-0 flex-1">
                   <option value="">Seleccionar...</option>
                   {habitaciones?.map((h) => (
                     <option key={h.id} value={h.id}>
                       {h.numero} — Piso {h.piso} ({h.estado})
                     </option>
                   ))}
-                </select>
+                </SelectInput>
                 <button
                   type="button"
                   title="Nueva habitación"
@@ -121,14 +121,14 @@ export default function ContratoForm({ defaultValues, onSubmit, onCancel, isLoad
             </FormField>
             <FormField label="Inquilino" error={errors.inquilino}>
               <div className="flex items-center gap-2">
-                <select {...register('inquilino')} className={`${selectClass} min-w-0 flex-1`}>
+                <SelectInput {...register('inquilino')} wrapperClassName="min-w-0 flex-1">
                   <option value="">Seleccionar...</option>
                   {inquilinos?.map((i) => (
                     <option key={i.id} value={i.id}>
                       {i.apellido}, {i.nombre}
                     </option>
                   ))}
-                </select>
+                </SelectInput>
                 <button
                   type="button"
                   title="Nuevo inquilino"
@@ -189,12 +189,12 @@ export default function ContratoForm({ defaultValues, onSubmit, onCancel, isLoad
             </div>
           )}
           <FormField label="Estado" error={errors.estado}>
-            <select {...register('estado')} className={selectClass}>
+            <SelectInput {...register('estado')}>
               <option value="activo">Activo</option>
               <option value="finalizado">Finalizado</option>
               <option value="cancelado">Cancelado</option>
               <option value="moroso">Moroso</option>
-            </select>
+            </SelectInput>
           </FormField>
         </FormSection>
 

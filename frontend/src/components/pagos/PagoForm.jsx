@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { formatGs } from '../../utils/format'
 import { useContratosSelect } from '../../hooks/queries/useContratos'
 import { pagosService } from '../../services/pagosService'
-import { FormField, FormSection, FormFooter, inputClass, selectClass } from '../ui/ModalParts'
+import { FormField, FormSection, FormFooter, inputClass, SelectInput } from '../ui/ModalParts'
 import { MoneyInput } from '../ui/MoneyInput'
 
 const schema = z.object({
@@ -21,11 +21,12 @@ const schema = z.object({
 const NEW_DEFAULTS = { metodo_pago: 'efectivo', estado: 'pagado', observacion: '' }
 
 export default function PagoForm({ defaultValues, onSubmit, onCancel, isLoading, apiError }) {
+  const today = new Date().toISOString().slice(0, 10)
   const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultValues
       ? { ...NEW_DEFAULTS, ...defaultValues, contrato: defaultValues.contrato?.id ?? defaultValues.contrato }
-      : NEW_DEFAULTS,
+      : { ...NEW_DEFAULTS, fecha_pago: today },
   })
 
   const { data: contratos } = useContratosSelect()
@@ -57,14 +58,14 @@ export default function PagoForm({ defaultValues, onSubmit, onCancel, isLoading,
 
       <FormSection label="Contrato">
         <FormField label="Contrato" error={errors.contrato}>
-          <select {...register('contrato')} className={selectClass}>
+          <SelectInput {...register('contrato')}>
             <option value="">Seleccionar...</option>
             {contratos?.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.id} — {c.inquilino.apellido}, {c.inquilino.nombre} / Hab. {c.habitacion.numero} ({formatGs(c.monto_mensual)})
               </option>
             ))}
-          </select>
+          </SelectInput>
         </FormField>
       </FormSection>
 
@@ -79,20 +80,20 @@ export default function PagoForm({ defaultValues, onSubmit, onCancel, isLoading,
         </div>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Método de pago" error={errors.metodo_pago}>
-            <select {...register('metodo_pago')} className={selectClass}>
+            <SelectInput {...register('metodo_pago')}>
               <option value="efectivo">Efectivo</option>
               <option value="transferencia">Transferencia</option>
               <option value="tarjeta">Tarjeta</option>
               <option value="qr">QR</option>
-            </select>
+            </SelectInput>
           </FormField>
           <FormField label="Estado" error={errors.estado}>
-            <select {...register('estado')} className={selectClass}>
+            <SelectInput {...register('estado')}>
               <option value="pagado">Pagado</option>
               <option value="pendiente">Pendiente</option>
               <option value="parcial">Parcial</option>
               <option value="vencido">Vencido</option>
-            </select>
+            </SelectInput>
           </FormField>
         </div>
       </FormSection>

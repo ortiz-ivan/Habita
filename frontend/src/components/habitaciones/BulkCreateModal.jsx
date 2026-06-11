@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
-import { FormField, FormSection, inputClass, selectClass } from '../ui/ModalParts'
+import { FormField, FormSection, inputClass, SelectInput } from '../ui/ModalParts'
 import { useTiposHabitacion, useBulkCreateHabitaciones } from '../../hooks/queries/useHabitaciones'
 
 const schema = z.object({
@@ -95,12 +95,12 @@ export function BulkCreateModal({ isOpen, onClose }) {
 
           <FormSection label="Tipo de habitación">
             <FormField label="Tipo" error={errors.tipo_id}>
-              <select {...register('tipo_id')} className={selectClass}>
+              <SelectInput {...register('tipo_id')}>
                 <option value="">Seleccioná un tipo…</option>
                 {tipos.map((t) => (
                   <option key={t.id} value={t.id}>{t.nombre}</option>
                 ))}
-              </select>
+              </SelectInput>
             </FormField>
             {selectedTipo && (
               <div className="flex flex-wrap gap-2">

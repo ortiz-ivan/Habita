@@ -14,9 +14,10 @@ import { Chip } from '../components/ui/Chip'
 import { usePagosList, usePagosSummary, useCreatePago, useUpdatePago, useDeletePago } from '../hooks/queries/usePagos'
 import { useContratosSelect } from '../hooks/queries/useContratos'
 import { Pagination } from '../components/ui/Pagination'
+import { SelectInput } from '../components/ui/ModalParts'
 import { estadoConfig, estadoPills, periodoPills, metodoLabel, periodoLabel, getPeriodoFechas } from '../lib/constants/pagos'
 
-const inpFilter = 'border border-border-strong rounded px-3 py-2 text-sm bg-surface-1 focus:outline-none focus:ring-2 focus:ring-brand text-stone-dark transition-all'
+const inpFilter = 'border border-border-strong rounded-lg px-3 py-2 text-[13px] bg-surface-2 text-stone-dark placeholder:text-[#55554f] focus:outline-none focus:ring-[3px] focus:ring-brand/15 focus:border-brand transition-all'
 
 function KpiCard({ label, value, dot, color, isLoading, onClick, active }) {
   const base    = { backgroundColor: 'var(--color-surface-1)', borderColor: 'var(--color-border)' }
@@ -155,22 +156,22 @@ export default function PagosPage() {
             />
           </div>
 
-          <select value={contratoId} onChange={(e) => setContratoId(e.target.value)} className={inpFilter}>
+          <SelectInput value={contratoId} onChange={(e) => setContratoId(e.target.value)} className={inpFilter}>
             <option value="">Todos los contratos</option>
             {contratos?.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.inquilino.apellido}, {c.inquilino.nombre} · Hab. {c.habitacion.numero}
               </option>
             ))}
-          </select>
+          </SelectInput>
 
-          <select value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className={inpFilter}>
+          <SelectInput value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className={inpFilter}>
             <option value="">Todos los métodos</option>
             <option value="efectivo">Efectivo</option>
             <option value="transferencia">Transferencia</option>
             <option value="tarjeta">Tarjeta</option>
             <option value="qr">QR</option>
-          </select>
+          </SelectInput>
 
           <div className="w-px h-5 self-center shrink-0" style={{ backgroundColor: 'var(--color-border-strong)' }} />
 

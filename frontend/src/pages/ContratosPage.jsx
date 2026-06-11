@@ -18,7 +18,7 @@ import { useContratosList, useContratosSummary, useCreateContrato, useUpdateCont
 import { Pagination } from '../components/ui/Pagination'
 import { estadoConfig, estadoPills } from '../lib/constants/contratos'
 
-const inpFilter = 'border border-border-strong rounded px-3 py-2 text-sm bg-surface-1 focus:outline-none focus:ring-2 focus:ring-brand text-stone-dark transition-all'
+const inpFilter = 'border border-border-strong rounded-lg px-3 py-2 text-[13px] bg-surface-2 text-stone-dark placeholder:text-[#55554f] focus:outline-none focus:ring-[3px] focus:ring-brand/15 focus:border-brand transition-all'
 
 function KpiCard({ label, value, dot, color, isLoading, onClick, active }) {
   const base    = { backgroundColor: 'var(--color-surface-1)', borderColor: 'var(--color-border)' }

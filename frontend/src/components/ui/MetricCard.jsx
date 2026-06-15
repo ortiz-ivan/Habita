@@ -137,14 +137,16 @@ export function MetricCard({ label, value, color = 'default', icon, progress, sp
         {delta && (
           <span
             className="inline-flex items-center gap-[3px] text-[12px] font-semibold px-2 py-1 rounded-full"
-            style={{
-              background: delta.up ? 'var(--color-green-soft)' : 'var(--color-red-soft)',
-              color: delta.up ? 'var(--color-green-text)' : 'var(--color-red-text)',
-            }}
+            style={delta.neutral
+              ? { background: 'var(--color-surface-2)', color: 'var(--color-stone-text)', border: '1px solid var(--color-border)' }
+              : { background: delta.up ? 'var(--color-green-soft)' : 'var(--color-red-soft)', color: delta.up ? 'var(--color-green-text)' : 'var(--color-red-text)' }
+            }
           >
-            <span style={{ display: 'inline-flex', transform: delta.up ? 'none' : 'scaleY(-1)' }}>
-              <IconTrendUp />
-            </span>
+            {!delta.neutral && (
+              <span style={{ display: 'inline-flex', transform: delta.up ? 'none' : 'scaleY(-1)' }}>
+                <IconTrendUp />
+              </span>
+            )}
             {delta.value}
           </span>
         )}

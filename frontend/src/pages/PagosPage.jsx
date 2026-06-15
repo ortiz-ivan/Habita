@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { parseApiError } from '../utils/format'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -16,6 +17,8 @@ import { useContratosSelect } from '../hooks/queries/useContratos'
 import { Pagination } from '../components/ui/Pagination'
 import { SelectInput } from '../components/ui/ModalParts'
 import { estadoConfig, estadoPills, periodoPills, metodoLabel, periodoLabel, getPeriodoFechas } from '../lib/constants/pagos'
+import { pagosService } from '../services/pagosService'
+import { queryKeys } from '../lib/queryKeys'
 
 const inpFilter = 'border border-border-strong rounded-lg px-3 py-2 text-[13px] bg-surface-2 text-stone-dark placeholder:text-[#55554f] focus:outline-none focus:ring-[3px] focus:ring-brand/15 focus:border-brand transition-all'
 
@@ -46,11 +49,14 @@ function KpiCard({ label, value, dot, color, isLoading, onClick, active }) {
 }
 
 export default function PagosPage() {
-  const [modalOpen, setModalOpen]       = useState(false)
-  const [editTarget, setEditTarget]     = useState(null)
-  const [viewTarget, setViewTarget]     = useState(null)
-  const [deleteTarget, setDeleteTarget] = useState(null)
-  const [apiError, setApiError]         = useState('')
+  const [modalOpen, setModalOpen]         = useState(false)
+  const [editTarget, setEditTarget]       = useState(null)
+  const [isCobrarMode, setIsCobrarMode]   = useState(false)
+  const [garantiaPagoId, setGarantiaPagoId] = useState(null)
+  const [viewTarget, setViewTarget]       = useState(null)
+  const [deleteTarget, setDeleteTarget]   = useState(null)
+  const [apiError, setApiError]           = useState('')
+  const qc = useQueryClient()
 
   const [search, setSearch]         = useState('')
   const [estado, setEstado]         = useState('')
@@ -88,10 +94,7 @@ export default function PagosPage() {
     parcial:   allResults.filter(p => p.estado === 'parcial').length,
   }
 
-  const createMutation = useCreatePago({
-    onSuccess: () => setModalOpen(false),
-    onError:   (err) => setApiError(parseApiError(err)),
-  })
+  const createMutation = useCreatePago({ onError: (err) => setApiError(parseApiError(err)) })
 
   const updateMutation = useUpdatePago({
     onSuccess: () => setModalOpen(false),
@@ -103,13 +106,47 @@ export default function PagosPage() {
     onError:   (err) => { setDeleteTarget(null); alert(parseApiError(err)) },
   })
 
-  const openCreate = () => { setEditTarget(null); setApiError(''); setModalOpen(true) }
-  const openEdit   = (p) => { setEditTarget(p);   setApiError(''); setViewTarget(null); setModalOpen(true) }
+  const openCreate = () => {
+    setEditTarget(null); setGarantiaPagoId(null)
+    setIsCobrarMode(false); setApiError(''); setModalOpen(true)
+  }
+  const openEdit = (p) => {
+    setEditTarget(p); setGarantiaPagoId(null)
+    setIsCobrarMode(false); setApiError(''); setViewTarget(null); setModalOpen(true)
+  }
+  const openCobrar = (p) => {
+    const today = new Date().toISOString().slice(0, 10)
+    if (p.tipo === 'garantia') {
+      // Crear un nuevo pago de alquiler (auto-fill calculará monto_mensual + garantía)
+      setEditTarget({ contrato: p.contrato?.id, fecha_pago: today })
+      setGarantiaPagoId(p.id)
+    } else {
+      setEditTarget({ ...p, estado: 'pagado' })
+      setGarantiaPagoId(null)
+    }
+    setIsCobrarMode(true); setApiError(''); setViewTarget(null); setModalOpen(true)
+  }
 
   const handleSubmit = (data) => {
     setApiError('')
-    if (editTarget) updateMutation.mutate({ id: editTarget.id, data })
-    else            createMutation.mutate(data)
+    if (editTarget?.id) {
+      updateMutation.mutate({ id: editTarget.id, data })
+    } else {
+      const gId = garantiaPagoId
+      createMutation.mutate(data, {
+        onSuccess: async () => {
+          if (gId) {
+            try {
+              await pagosService.update(gId, { estado: 'pagado' })
+            } finally {
+              qc.invalidateQueries({ queryKey: queryKeys.pagos.all() })
+              qc.invalidateQueries({ queryKey: queryKeys.pagos.resumen() })
+            }
+          }
+          setModalOpen(false)
+        },
+      })
+    }
   }
 
   const isSaving   = createMutation.isPending || updateMutation.isPending
@@ -275,7 +312,7 @@ export default function PagosPage() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
             {data.results.map((p) => (
-              <PagoCard key={p.id} p={p} onEdit={openEdit} onView={setViewTarget} />
+              <PagoCard key={p.id} p={p} onEdit={openEdit} onView={setViewTarget} onCobrar={openCobrar} />
             ))}
           </div>
           <Pagination count={data.count} page={page} onChange={setPage} />
@@ -292,7 +329,7 @@ export default function PagosPage() {
         )}
       </Modal>
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editTarget ? 'Editar pago' : 'Registrar pago'} size="lg">
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={isCobrarMode ? 'Registrar cobro' : editTarget ? 'Editar pago' : 'Registrar pago'} size="lg">
         <PagoForm
           key={editTarget?.id ?? 'new'}
           defaultValues={editTarget}

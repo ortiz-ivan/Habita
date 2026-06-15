@@ -51,9 +51,9 @@ export default function ContratoForm({ defaultValues, onSubmit, onCancel, isLoad
         })(),
   })
 
-  const { data: allHabitaciones } = useHabitacionesSelect()
-  const { data: allInquilinos }   = useInquilinosSelect()
-  const { data: contratosData }   = useContratosSummary()
+  const { data: allHabitaciones }                        = useHabitacionesSelect()
+  const { data: allInquilinos }                          = useInquilinosSelect()
+  const { data: contratosData, isLoading: loadingContratos } = useContratosSummary()
 
   const currentHabId  = defaultValues?.habitacion?.id ?? defaultValues?.habitacion
   const currentInqId  = defaultValues?.inquilino?.id  ?? defaultValues?.inquilino
@@ -61,11 +61,13 @@ export default function ContratoForm({ defaultValues, onSubmit, onCancel, isLoad
   const habitaciones  = allHabitaciones?.filter(h => h.estado !== 'ocupada' || h.id === currentHabId)
 
   const occupiedInqIds = new Set(
-    contratosData?.results
-      ?.filter(c => (c.estado === 'activo' || c.estado === 'moroso') && c.id !== defaultValues?.id)
-      ?.map(c => c.inquilino?.id ?? c.inquilino)
+    (contratosData?.results ?? [])
+      .filter(c => (c.estado === 'activo' || c.estado === 'moroso') && c.id !== defaultValues?.id)
+      .map(c => c.inquilino?.id ?? c.inquilino)
   )
-  const inquilinos = allInquilinos?.filter(i => !occupiedInqIds.has(i.id) || i.id === currentInqId)
+  const inquilinos = loadingContratos
+    ? []
+    : allInquilinos?.filter(i => !occupiedInqIds.has(i.id) || i.id === currentInqId)
 
   const habitacionId = watch('habitacion')
   useEffect(() => {
@@ -121,8 +123,8 @@ export default function ContratoForm({ defaultValues, onSubmit, onCancel, isLoad
             </FormField>
             <FormField label="Inquilino" error={errors.inquilino}>
               <div className="flex items-center gap-2">
-                <SelectInput {...register('inquilino')} wrapperClassName="min-w-0 flex-1">
-                  <option value="">Seleccionar...</option>
+                <SelectInput {...register('inquilino')} wrapperClassName="min-w-0 flex-1" disabled={loadingContratos}>
+                  <option value="">{loadingContratos ? 'Cargando...' : 'Seleccionar...'}</option>
                   {inquilinos?.map((i) => (
                     <option key={i.id} value={i.id}>
                       {i.apellido}, {i.nombre}

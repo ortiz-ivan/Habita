@@ -25,7 +25,7 @@ const IconEdit = () => (
   </svg>
 )
 
-export function PagoCard({ p, onEdit, onView }) {
+export function PagoCard({ p, onEdit, onView, onCobrar }) {
   const cfg = estadoConfig[p.estado] ?? { label: p.estado, dot: 'var(--color-stone-text)', bg: 'var(--color-surface-2)', text: 'var(--color-stone-text)' }
   const met = metodoStyle[p.metodo_pago] ?? metodoStyle.efectivo
 
@@ -78,6 +78,20 @@ export function PagoCard({ p, onEdit, onView }) {
         <button onClick={() => onEdit(p)} className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded cursor-pointer transition-colors" style={{ color: 'var(--color-stone-text)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-brand)' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-stone-text)' }}>
           <IconEdit /> Editar
         </button>
+        {p.estado !== 'pagado' && onCobrar && (
+          <>
+            <div className="w-px h-3.5 mx-0.5 shrink-0" style={{ backgroundColor: 'var(--color-border-strong)' }} />
+            <button
+              onClick={() => onCobrar(p)}
+              className="flex items-center gap-1.5 text-[12px] font-bold px-2.5 py-1.5 rounded cursor-pointer transition-all"
+              style={{ color: '#fff', background: 'linear-gradient(135deg, var(--color-brand) 0%, #C9522E 100%)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85' }}
+              onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+            >
+              Cobrar
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

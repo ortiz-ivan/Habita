@@ -27,7 +27,7 @@ class ContratoBriefSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Contrato
-        fields = ['id', 'inquilino_nombre', 'habitacion_numero', 'estado']
+        fields = ['id', 'inquilino_nombre', 'habitacion_numero', 'estado', 'monto_mensual']
 
 
 class PagoReadSerializer(serializers.ModelSerializer):

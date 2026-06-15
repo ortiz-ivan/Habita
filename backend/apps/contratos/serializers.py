@@ -43,18 +43,28 @@ class ContratoWriteSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         habitacion = data.get('habitacion', getattr(self.instance, 'habitacion', None))
-        estado = data.get('estado', getattr(self.instance, 'estado', 'activo'))
+        inquilino  = data.get('inquilino',  getattr(self.instance, 'inquilino',  None))
+        estado     = data.get('estado',     getattr(self.instance, 'estado', 'activo'))
 
-        if habitacion and estado in ESTADOS_ACTIVOS:
-            qs = Contrato.objects.filter(
-                habitacion=habitacion,
-                estado__in=ESTADOS_ACTIVOS,
-            )
-            if self.instance:
-                qs = qs.exclude(pk=self.instance.pk)
-            if qs.exists():
-                raise serializers.ValidationError(
-                    {'habitacion': 'Esta habitación ya tiene un contrato activo.'}
-                )
+        if estado in ESTADOS_ACTIVOS:
+            if habitacion:
+                qs = Contrato.objects.filter(habitacion=habitacion, estado__in=ESTADOS_ACTIVOS)
+                if self.instance:
+                    qs = qs.exclude(pk=self.instance.pk)
+                conflicto = qs.first()
+                if conflicto:
+                    raise serializers.ValidationError(
+                        {'habitacion': f'Esta habitación ya tiene un contrato activo (ID #{conflicto.pk} con {conflicto.inquilino}). Finalizá ese contrato primero.'}
+                    )
+
+            if inquilino:
+                qs = Contrato.objects.filter(inquilino=inquilino, estado__in=ESTADOS_ACTIVOS)
+                if self.instance:
+                    qs = qs.exclude(pk=self.instance.pk)
+                conflicto = qs.first()
+                if conflicto:
+                    raise serializers.ValidationError(
+                        {'inquilino': f'Este inquilino ya tiene un contrato activo (ID #{conflicto.pk}). Finalizá ese contrato primero.'}
+                    )
 
         return data

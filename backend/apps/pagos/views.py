@@ -45,9 +45,14 @@ class PagoViewSet(ModelViewSet):
             fecha_pago__lte=fin_mes_anterior,
         ).aggregate(t=Sum('monto'))['t'] or 0
 
-        monto_adeudado = Pago.objects.filter(
-            estado__in=['pendiente', 'vencido'],
-        ).aggregate(t=Sum('monto'))['t'] or 0
+        qs_adeudado = Pago.objects.filter(estado__in=['pendiente', 'vencido'])
+        fecha_desde = request.query_params.get('fecha_desde')
+        fecha_hasta = request.query_params.get('fecha_hasta')
+        if fecha_desde:
+            qs_adeudado = qs_adeudado.filter(fecha_pago__gte=fecha_desde)
+        if fecha_hasta:
+            qs_adeudado = qs_adeudado.filter(fecha_pago__lte=fecha_hasta)
+        monto_adeudado = qs_adeudado.aggregate(t=Sum('monto'))['t'] or 0
 
         return Response({
             'ingresos_mes':          ingresos_mes,

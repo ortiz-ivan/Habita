@@ -5,7 +5,7 @@ export const queryKeys = {
     pendientes:   () => ['pagos-pendientes'],
     vencidos:     () => ['pagos-vencidos'],
     vencidosCount:() => ['pagos-vencidos-count'],
-    dashboard:    (filter) => ['pagos-dashboard', filter],
+    dashboard:    (filter, fechaParams) => ['pagos-dashboard', filter, fechaParams ?? {}],
     resumen:      () => ['pagos-resumen'],
   },
   habitaciones: {

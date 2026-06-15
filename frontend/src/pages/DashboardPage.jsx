@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '../store/authStore'
 import { formatGs, formatDate, parseApiError } from '../utils/format'
 import { AlertBanner } from '../components/ui/AlertBanner'
@@ -19,7 +20,9 @@ import {
 } from '../components/ui/icons'
 import { useHabitacionesSummary } from '../hooks/queries/useHabitaciones'
 import { useContratosActivos } from '../hooks/queries/useContratos'
-import { usePagosVencidos, usePagosPendientes, usePagosDashboard, usePagosResumen, useCreatePago } from '../hooks/queries/usePagos'
+import { usePagosVencidos, usePagosPendientes, usePagosDashboard, usePagosResumen, useCreatePago, useUpdatePago } from '../hooks/queries/usePagos'
+import { pagosService } from '../services/pagosService'
+import { queryKeys } from '../lib/queryKeys'
 
 // ─── Configuraciones ────────────────────────────────────────────────────────
 
@@ -52,9 +55,9 @@ const contratosSerie = [7, 8, 8, 9, 9, 9]
 
 // ─── SectionLabel ────────────────────────────────────────────────────────────
 
-function SectionLabel({ label }) {
+function SectionLabel({ label, noMargin = false }) {
   return (
-    <div className="flex items-center gap-2.5 mb-5">
+    <div className={`flex items-center gap-2.5 ${noMargin ? '' : 'mb-5'}`}>
       <div style={{
         width: '3px',
         height: '14px',
@@ -81,6 +84,11 @@ function TenantRow({ pago, onCobrar }) {
   const initials = words.slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?'
   const { bg, text } = avatarByStatus[pago.estado] ?? avatarByStatus.sin_contrato
 
+  // Para garantías pendientes mostrar alquiler + cuota de garantía
+  const montoMostrar = pago.tipo === 'garantia' && pago.estado !== 'pagado'
+    ? (pago.contrato?.monto_mensual ?? 0) + pago.monto
+    : pago.monto
+
   return (
     <div
       className="flex items-center gap-3 px-5 py-3 transition-colors cursor-pointer"
@@ -106,7 +114,7 @@ function TenantRow({ pago, onCobrar }) {
         className="text-[14px] font-bold shrink-0"
         style={{ color: 'var(--color-fg)', letterSpacing: '-0.01em' }}
       >
-        {formatGs(pago.monto)}
+        {formatGs(montoMostrar)}
       </span>
       <div className="w-[92px] flex justify-end shrink-0">
         <PaymentStatusBadge status={pago.estado} />
@@ -142,6 +150,41 @@ function TenantRow({ pago, onCobrar }) {
 
 // ─── Página ──────────────────────────────────────────────────────────────────
 
+// ─── Helpers filtro período ──────────────────────────────────────────────────
+
+const PERIODO_LABELS = { hoy: 'Hoy', semana: 'Esta semana', mes: 'Este mes', '': 'Todo el tiempo' }
+
+function getPeriodoParams(periodo, rangoDesde, rangoHasta) {
+  const now = new Date()
+  const fmt = (d) => d.toISOString().slice(0, 10)
+
+  if (periodo === 'hoy') {
+    const t = fmt(now)
+    return { fecha_desde: t, fecha_hasta: t }
+  }
+  if (periodo === 'semana') {
+    const day = now.getDay()
+    const diffMon = day === 0 ? -6 : 1 - day
+    const mon = new Date(now); mon.setDate(now.getDate() + diffMon)
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6)
+    return { fecha_desde: fmt(mon), fecha_hasta: fmt(sun) }
+  }
+  if (periodo === 'mes') {
+    const first = new Date(now.getFullYear(), now.getMonth(), 1)
+    const last  = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    return { fecha_desde: fmt(first), fecha_hasta: fmt(last) }
+  }
+  if (periodo === 'rango') {
+    return {
+      fecha_desde: rangoDesde || undefined,
+      fecha_hasta: rangoHasta || undefined,
+    }
+  }
+  return {}
+}
+
+// ─── Página ──────────────────────────────────────────────────────────────────
+
 export default function DashboardPage() {
   const user     = useAuthStore((s) => s.user)
   const navigate = useNavigate()
@@ -149,18 +192,72 @@ export default function DashboardPage() {
   const [habPage, setHabPage] = useState(0)
   const [movPage, setMovPage] = useState(0)
 
-  // ── Modal cobrar ──────────────────────────────────────────────────────────
-  const [pagoModal, setPagoModal] = useState({ open: false, defaultValues: null })
-  const [pagoApiError, setPagoApiError] = useState('')
+  // ── Filtro período KPI ───────────────────────────────────────────────────
+  const [periodoKpi, setPeriodoKpi] = useState('mes')
+  const [rangoDesde, setRangoDesde] = useState('')
+  const [rangoHasta, setRangoHasta] = useState('')
+  const resumenParams = getPeriodoParams(periodoKpi, rangoDesde, rangoHasta)
 
-  const createPago = useCreatePago({
-    onSuccess: () => { setPagoModal({ open: false, defaultValues: null }); setPagoApiError('') },
-    onError:   (err) => setPagoApiError(parseApiError(err)),
-  })
+  // ── Modal cobrar ──────────────────────────────────────────────────────────
+  const [pagoModal, setPagoModal] = useState({ open: false, defaultValues: null, garantiaPagoId: null })
+  const [pagoApiError, setPagoApiError] = useState('')
+  const qc = useQueryClient()
+
+  const closeModal = () => {
+    setPagoModal({ open: false, defaultValues: null, garantiaPagoId: null })
+    setPagoApiError('')
+  }
+
+  const createPago = useCreatePago({ onError: (err) => setPagoApiError(parseApiError(err)) })
+  const updatePago = useUpdatePago({ onSuccess: closeModal, onError: (err) => setPagoApiError(parseApiError(err)) })
 
   const handleCobrar = (pago) => {
     setPagoApiError('')
-    setPagoModal({ open: true, defaultValues: { contrato: pago.contrato?.id } })
+    const today = new Date().toISOString().slice(0, 10)
+    if (pago.tipo === 'garantia') {
+      // Crear un nuevo pago de alquiler con monto_mensual + cuota de garantía
+      // La garantía se marca automáticamente como pagada al completar
+      setPagoModal({
+        open: true,
+        defaultValues: { contrato: pago.contrato?.id, fecha_pago: today },
+        garantiaPagoId: pago.id,
+      })
+    } else {
+      // Actualizar el pago de alquiler existente
+      setPagoModal({
+        open: true,
+        defaultValues: {
+          id:         pago.id,
+          contrato:   pago.contrato?.id,
+          monto:      pago.monto,
+          fecha_pago: today,
+          estado:     'pagado',
+        },
+        garantiaPagoId: null,
+      })
+    }
+  }
+
+  const handlePagoSubmit = (data) => {
+    if (pagoModal.defaultValues?.id) {
+      updatePago.mutate({ id: pagoModal.defaultValues.id, data })
+    } else {
+      const garantiaPagoId = pagoModal.garantiaPagoId
+      createPago.mutate(data, {
+        onSuccess: async () => {
+          if (garantiaPagoId) {
+            try {
+              await pagosService.update(garantiaPagoId, { estado: 'pagado' })
+            } finally {
+              qc.invalidateQueries({ queryKey: queryKeys.pagos.all() })
+              qc.invalidateQueries({ queryKey: queryKeys.pagos.resumen() })
+              qc.invalidateQueries({ queryKey: ['pagos-dashboard'] })
+            }
+          }
+          closeModal()
+        },
+      })
+    }
   }
 
   // ── Queries para métricas ─────────────────────────────────────────────────
@@ -168,8 +265,8 @@ export default function DashboardPage() {
   const { data: contratos }                            = useContratosActivos()
   const { data: pagosVencidos }                        = usePagosVencidos()
   const { data: pagosPendientes }                      = usePagosPendientes()
-  const { data: resumen }                              = usePagosResumen()
-  const { data: tenantData, isLoading: tenantLoading } = usePagosDashboard(tenantFilter)
+  const { data: resumen }                              = usePagosResumen(resumenParams)
+  const { data: tenantData, isLoading: tenantLoading } = usePagosDashboard(tenantFilter, resumenParams)
 
   // ── Métricas ──────────────────────────────────────────────────────────────
   const habs        = habitaciones?.results ?? []
@@ -264,7 +361,51 @@ export default function DashboardPage() {
 
 
       {/* Métricas */}
-      <SectionLabel label="Resumen" />
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-3">
+        <SectionLabel label="Resumen" noMargin />
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {[
+            { id: 'hoy',    label: 'Hoy' },
+            { id: 'semana', label: 'Esta semana' },
+            { id: 'mes',    label: 'Este mes' },
+            { id: '',       label: 'Todo' },
+            { id: 'rango',  label: 'Rango' },
+          ].map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setPeriodoKpi(p.id)}
+              className="text-[12px] px-3 py-1.5 rounded-full font-medium transition-colors cursor-pointer"
+              style={periodoKpi === p.id
+                ? { backgroundColor: 'var(--color-brand)', color: '#fff' }
+                : { backgroundColor: 'var(--color-surface-2)', color: 'var(--color-stone-text)', border: '1px solid var(--color-border)' }
+              }
+              onMouseEnter={(e) => { if (periodoKpi !== p.id) e.currentTarget.style.color = 'var(--color-fg)' }}
+              onMouseLeave={(e) => { if (periodoKpi !== p.id) e.currentTarget.style.color = 'var(--color-stone-text)' }}
+            >
+              {p.label}
+            </button>
+          ))}
+          {periodoKpi === 'rango' && (
+            <div className="flex items-center gap-1.5 ml-1">
+              <input
+                type="date"
+                value={rangoDesde}
+                onChange={(e) => setRangoDesde(e.target.value)}
+                className="text-[12px] px-2.5 py-1.5 rounded-lg"
+                style={{ backgroundColor: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-fg)' }}
+              />
+              <span className="text-[12px]" style={{ color: 'var(--color-stone-text)' }}>–</span>
+              <input
+                type="date"
+                value={rangoHasta}
+                onChange={(e) => setRangoHasta(e.target.value)}
+                className="text-[12px] px-2.5 py-1.5 rounded-lg"
+                style={{ backgroundColor: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-fg)' }}
+              />
+            </div>
+          )}
+        </div>
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
         <MetricCard
           label="Ingresos del mes"
@@ -278,7 +419,11 @@ export default function DashboardPage() {
           value={formatGs(montoAdeudado)}
           color={vencidosCount > 0 ? 'danger' : 'warning'}
           icon={<IconChart />}
-          delta={vencidosCount > 0 ? { value: `${vencidosCount} vencido${vencidosCount > 1 ? 's' : ''}`, up: false } : undefined}
+          delta={
+            vencidosCount > 0
+              ? { value: `${vencidosCount} vencido${vencidosCount > 1 ? 's' : ''}`, up: false }
+              : { value: PERIODO_LABELS[periodoKpi] ?? 'Rango personalizado', neutral: true }
+          }
         />
         <MetricCard
           label="Ocupación"
@@ -483,15 +628,15 @@ export default function DashboardPage() {
       {/* Modal — Cobrar pago rápido */}
       <Modal
         isOpen={pagoModal.open}
-        onClose={() => setPagoModal({ open: false, defaultValues: null })}
+        onClose={closeModal}
         title="Registrar pago"
         size="lg"
       >
         <PagoForm
           defaultValues={pagoModal.defaultValues}
-          onSubmit={(data) => createPago.mutate(data)}
-          onCancel={() => setPagoModal({ open: false, defaultValues: null })}
-          isLoading={createPago.isPending}
+          onSubmit={handlePagoSubmit}
+          onCancel={closeModal}
+          isLoading={createPago.isPending || updatePago.isPending}
           apiError={pagoApiError}
         />
       </Modal>

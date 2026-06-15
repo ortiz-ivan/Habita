@@ -8,7 +8,7 @@ function invalidatePagos(qc) {
   qc.invalidateQueries({ queryKey: queryKeys.pagos.vencidos() })
   qc.invalidateQueries({ queryKey: queryKeys.pagos.vencidosCount() })
   qc.invalidateQueries({ queryKey: ['pagos-dashboard'] })
-  qc.invalidateQueries({ queryKey: queryKeys.pagos.resumen() })
+  qc.invalidateQueries({ queryKey: ['pagos-resumen'] })
   // garantia_info se calcula en el serializer de contratos, invalidar también
   qc.invalidateQueries({ queryKey: queryKeys.contratos.all() })
   qc.invalidateQueries({ queryKey: queryKeys.contratos.activos() })
@@ -53,21 +53,21 @@ export function usePagosVencidosCount() {
   })
 }
 
-export function usePagosDashboard(filter) {
+export function usePagosDashboard(filter, fechaParams = {}) {
   return useQuery({
-    queryKey: queryKeys.pagos.dashboard(filter),
+    queryKey: queryKeys.pagos.dashboard(filter, fechaParams),
     queryFn:  () => {
-      const params = { page_size: 5 }
+      const params = { page_size: 20, ...fechaParams }
       if (filter !== 'all') params.estado = filter
       return pagosService.list(params)
     },
   })
 }
 
-export function usePagosResumen() {
+export function usePagosResumen(params = {}) {
   return useQuery({
-    queryKey: queryKeys.pagos.resumen(),
-    queryFn:  pagosService.resumen,
+    queryKey: ['pagos-resumen', params],
+    queryFn:  () => pagosService.resumen(params),
   })
 }
 

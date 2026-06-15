@@ -6,12 +6,14 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from apps.auditoria.mixins import AuditMixin
 from .models import Pago
 from .serializers import PagoReadSerializer, PagoWriteSerializer
 from .filters import PagoFilter
 
 
-class PagoViewSet(ModelViewSet):
+class PagoViewSet(AuditMixin, ModelViewSet):
+    audit_recurso = 'pago'
     queryset = Pago.objects.select_related(
         'contrato', 'contrato__habitacion', 'contrato__inquilino'
     ).all()

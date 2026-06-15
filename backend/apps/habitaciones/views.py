@@ -7,12 +7,14 @@ from rest_framework import status as drf_status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Prefetch
+from apps.auditoria.mixins import AuditMixin
 from apps.contratos.models import Contrato
 from .models import Habitacion, TipoHabitacion
 from .serializers import HabitacionSerializer, TipoHabitacionSerializer
 
 
-class TipoHabitacionViewSet(ModelViewSet):
+class TipoHabitacionViewSet(AuditMixin, ModelViewSet):
+    audit_recurso    = 'tipo_habitacion'
     queryset         = TipoHabitacion.objects.annotate(habitaciones_count=Count('habitaciones'))
     serializer_class = TipoHabitacionSerializer
     ordering         = ['nombre']
@@ -29,7 +31,8 @@ class TipoHabitacionViewSet(ModelViewSet):
         return Response({'updated': count})
 
 
-class HabitacionViewSet(ModelViewSet):
+class HabitacionViewSet(AuditMixin, ModelViewSet):
+    audit_recurso = 'habitacion'
     queryset = Habitacion.objects.prefetch_related(
         Prefetch(
             'contratos',

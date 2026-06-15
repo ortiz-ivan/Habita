@@ -1,12 +1,15 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from apps.auditoria.mixins import AuditMixin
+from apps.auditoria.models import AuditLog
 from .models import Contrato
 from .serializers import ContratoReadSerializer, ContratoWriteSerializer
 from . import services
 
 
-class ContratoViewSet(ModelViewSet):
+class ContratoViewSet(AuditMixin, ModelViewSet):
+    audit_recurso = 'contrato'
     queryset = Contrato.objects.select_related('habitacion', 'inquilino').prefetch_related('pagos').all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['estado', 'habitacion', 'inquilino']
@@ -22,15 +25,19 @@ class ContratoViewSet(ModelViewSet):
     def perform_create(self, serializer):
         contrato = serializer.save()
         services.on_contrato_created(contrato)
+        self._log(AuditLog.Accion.CREAR, contrato.pk, str(contrato))
 
     def perform_update(self, serializer):
         habitacion_prev = serializer.instance.habitacion
         estado_prev = serializer.instance.estado
         contrato = serializer.save()
         services.on_contrato_updated(contrato, habitacion_prev, estado_prev)
+        self._log(AuditLog.Accion.EDITAR, contrato.pk, str(contrato))
 
     def perform_destroy(self, instance):
         habitacion = instance.habitacion
         estado = instance.estado
+        pk, desc = instance.pk, str(instance)
         instance.delete()
         services.on_contrato_deleted(habitacion, estado)
+        self._log(AuditLog.Accion.ELIMINAR, pk, desc)

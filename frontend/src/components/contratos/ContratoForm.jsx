@@ -16,7 +16,7 @@ const schema = z.object({
   habitacion:    z.coerce.number().int().min(1, 'Seleccioná una habitación'),
   inquilino:     z.coerce.number().int().min(1, 'Seleccioná un inquilino'),
   fecha_inicio:  z.string().min(1, 'Requerido'),
-  fecha_fin:     z.string().optional(),
+  fecha_fin:     z.string().min(1, 'Requerido'),
   monto_mensual: z.coerce.number().int().min(1, 'Requerido'),
   deposito:      z.coerce.number().int().min(0, 'Mínimo 0'),
   estado:        z.enum(['activo', 'finalizado', 'cancelado', 'moroso']),
@@ -152,7 +152,7 @@ export default function ContratoForm({ defaultValues, onSubmit, onCancel, isLoad
             <FormField label="Fecha inicio" error={errors.fecha_inicio}>
               <input {...register('fecha_inicio')} type="date" className={inputClass} />
             </FormField>
-            <FormField label="Fecha fin (opcional)" error={errors.fecha_fin}>
+            <FormField label="Fecha fin" error={errors.fecha_fin}>
               <input {...register('fecha_fin')} type="date" className={inputClass} />
             </FormField>
           </div>

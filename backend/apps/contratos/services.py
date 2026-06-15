@@ -20,8 +20,7 @@ def _sincronizar_habitacion(habitacion):
 
 @transaction.atomic
 def on_contrato_created(contrato):
-    if contrato.estado in ESTADOS_ACTIVOS:
-        _sincronizar_habitacion(contrato.habitacion)
+    _sincronizar_habitacion(contrato.habitacion)
 
 
 @transaction.atomic
@@ -34,6 +33,4 @@ def on_contrato_updated(contrato, habitacion_prev, estado_prev):
 
 @transaction.atomic
 def on_contrato_deleted(habitacion, estado):
-    # La instancia ya fue eliminada cuando se llama esto
-    if estado in ESTADOS_ACTIVOS:
-        _sincronizar_habitacion(habitacion)
+    _sincronizar_habitacion(habitacion)

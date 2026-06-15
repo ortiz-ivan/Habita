@@ -13,7 +13,7 @@ class Contrato(models.Model):
     habitacion = models.ForeignKey(Habitacion, on_delete=models.PROTECT, related_name='contratos')
     inquilino = models.ForeignKey(Inquilino, on_delete=models.PROTECT, related_name='contratos')
     fecha_inicio = models.DateField()
-    fecha_fin = models.DateField(null=True, blank=True)
+    fecha_fin = models.DateField()
     monto_mensual = models.PositiveIntegerField()
     deposito = models.PositiveIntegerField()
     estado = models.CharField(max_length=12, choices=Estado.choices, default=Estado.ACTIVO)

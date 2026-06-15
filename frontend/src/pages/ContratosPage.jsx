@@ -123,15 +123,18 @@ export default function ContratosPage() {
       createMutation.mutate(data, {
         onSuccess: (contrato) => {
           setModalOpen(false)
+          const promises = []
+
+          // Pagos de garantía (1, 2 o 3 cuotas)
           if (contrato.deposito > 0) {
             const total    = contrato.deposito
             const n        = cuotasGarantia
             const perCuota = Math.floor(total / n)
-            const base     = new Date(contrato.fecha_inicio)
-            const pagos    = Array.from({ length: n }, (_, i) => {
+            const base     = new Date(contrato.fecha_inicio + 'T12:00:00')
+            for (let i = 0; i < n; i++) {
               const fecha = new Date(base)
               fecha.setMonth(fecha.getMonth() + i)
-              return pagosService.create({
+              promises.push(pagosService.create({
                 contrato:    contrato.id,
                 tipo:        'garantia',
                 monto:       i === n - 1 ? total - perCuota * (n - 1) : perCuota,
@@ -139,9 +142,30 @@ export default function ContratosPage() {
                 metodo_pago: 'efectivo',
                 estado:      'pendiente',
                 observacion: n > 1 ? `Garantía — Cuota ${i + 1}/${n}` : 'Garantía',
-              })
-            })
-            Promise.all(pagos).then(() => {
+              }))
+            }
+          }
+
+          // Pagos de alquiler mensuales hasta fecha_fin
+          if (contrato.fecha_fin) {
+            const fin     = new Date(contrato.fecha_fin + 'T12:00:00')
+            const current = new Date(contrato.fecha_inicio + 'T12:00:00')
+            while (current < fin) {
+              promises.push(pagosService.create({
+                contrato:    contrato.id,
+                tipo:        'alquiler',
+                monto:       contrato.monto_mensual,
+                fecha_pago:  current.toISOString().slice(0, 10),
+                metodo_pago: 'efectivo',
+                estado:      'pendiente',
+                observacion: '',
+              }))
+              current.setMonth(current.getMonth() + 1)
+            }
+          }
+
+          if (promises.length > 0) {
+            Promise.all(promises).then(() => {
               qc.invalidateQueries({ queryKey: queryKeys.pagos.all() })
             })
           }

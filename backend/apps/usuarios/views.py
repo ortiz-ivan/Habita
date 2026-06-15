@@ -1,11 +1,13 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from apps.auditoria.mixins import AuditMixin
 from .models import Usuario
 from .serializers import UsuarioSerializer, UsuarioCreateSerializer
 
 
-class UsuarioViewSet(ModelViewSet):
+class UsuarioViewSet(AuditMixin, ModelViewSet):
+    audit_recurso = 'usuario'
     queryset = Usuario.objects.all()
     http_method_names = ['get', 'post', 'patch', 'delete']
 

@@ -8,6 +8,7 @@ class AuditLog(models.Model):
         EDITAR   = 'editar',   'Editar'
         ELIMINAR = 'eliminar', 'Eliminar'
         LOGIN    = 'login',    'Inicio de sesión'
+        LOGOUT   = 'logout',   'Cierre de sesión'
 
     usuario     = models.ForeignKey(
         settings.AUTH_USER_MODEL,

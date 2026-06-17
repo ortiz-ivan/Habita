@@ -1,10 +1,10 @@
 from django.urls import path, include
-from rest_framework_simplejwt.views import TokenRefreshView
-from config.throttling import ThrottledTokenObtainPairView
+from config.auth_views import CookieTokenObtainPairView, CookieTokenRefreshView, LogoutView
 
 urlpatterns = [
-    path('auth/token/',         ThrottledTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('auth/token/refresh/', TokenRefreshView.as_view(),             name='token_refresh'),
+    path('auth/token/',         CookieTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/token/refresh/', CookieTokenRefreshView.as_view(),    name='token_refresh'),
+    path('auth/logout/',        LogoutView.as_view(),                 name='logout'),
 
     path('habitaciones/', include('apps.habitaciones.urls')),
     path('inquilinos/',   include('apps.inquilinos.urls')),

@@ -68,8 +68,8 @@ export default function MainLayout() {
   const { data: unreadCount = 0 } = usePagosVencidosCount()
   const quickPago = useQuickPago()
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     navigate('/login')
   }
 

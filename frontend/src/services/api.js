@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore'
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 })
 
 api.interceptors.request.use((config) => {
@@ -19,12 +20,12 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true
       try {
-        const refreshToken = useAuthStore.getState().refreshToken
         const { data } = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/v1/auth/token/refresh/`,
-          { refresh: refreshToken }
+          {},
+          { withCredentials: true }
         )
-        useAuthStore.getState().setTokens(data.access, refreshToken)
+        useAuthStore.getState().setAccessToken(data.access)
         original.headers.Authorization = `Bearer ${data.access}`
         return api(original)
       } catch {

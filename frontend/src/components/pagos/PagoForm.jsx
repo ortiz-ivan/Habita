@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -7,6 +7,7 @@ import { formatGs } from '../../utils/format'
 import { useContratosSelect } from '../../hooks/queries/useContratos'
 import { pagosService } from '../../services/pagosService'
 import { FormField, FormSection, FormFooter, inputClass, SelectInput } from '../ui/ModalParts'
+import { DatePickerInput } from '../ui/DatePickerInput'
 import { MoneyInput } from '../ui/MoneyInput'
 
 const schema = z.object({
@@ -75,7 +76,13 @@ export default function PagoForm({ defaultValues, onSubmit, onCancel, isLoading,
             <MoneyInput name="monto" control={control} placeholder="1.500.000" />
           </FormField>
           <FormField label="Fecha de pago" error={errors.fecha_pago}>
-            <input {...register('fecha_pago')} type="date" className={inputClass} />
+            <Controller
+              name="fecha_pago"
+              control={control}
+              render={({ field }) => (
+                <DatePickerInput value={field.value} onChange={field.onChange} />
+              )}
+            />
           </FormField>
         </div>
         <div className="grid grid-cols-2 gap-4">

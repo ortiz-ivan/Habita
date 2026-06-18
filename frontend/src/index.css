@@ -165,3 +165,128 @@ textarea:focus {
   border-color: #ea6a3c;
   box-shadow: 0 0 0 3px rgba(234, 106, 60, 0.15);
 }
+
+/* ── DatePicker (react-day-picker v9) ────────────────────── */
+.rdp-c {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 12px;
+  padding: 12px 14px 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3);
+  width: 272px;
+  font-family: 'Inter', sans-serif;
+  animation: scale-in 180ms cubic-bezier(0.34,1.2,0.64,1) both;
+}
+.rdp-c-months { display: flex; flex-direction: column; }
+.rdp-c-month  {}
+.rdp-c-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 2px 10px;
+}
+.rdp-c-caption-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-fg);
+  text-transform: capitalize;
+}
+.rdp-c-nav {
+  display: flex;
+  gap: 2px;
+}
+.rdp-c-nav-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--color-stone-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 120ms, color 120ms;
+}
+.rdp-c-nav-btn:hover {
+  background: var(--color-surface-3);
+  color: var(--color-fg);
+}
+.rdp-c-chevron {
+  width: 15px;
+  height: 15px;
+  display: block;
+  fill: currentColor;
+}
+.rdp-c-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+.rdp-c-weekdays {}
+.rdp-c-weekday {
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--color-stone-text);
+  padding: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  width: 36px;
+}
+.rdp-c-week {}
+.rdp-c-day {
+  width: 36px;
+  height: 36px;
+  padding: 1px;
+  text-align: center;
+}
+.rdp-c-day-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-fg);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 120ms, color 120ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-family: inherit;
+}
+.rdp-c-day-btn:hover {
+  background: var(--color-surface-3);
+}
+.rdp-c-sel .rdp-c-day-btn {
+  background: var(--color-brand) !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+.rdp-c-today .rdp-c-day-btn {
+  border: 1.5px solid rgba(224,97,58,0.55);
+  color: var(--color-brand);
+  font-weight: 500;
+}
+.rdp-c-today.rdp-c-sel .rdp-c-day-btn {
+  border-color: transparent;
+  color: #fff;
+}
+.rdp-c-outside .rdp-c-day-btn {
+  color: var(--color-stone-text);
+  opacity: 0.35;
+}
+.rdp-c-outside .rdp-c-day-btn:hover {
+  background: transparent;
+}
+.rdp-c-disabled .rdp-c-day-btn {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+.rdp-c-disabled .rdp-c-day-btn:hover {
+  background: transparent;
+}
+.rdp-c-hidden {
+  visibility: hidden;
+}

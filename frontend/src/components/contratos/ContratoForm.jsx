@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useHabitacionesSelect, useCreateHabitacion } from '../../hooks/queries/useHabitaciones'
 import { useInquilinosSelect, useCreateInquilino } from '../../hooks/queries/useInquilinos'
 import { useContratosSummary } from '../../hooks/queries/useContratos'
 import { FormField, FormSection, FormFooter, inputClass, SelectInput } from '../ui/ModalParts'
+import { DatePickerInput } from '../ui/DatePickerInput'
 import { MoneyInput } from '../ui/MoneyInput'
 import { Modal } from '../ui/Modal'
 import HabitacionForm from '../habitaciones/HabitacionForm'
@@ -150,10 +151,22 @@ export default function ContratoForm({ defaultValues, onSubmit, onCancel, isLoad
         <FormSection label="Vigencia">
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Fecha inicio" error={errors.fecha_inicio}>
-              <input {...register('fecha_inicio')} type="date" className={inputClass} />
+              <Controller
+                name="fecha_inicio"
+                control={control}
+                render={({ field }) => (
+                  <DatePickerInput value={field.value} onChange={field.onChange} />
+                )}
+              />
             </FormField>
             <FormField label="Fecha fin" error={errors.fecha_fin}>
-              <input {...register('fecha_fin')} type="date" className={inputClass} />
+              <Controller
+                name="fecha_fin"
+                control={control}
+                render={({ field }) => (
+                  <DatePickerInput value={field.value} onChange={field.onChange} />
+                )}
+              />
             </FormField>
           </div>
         </FormSection>

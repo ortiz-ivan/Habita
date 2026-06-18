@@ -8,6 +8,7 @@ import { MetricCard } from '../components/ui/MetricCard'
 import { PaymentStatusBadge } from '../components/ui/PaymentStatusBadge'
 import { FilterBar } from '../components/ui/FilterBar'
 import { EmptyState } from '../components/ui/EmptyState'
+import { DatePickerInput } from '../components/ui/DatePickerInput'
 import { Modal } from '../components/ui/Modal'
 import PagoForm from '../components/pagos/PagoForm'
 import {
@@ -387,20 +388,18 @@ export default function DashboardPage() {
           ))}
           {periodoKpi === 'rango' && (
             <div className="flex items-center gap-1.5 ml-1">
-              <input
-                type="date"
+              <DatePickerInput
                 value={rangoDesde}
-                onChange={(e) => setRangoDesde(e.target.value)}
-                className="text-[12px] px-2.5 py-1.5 rounded-lg"
-                style={{ backgroundColor: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-fg)' }}
+                onChange={setRangoDesde}
+                placeholder="Desde"
+                compact
               />
               <span className="text-[12px]" style={{ color: 'var(--color-stone-text)' }}>–</span>
-              <input
-                type="date"
+              <DatePickerInput
                 value={rangoHasta}
-                onChange={(e) => setRangoHasta(e.target.value)}
-                className="text-[12px] px-2.5 py-1.5 rounded-lg"
-                style={{ backgroundColor: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-fg)' }}
+                onChange={setRangoHasta}
+                placeholder="Hasta"
+                compact
               />
             </div>
           )}

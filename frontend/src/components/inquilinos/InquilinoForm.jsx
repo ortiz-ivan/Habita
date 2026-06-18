@@ -1,7 +1,8 @@
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FormField, FormSection, FormFooter, inputClass } from '../ui/ModalParts'
+import { DatePickerInput } from '../ui/DatePickerInput'
 
 const schema = z.object({
   nombre:              z.string().min(1, 'Requerido'),
@@ -14,7 +15,7 @@ const schema = z.object({
 })
 
 export default function InquilinoForm({ defaultValues, onSubmit, onCancel, isLoading, apiError }) {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, control, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultValues ?? {},
   })
@@ -36,7 +37,13 @@ export default function InquilinoForm({ defaultValues, onSubmit, onCancel, isLoa
             <input {...register('documento')} className={inputClass} placeholder="4.567.890" />
           </FormField>
           <FormField label="Fecha de ingreso" error={errors.fecha_ingreso}>
-            <input {...register('fecha_ingreso')} type="date" className={inputClass} />
+            <Controller
+              name="fecha_ingreso"
+              control={control}
+              render={({ field }) => (
+                <DatePickerInput value={field.value} onChange={field.onChange} />
+              )}
+            />
           </FormField>
         </div>
       </FormSection>

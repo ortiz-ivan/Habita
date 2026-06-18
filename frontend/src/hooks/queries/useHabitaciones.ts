@@ -1,19 +1,32 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { habitacionesService, tiposService } from '../../services/habitacionesService'
 import { queryKeys } from '../../lib/queryKeys'
+import type {
+  Habitacion,
+  HabitacionWrite,
+  HabitacionFilters,
+  TipoHabitacion,
+  TipoHabitacionWrite,
+  BulkCreateHabitacionPayload,
+} from '../../types/api'
 
-function invalidateHabitaciones(qc) {
+interface MutationOptions<TData = unknown, TVariables = unknown> {
+  onSuccess?: (data: TData, variables: TVariables) => void
+  onError?: (error: Error) => void
+}
+
+function invalidateHabitaciones(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: queryKeys.habitaciones.all() })
   qc.invalidateQueries({ queryKey: queryKeys.habitaciones.pisos() })
 }
 
-function invalidateTipos(qc) {
+function invalidateTipos(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: queryKeys.tiposHabitacion.all() })
 }
 
-// ── Habitaciones ────────────────────────────────────────────────────────────
+// ── Habitaciones ──────────────────────────────────────────────────────────────
 
-export function useHabitacionesList(filters) {
+export function useHabitacionesList(filters?: HabitacionFilters) {
   return useQuery({
     queryKey: queryKeys.habitaciones.list(filters),
     queryFn:  () => habitacionesService.list(filters),
@@ -42,42 +55,56 @@ export function useHabitacionesSelect() {
   })
 }
 
-export function useCreateHabitacion({ onSuccess, onError } = {}) {
+export function useCreateHabitacion(
+  options: MutationOptions<Habitacion, HabitacionWrite> = {}
+) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: habitacionesService.create,
-    onSuccess: (...args) => { invalidateHabitaciones(qc); onSuccess?.(...args) },
-    onError,
+    onSuccess: (data, variables) => {
+      invalidateHabitaciones(qc)
+      options.onSuccess?.(data, variables)
+    },
+    onError: options.onError,
   })
 }
 
-export function useUpdateHabitacion({ onSuccess, onError } = {}) {
+export function useUpdateHabitacion(
+  options: MutationOptions<Habitacion, { id: number; data: Partial<HabitacionWrite> }> = {}
+) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }) => habitacionesService.update(id, data),
-    onSuccess: (...args) => { invalidateHabitaciones(qc); onSuccess?.(...args) },
-    onError,
+    mutationFn: ({ id, data }: { id: number; data: Partial<HabitacionWrite> }) =>
+      habitacionesService.update(id, data),
+    onSuccess: (data, variables) => {
+      invalidateHabitaciones(qc)
+      options.onSuccess?.(data, variables)
+    },
+    onError: options.onError,
   })
 }
 
-export function useDeleteHabitacion({ onSuccess, onError } = {}) {
+export function useDeleteHabitacion(options: MutationOptions<void, number> = {}) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: habitacionesService.remove,
-    onSuccess: (...args) => { invalidateHabitaciones(qc); onSuccess?.(...args) },
-    onError,
+    onSuccess: (data, variables) => {
+      invalidateHabitaciones(qc)
+      options.onSuccess?.(data, variables)
+    },
+    onError: options.onError,
   })
 }
 
 export function useBulkCreateHabitaciones() {
   const qc = useQueryClient()
-  return useMutation({
+  return useMutation<Habitacion[], Error, BulkCreateHabitacionPayload>({
     mutationFn: habitacionesService.bulkCreate,
     onSuccess: () => invalidateHabitaciones(qc),
   })
 }
 
-// ── Tipos ────────────────────────────────────────────────────────────────────
+// ── Tipos ─────────────────────────────────────────────────────────────────────
 
 export function useTiposHabitacion() {
   return useQuery({
@@ -88,7 +115,7 @@ export function useTiposHabitacion() {
 
 export function useCreateTipoHabitacion() {
   const qc = useQueryClient()
-  return useMutation({
+  return useMutation<TipoHabitacion, Error, TipoHabitacionWrite>({
     mutationFn: tiposService.create,
     onSuccess: () => invalidateTipos(qc),
   })
@@ -96,7 +123,7 @@ export function useCreateTipoHabitacion() {
 
 export function useUpdateTipoHabitacion() {
   const qc = useQueryClient()
-  return useMutation({
+  return useMutation<TipoHabitacion, Error, { id: number; data: Partial<TipoHabitacionWrite> }>({
     mutationFn: ({ id, data }) => tiposService.update(id, data),
     onSuccess: () => invalidateTipos(qc),
   })
@@ -104,7 +131,7 @@ export function useUpdateTipoHabitacion() {
 
 export function useDeleteTipoHabitacion() {
   const qc = useQueryClient()
-  return useMutation({
+  return useMutation<void, Error, number>({
     mutationFn: tiposService.remove,
     onSuccess: () => invalidateTipos(qc),
   })
@@ -112,7 +139,7 @@ export function useDeleteTipoHabitacion() {
 
 export function useApplyTipoToAll() {
   const qc = useQueryClient()
-  return useMutation({
+  return useMutation<Habitacion[], Error, number>({
     mutationFn: tiposService.applyToAll,
     onSuccess: () => invalidateHabitaciones(qc),
   })

@@ -1,8 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { pagosService } from '../../services/pagosService'
 import { queryKeys } from '../../lib/queryKeys'
+import type { PagoRead, PagoWrite, PagoFilters } from '../../types/api'
 
-function invalidatePagos(qc) {
+interface MutationOptions<TData = unknown, TVariables = unknown> {
+  onSuccess?: (data: TData, variables: TVariables) => void
+  onError?: (error: Error) => void
+}
+
+function invalidatePagos(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: queryKeys.pagos.all() })
   qc.invalidateQueries({ queryKey: queryKeys.pagos.pendientes() })
   qc.invalidateQueries({ queryKey: queryKeys.pagos.vencidos() })
@@ -15,7 +21,7 @@ function invalidatePagos(qc) {
   qc.invalidateQueries({ queryKey: queryKeys.contratos.select() })
 }
 
-export function usePagosList(filters) {
+export function usePagosList(filters?: PagoFilters) {
   return useQuery({
     queryKey: queryKeys.pagos.list(filters),
     queryFn:  () => pagosService.list(filters),
@@ -53,47 +59,59 @@ export function usePagosVencidosCount() {
   })
 }
 
-export function usePagosDashboard(filter, fechaParams = {}) {
+export function usePagosDashboard(filter: string, fechaParams: Partial<PagoFilters> = {}) {
   return useQuery({
     queryKey: queryKeys.pagos.dashboard(filter, fechaParams),
     queryFn:  () => {
-      const params = { page_size: 20, ...fechaParams }
-      if (filter !== 'all') params.estado = filter
+      const params: PagoFilters = { page_size: 20, ...fechaParams }
+      if (filter !== 'all') params.estado = filter as PagoFilters['estado']
       return pagosService.list(params)
     },
   })
 }
 
-export function usePagosResumen(params = {}) {
+export function usePagosResumen(params: Partial<PagoFilters> = {}) {
   return useQuery({
     queryKey: ['pagos-resumen', params],
     queryFn:  () => pagosService.resumen(params),
   })
 }
 
-export function useCreatePago({ onSuccess, onError } = {}) {
+export function useCreatePago(options: MutationOptions<PagoRead, PagoWrite> = {}) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: pagosService.create,
-    onSuccess: (...args) => { invalidatePagos(qc); onSuccess?.(...args) },
-    onError,
+    onSuccess: (data, variables) => {
+      invalidatePagos(qc)
+      options.onSuccess?.(data, variables)
+    },
+    onError: options.onError,
   })
 }
 
-export function useUpdatePago({ onSuccess, onError } = {}) {
+export function useUpdatePago(
+  options: MutationOptions<PagoRead, { id: number; data: Partial<PagoWrite> }> = {}
+) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }) => pagosService.update(id, data),
-    onSuccess: (...args) => { invalidatePagos(qc); onSuccess?.(...args) },
-    onError,
+    mutationFn: ({ id, data }: { id: number; data: Partial<PagoWrite> }) =>
+      pagosService.update(id, data),
+    onSuccess: (data, variables) => {
+      invalidatePagos(qc)
+      options.onSuccess?.(data, variables)
+    },
+    onError: options.onError,
   })
 }
 
-export function useDeletePago({ onSuccess, onError } = {}) {
+export function useDeletePago(options: MutationOptions<void, number> = {}) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: pagosService.remove,
-    onSuccess: (...args) => { invalidatePagos(qc); onSuccess?.(...args) },
-    onError,
+    onSuccess: (data, variables) => {
+      invalidatePagos(qc)
+      options.onSuccess?.(data, variables)
+    },
+    onError: options.onError,
   })
 }

@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '../store/authStore'
 
 const api = axios.create({
@@ -7,20 +7,22 @@ const api = axios.create({
   withCredentials: true,
 })
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = useAuthStore.getState().accessToken
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
+type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean }
+
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const original = error.config
-    if (error.response?.status === 401 && !original._retry) {
+  async (error: AxiosError) => {
+    const original = error.config as RetryConfig | undefined
+    if (error.response?.status === 401 && original && !original._retry) {
       original._retry = true
       try {
-        const { data } = await axios.post(
+        const { data } = await axios.post<{ access: string }>(
           `${import.meta.env.VITE_API_URL}/api/v1/auth/token/refresh/`,
           {},
           { withCredentials: true }

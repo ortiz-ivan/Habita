@@ -15,10 +15,26 @@ export interface User {
   id: number
   username: string
   email: string
+  first_name: string
+  last_name: string
   rol: UserRole
 }
 
 // ─── Inquilinos ───────────────────────────────────────────────────────────────
+
+// Contrato anidado dentro de un Inquilino (para la tarjeta de inquilino)
+export interface ContratoInquilino {
+  id: number
+  habitacion: string | number
+  monto_mensual: number
+  fecha_fin: string | null
+  estado: string
+  garantia_info?: {
+    cancelada: boolean
+    pagadas: number
+    total: number
+  }
+}
 
 export interface Inquilino {
   id: number
@@ -28,9 +44,11 @@ export interface Inquilino {
   documento: string
   telefono?: string
   fecha_nacimiento?: string | null
+  fecha_ingreso?: string | null
+  contrato_activo?: ContratoInquilino | null
 }
 
-export type InquilinoWrite = Omit<Inquilino, 'id'>
+export type InquilinoWrite = Omit<Inquilino, 'id' | 'contrato_activo'>
 
 export interface InquilinoFilters {
   search?: string
@@ -47,12 +65,20 @@ export interface TipoHabitacion {
   id: number
   nombre: string
   descripcion?: string
-  precio_base?: number
-  banio_privado?: boolean
-  capacidad?: number
+  precio: number
+  tiene_banio_privado: boolean
+  capacidad: number
+  habitaciones_count?: number
 }
 
 export type TipoHabitacionWrite = Omit<TipoHabitacion, 'id'>
+
+export interface HabitacionContratoActivo {
+  id: number
+  inquilino_nombre: string
+  fecha_fin: string | null
+  pagos_pendientes: number
+}
 
 export interface Habitacion {
   id: number
@@ -60,20 +86,28 @@ export interface Habitacion {
   piso: number
   estado: EstadoHabitacion
   tipo: TipoHabitacion | null
-  banio_privado?: boolean
-  capacidad?: number
-  precio?: number
+  tiene_banio_privado: boolean
+  capacidad: number
+  precio: number
+  descripcion?: string
+  contrato_activo?: HabitacionContratoActivo | null
 }
 
-export type HabitacionWrite = Omit<Habitacion, 'id' | 'tipo' | 'estado'> & {
-  tipo?: number | null
+export interface HabitacionWrite {
+  numero: string
+  piso: number
+  precio: number
   estado?: EstadoHabitacion
+  capacidad?: number
+  tiene_banio_privado?: boolean
+  descripcion?: string
+  tipo?: number | null
 }
 
 export interface HabitacionFilters {
   piso?: number
   estado?: EstadoHabitacion
-  banio_privado?: boolean
+  tiene_banio_privado?: boolean
   tipo?: number
   search?: string
   ordering?: string
@@ -81,8 +115,15 @@ export interface HabitacionFilters {
   page_size?: number
 }
 
-// Payload para bulk_create — refinar cuando se lea el backend serializer
-export type BulkCreateHabitacionPayload = Record<string, unknown>
+export interface BulkCreateHabitacionPayload {
+  tipo_id: number
+  habitaciones: Array<{ numero: string; piso: number }>
+}
+
+export interface BulkCreateResult {
+  created: number
+  errors?: Array<{ numero: string; error: string }>
+}
 
 // ─── Contratos ────────────────────────────────────────────────────────────────
 
@@ -90,7 +131,8 @@ export type EstadoContrato = 'activo' | 'finalizado' | 'cancelado' | 'moroso'
 
 export type EstadoPago = 'pendiente' | 'pagado' | 'parcial' | 'vencido'
 
-export interface ContratoInquilino {
+// Inquilino anidado dentro de ContratoRead
+export interface ContratoInquilinoNested {
   id: number
   nombre: string
   apellido: string
@@ -105,17 +147,22 @@ export interface GarantiaInfo {
   monto: number
   estado: EstadoPago
   pagos_count: number
+  cancelada: boolean
+  pagadas: number
+  total: number
 }
 
 export interface ContratoRead {
   id: number
-  inquilino: ContratoInquilino
+  inquilino: ContratoInquilinoNested
   habitacion: ContratoHabitacion
   monto_mensual: number
+  deposito: number
   estado: EstadoContrato
   fecha_inicio: string
   fecha_fin: string | null
   dia_pago: number
+  observacion?: string
   garantia_info?: GarantiaInfo
 }
 
@@ -123,9 +170,12 @@ export interface ContratoWrite {
   inquilino: number
   habitacion: number
   monto_mensual: number
+  deposito: number
   fecha_inicio: string
   fecha_fin?: string | null
   dia_pago?: number
+  estado?: EstadoContrato
+  observacion?: string
 }
 
 export interface ContratoFilters {
@@ -141,17 +191,18 @@ export interface ContratoFilters {
 // ─── Pagos ────────────────────────────────────────────────────────────────────
 
 export type MetodoPago = 'efectivo' | 'transferencia' | 'tarjeta' | 'qr'
-export type TipoPago = 'mensualidad' | 'garantia' | 'otro'
+export type TipoPago = 'mensualidad' | 'alquiler' | 'garantia' | 'otro'
 
 export interface PagoContrato {
   id: number
   inquilino_nombre: string
   habitacion_numero: string
+  monto_mensual: number
 }
 
 export interface PagoRead {
   id: number
-  contrato: PagoContrato
+  contrato: PagoContrato | null
   monto: number
   fecha_pago: string
   metodo_pago: MetodoPago
@@ -162,6 +213,7 @@ export interface PagoRead {
 
 export interface PagoWrite {
   contrato: number
+  tipo: TipoPago
   monto: number
   fecha_pago: string
   metodo_pago: MetodoPago
@@ -170,10 +222,10 @@ export interface PagoWrite {
 }
 
 export interface PagoFilters {
-  contrato?: number
-  estado?: EstadoPago
+  contrato?: number | string
+  estado?: EstadoPago | string
   tipo?: TipoPago
-  metodo_pago?: MetodoPago
+  metodo_pago?: MetodoPago | string
   fecha_desde?: string
   fecha_hasta?: string
   search?: string
@@ -183,6 +235,9 @@ export interface PagoFilters {
 }
 
 export interface PagosResumen {
+  ingresos_mes: number
+  ingresos_mes_anterior: number
+  monto_adeudado: number
   total_cobrado: number
   total_pendiente: number
   total_vencido: number

@@ -1,4 +1,4 @@
-import type { Control } from 'react-hook-form'
+import type { Control, FieldValues } from 'react-hook-form'
 import { Controller } from 'react-hook-form'
 import { inputClass } from './ModalParts'
 
@@ -10,8 +10,7 @@ const fmt = (v: number | string | undefined | null): string => {
 
 interface MoneyInputProps {
   name: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: Control<any>
+  control: Control<FieldValues>
   placeholder?: string
   className?: string
 }

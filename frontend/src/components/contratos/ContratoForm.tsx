@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
+import type { Resolver } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { ContratoRead, ContratoWrite } from '../../types/api'
@@ -47,7 +48,7 @@ export default function ContratoForm({ defaultValues, onSubmit, onCancel, isLoad
   const [cuotasGarantia, setCuotasGarantia] = useState<1 | 2 | 3>(1)
 
   const { register, handleSubmit, setValue, watch, control, formState: { errors, dirtyFields } } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: defaultValues
       ? {
           ...defaultValues,

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import type { ContratoRead, ContratoWrite } from '../types/api'
 import { parseApiError } from '../utils/format'
 import { pagosService } from '../services/pagosService'
 import { queryKeys } from '../lib/queryKeys'
@@ -20,7 +21,17 @@ import { estadoConfig, estadoPills } from '../lib/constants/contratos'
 
 const inpFilter = 'border border-border-strong rounded-lg px-3 py-2 text-[13px] bg-surface-2 text-stone-dark placeholder:text-[#55554f] focus:outline-none focus:ring-[3px] focus:ring-brand/15 focus:border-brand transition-all'
 
-function KpiCard({ label, value, dot, color, isLoading, onClick, active }) {
+interface KpiCardProps {
+  label: string
+  value?: number
+  dot?: string
+  color?: { bg: string; dot: string; text: string }
+  isLoading?: boolean
+  onClick?: () => void
+  active?: boolean
+}
+
+function KpiCard({ label, value, dot, color, isLoading, onClick, active }: KpiCardProps) {
   const base    = { backgroundColor: 'var(--color-surface-1)', borderColor: 'var(--color-border)' }
   const active_ = { backgroundColor: color?.bg ?? 'var(--color-surface-2)', borderColor: color?.dot ?? 'var(--color-brand)' }
   return (
@@ -47,11 +58,11 @@ function KpiCard({ label, value, dot, color, isLoading, onClick, active }) {
 }
 
 export default function ContratosPage() {
-  const [modalOpen, setModalOpen]       = useState(false)
-  const [editTarget, setEditTarget]     = useState(null)
-  const [viewTarget, setViewTarget]     = useState(null)
-  const [deleteTarget, setDeleteTarget] = useState(null)
-  const [terminaTarget, setTerminaTarget] = useState(null)
+  const [modalOpen, setModalOpen]         = useState(false)
+  const [editTarget, setEditTarget]       = useState<ContratoRead | null>(null)
+  const [viewTarget, setViewTarget]       = useState<ContratoRead | null>(null)
+  const [deleteTarget, setDeleteTarget]   = useState<ContratoRead | null>(null)
+  const [terminaTarget, setTerminaTarget] = useState<ContratoRead | null>(null)
   const [fechaSalida, setFechaSalida]     = useState('')
   const [terminaError, setTerminaError]   = useState('')
   const [apiError, setApiError]           = useState('')
@@ -69,8 +80,8 @@ export default function ContratosPage() {
     page:   page > 1 ? page : undefined,
   }
 
-  const { data, isLoading }                          = useContratosList(filters)
-  const { data: allContratos, isLoading: kpiLoading } = useContratosSummary()
+  const { data, isLoading }                            = useContratosList(filters)
+  const { data: allContratos, isLoading: kpiLoading }  = useContratosSummary()
   const allResults = allContratos?.results ?? []
   const kpis = {
     total:      allResults.length,
@@ -97,14 +108,16 @@ export default function ContratosPage() {
   })
 
   const openCreate   = () => { setEditTarget(null); setApiError(''); setModalOpen(true) }
-  const openEdit     = (c) => { setEditTarget(c);   setApiError(''); setViewTarget(null); setModalOpen(true) }
-  const openTerminar = (c) => {
+  const openEdit     = (c: ContratoRead) => { setEditTarget(c); setApiError(''); setViewTarget(null); setModalOpen(true) }
+  const openTerminar = (c: ContratoRead) => {
     setViewTarget(null)
     setTerminaTarget(c)
     setFechaSalida(new Date().toISOString().slice(0, 10))
     setTerminaError('')
   }
+
   const handleTerminar = () => {
+    if (!terminaTarget) return
     setTerminaError('')
     updateMutation.mutate(
       { id: terminaTarget.id, data: { estado: 'cancelado', fecha_fin: fechaSalida } },
@@ -115,7 +128,7 @@ export default function ContratosPage() {
     )
   }
 
-  const handleSubmit = (data, cuotasGarantia = 1) => {
+  const handleSubmit = (data: ContratoWrite, cuotasGarantia = 1) => {
     setApiError('')
     if (editTarget) {
       updateMutation.mutate({ id: editTarget.id, data })
@@ -123,9 +136,8 @@ export default function ContratosPage() {
       createMutation.mutate(data, {
         onSuccess: (contrato) => {
           setModalOpen(false)
-          const promises = []
+          const promises: Promise<unknown>[] = []
 
-          // Pagos de garantía (1, 2 o 3 cuotas)
           if (contrato.deposito > 0) {
             const total    = contrato.deposito
             const n        = cuotasGarantia
@@ -146,7 +158,6 @@ export default function ContratosPage() {
             }
           }
 
-          // Pagos de alquiler mensuales hasta fecha_fin
           if (contrato.fecha_fin) {
             const fin     = new Date(contrato.fecha_fin + 'T12:00:00')
             const current = new Date(contrato.fecha_inicio + 'T12:00:00')
@@ -178,87 +189,53 @@ export default function ContratosPage() {
   const hayFiltros = search || estado
   const count      = data?.count
   const activeChips = [
-    search && { key: 'search', isSearch: true, label: `"${search}"`,                                                  onRemove: () => setSearch('') },
-    estado && { key: 'estado', dot: estadoConfig[estado]?.dot, color: estadoConfig[estado]?.text, label: estadoConfig[estado]?.label, onRemove: () => setEstado('') },
-  ].filter(Boolean)
+    search && { key: 'search', isSearch: true as const, label: `"${search}"`,                                                                         onRemove: () => setSearch('') },
+    estado && { key: 'estado', dot: estadoConfig[estado]?.dot, color: estadoConfig[estado]?.text, label: estadoConfig[estado]?.label ?? estado,        onRemove: () => setEstado('') },
+  ].filter(Boolean) as Array<{ key: string; isSearch?: true; dot?: string; color?: string; label: string; onRemove: () => void }>
 
   return (
     <div>
       <PageHeader actionLabel="Nuevo contrato" onAction={openCreate} />
 
-      {/* Mini KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-        <KpiCard label="Total"      value={kpis.total}      isLoading={kpiLoading} />
-        <KpiCard label="Activos"    value={kpis.activo}     dot={estadoConfig.activo.dot}     color={estadoConfig.activo}     isLoading={kpiLoading} onClick={() => setEstado(estado === 'activo'     ? '' : 'activo')}     active={estado === 'activo'} />
-        <KpiCard label="Morosos"    value={kpis.moroso}     dot={estadoConfig.moroso.dot}     color={estadoConfig.moroso}     isLoading={kpiLoading} onClick={() => setEstado(estado === 'moroso'     ? '' : 'moroso')}     active={estado === 'moroso'} />
-        <KpiCard label="Finalizados" value={kpis.finalizado} dot={estadoConfig.finalizado.dot} color={estadoConfig.finalizado} isLoading={kpiLoading} onClick={() => setEstado(estado === 'finalizado' ? '' : 'finalizado')} active={estado === 'finalizado'} />
-        <KpiCard label="Cancelados" value={kpis.cancelado}  dot={estadoConfig.cancelado.dot}  color={estadoConfig.cancelado}  isLoading={kpiLoading} onClick={() => setEstado(estado === 'cancelado'  ? '' : 'cancelado')}  active={estado === 'cancelado'} />
+        <KpiCard label="Total"       value={kpis.total}      isLoading={kpiLoading} />
+        <KpiCard label="Activos"     value={kpis.activo}     dot={estadoConfig.activo?.dot}     color={estadoConfig.activo}     isLoading={kpiLoading} onClick={() => setEstado(estado === 'activo'     ? '' : 'activo')}     active={estado === 'activo'} />
+        <KpiCard label="Morosos"     value={kpis.moroso}     dot={estadoConfig.moroso?.dot}     color={estadoConfig.moroso}     isLoading={kpiLoading} onClick={() => setEstado(estado === 'moroso'     ? '' : 'moroso')}     active={estado === 'moroso'} />
+        <KpiCard label="Finalizados" value={kpis.finalizado} dot={estadoConfig.finalizado?.dot} color={estadoConfig.finalizado} isLoading={kpiLoading} onClick={() => setEstado(estado === 'finalizado' ? '' : 'finalizado')} active={estado === 'finalizado'} />
+        <KpiCard label="Cancelados"  value={kpis.cancelado}  dot={estadoConfig.cancelado?.dot}  color={estadoConfig.cancelado}  isLoading={kpiLoading} onClick={() => setEstado(estado === 'cancelado'  ? '' : 'cancelado')}  active={estado === 'cancelado'} />
       </div>
 
       <div className="rounded mb-8 bg-surface-1 border border-border">
-
-        {/* Fila de búsqueda y filtros */}
         <div className="flex flex-wrap items-center gap-3 px-6 py-4">
           <div className="relative flex-1 min-w-[350px] max-w-xl">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-stone-text">
               <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
             </svg>
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por inquilino o habitación..."
-              className={`${inpFilter} pl-9 w-full`}
-            />
+            <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por inquilino o habitación..." className={`${inpFilter} pl-9 w-full`} />
           </div>
 
           <div className="w-px h-5 self-center shrink-0" style={{ backgroundColor: 'var(--color-border-strong)' }} />
 
           {!isLoading && count !== undefined && (
-            <span className="text-[13px] shrink-0" style={{ color: 'var(--color-stone-text)' }}>
-              {count} resultado{count !== 1 ? 's' : ''}
-            </span>
+            <span className="text-[13px] shrink-0" style={{ color: 'var(--color-stone-text)' }}>{count} resultado{count !== 1 ? 's' : ''}</span>
           )}
 
           {hayFiltros && (
-            <button
-              onClick={() => { setSearch(''); setEstado('') }}
-              className="flex items-center gap-1.5 text-[13px] font-medium cursor-pointer transition-colors shrink-0"
-              style={{ color: 'var(--color-stone-text)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-brand)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-stone-text)' }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-              </svg>
+            <button onClick={() => { setSearch(''); setEstado('') }} className="flex items-center gap-1.5 text-[13px] font-medium cursor-pointer transition-colors shrink-0" style={{ color: 'var(--color-stone-text)' }} onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-brand)' }} onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-stone-text)' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
               Limpiar
             </button>
           )}
         </div>
 
-        {/* Fila de pills de estado */}
         <div className="h-px bg-border" />
         <div className="flex items-center gap-1 flex-wrap px-6 py-3">
           {estadoPills.map((pill) => {
-            const isActive = estado === pill.id
-            const activeStyle = pill.id === ''
-              ? { backgroundColor: 'var(--color-brand)', color: '#FFFFFF' }
-              : { backgroundColor: pill.bg, color: pill.text }
+            const isActive    = estado === pill.id
+            const activeStyle = pill.id === '' ? { backgroundColor: 'var(--color-brand)', color: '#FFFFFF' } : { backgroundColor: pill.bg, color: pill.text }
             return (
-              <button
-                key={pill.id}
-                onClick={() => setEstado(pill.id)}
-                className="flex items-center gap-1.5 text-[12px] px-3 py-[5px] rounded-full font-medium transition-colors cursor-pointer"
-                style={isActive ? activeStyle : { color: 'var(--color-stone-text)', backgroundColor: 'transparent' }}
-                onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = 'var(--color-surface-2)' }}
-                onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent' }}
-              >
-                {pill.id && (
-                  <span
-                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ backgroundColor: isActive ? pill.dot : '#555553' }}
-                  />
-                )}
+              <button key={pill.id} onClick={() => setEstado(pill.id)} className="flex items-center gap-1.5 text-[12px] px-3 py-[5px] rounded-full font-medium transition-colors cursor-pointer" style={isActive ? activeStyle : { color: 'var(--color-stone-text)', backgroundColor: 'transparent' }} onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = 'var(--color-surface-2)' }} onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent' }}>
+                {pill.id && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isActive ? pill.dot : '#555553' }} />}
                 {pill.label}
               </button>
             )
@@ -279,16 +256,10 @@ export default function ContratosPage() {
         <SkeletonGrid />
       ) : !data?.results?.length ? (
         <EmptyState
-          icon={
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" className="w-8 h-8">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-            </svg>
-          }
+          icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>}
           title={hayFiltros ? 'Sin resultados para esa búsqueda' : 'No hay contratos registrados'}
           description={hayFiltros ? 'Probá con otros filtros' : 'Creá el primer contrato para empezar'}
-          action={!hayFiltros && (
-            <Button onClick={openCreate} className="px-5">+ Nuevo contrato</Button>
-          )}
+          action={!hayFiltros && <Button onClick={openCreate} className="px-5">+ Nuevo contrato</Button>}
         />
       ) : (
         <>
@@ -303,19 +274,14 @@ export default function ContratosPage() {
 
       <Modal isOpen={!!viewTarget} onClose={() => setViewTarget(null)} title={`Contrato #${viewTarget?.id}`} size="lg">
         {viewTarget && (
-          <ContratoDetail
-            c={viewTarget}
-            onEdit={() => openEdit(viewTarget)}
-            onDelete={() => setDeleteTarget(viewTarget)}
-            onTerminar={openTerminar}
-          />
+          <ContratoDetail c={viewTarget} onEdit={() => openEdit(viewTarget)} onDelete={() => setDeleteTarget(viewTarget)} onTerminar={openTerminar} />
         )}
       </Modal>
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editTarget ? 'Editar contrato' : 'Nuevo contrato'} size="lg">
         <ContratoForm
           key={editTarget?.id ?? 'new'}
-          defaultValues={editTarget}
+          defaultValues={editTarget ?? undefined}
           onSubmit={handleSubmit}
           onCancel={() => setModalOpen(false)}
           isLoading={isSaving}
@@ -326,22 +292,14 @@ export default function ContratosPage() {
       <ConfirmDialog
         isOpen={!!deleteTarget}
         message={`¿Eliminás el contrato #${deleteTarget?.id}? Esta acción no se puede deshacer.`}
-        onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
+        onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
         onCancel={() => setDeleteTarget(null)}
         isLoading={deleteMutation.isPending}
       />
 
-      {/* Modal salida anticipada */}
-      <Modal
-        isOpen={!!terminaTarget}
-        onClose={() => { setTerminaTarget(null); setTerminaError('') }}
-        title="Salida anticipada"
-        size="sm"
-      >
+      <Modal isOpen={!!terminaTarget} onClose={() => { setTerminaTarget(null); setTerminaError('') }} title="Salida anticipada" size="sm">
         {terminaTarget && (
           <div className="flex flex-col gap-5">
-
-            {/* Info del contrato */}
             <div className="rounded-lg px-4 py-3" style={{ backgroundColor: 'var(--color-surface-2)' }}>
               <p className="text-[14px] font-bold" style={{ color: 'var(--color-fg)' }}>
                 {terminaTarget.inquilino.apellido}, {terminaTarget.inquilino.nombre}
@@ -351,55 +309,31 @@ export default function ContratosPage() {
               </p>
             </div>
 
-            {/* Fecha de salida */}
             <div>
               <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--color-stone-text)' }}>
                 Fecha de salida
               </label>
-              <input
-                type="date"
-                value={fechaSalida}
-                onChange={(e) => setFechaSalida(e.target.value)}
-                min={terminaTarget.fecha_inicio}
-                className={inpFilter + ' w-full'}
-              />
+              <input type="date" value={fechaSalida} onChange={(e) => setFechaSalida(e.target.value)} min={terminaTarget.fecha_inicio} className={`${inpFilter} w-full`} />
             </div>
 
-            {/* Aviso */}
-            <div
-              className="rounded-lg px-3 py-2.5 text-[12px] leading-relaxed"
-              style={{ backgroundColor: 'var(--color-brand-amber-light)', color: 'var(--color-brand-amber)', border: '1px solid var(--color-amber-border)' }}
-            >
+            <div className="rounded-lg px-3 py-2.5 text-[12px] leading-relaxed" style={{ backgroundColor: 'var(--color-brand-amber-light)', color: 'var(--color-brand-amber)', border: '1px solid var(--color-amber-border)' }}>
               El contrato pasará a <strong>Cancelado</strong> y la habitación quedará <strong>disponible</strong>. Los pagos pendientes se mantienen registrados.
             </div>
 
             {terminaError && (
-              <p
-                className="text-[13px] font-medium px-3 py-2 rounded-lg"
-                style={{ color: 'var(--color-red-text)', backgroundColor: 'var(--color-red-bg)', border: '1px solid var(--color-red-border)' }}
-              >
+              <p className="text-[13px] font-medium px-3 py-2 rounded-lg" style={{ color: 'var(--color-red-text)', backgroundColor: 'var(--color-red-bg)', border: '1px solid var(--color-red-border)' }}>
                 {terminaError}
               </p>
             )}
 
             <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                onClick={() => { setTerminaTarget(null); setTerminaError('') }}
-                className="flex-1"
-              >
+              <Button variant="ghost" onClick={() => { setTerminaTarget(null); setTerminaError('') }} className="flex-1">
                 Volver
               </Button>
-              <Button
-                variant="danger-fill"
-                onClick={handleTerminar}
-                disabled={updateMutation.isPending || !fechaSalida}
-                className="flex-1"
-              >
+              <Button variant="danger-fill" onClick={handleTerminar} disabled={updateMutation.isPending || !fechaSalida} className="flex-1">
                 {updateMutation.isPending ? 'Procesando...' : 'Confirmar salida'}
               </Button>
             </div>
-
           </div>
         )}
       </Modal>

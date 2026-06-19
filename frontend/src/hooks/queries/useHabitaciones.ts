@@ -8,6 +8,7 @@ import type {
   TipoHabitacion,
   TipoHabitacionWrite,
   BulkCreateHabitacionPayload,
+  BulkCreateResult,
 } from '../../types/api'
 
 interface MutationOptions<TData = unknown, TVariables = unknown> {
@@ -98,7 +99,7 @@ export function useDeleteHabitacion(options: MutationOptions<void, number> = {})
 
 export function useBulkCreateHabitaciones() {
   const qc = useQueryClient()
-  return useMutation<Habitacion[], Error, BulkCreateHabitacionPayload>({
+  return useMutation<BulkCreateResult, Error, BulkCreateHabitacionPayload>({
     mutationFn: habitacionesService.bulkCreate,
     onSuccess: () => invalidateHabitaciones(qc),
   })

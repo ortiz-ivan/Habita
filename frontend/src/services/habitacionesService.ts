@@ -6,6 +6,7 @@ import type {
   TipoHabitacion,
   TipoHabitacionWrite,
   BulkCreateHabitacionPayload,
+  BulkCreateResult,
   PaginatedResponse,
 } from '../types/api'
 
@@ -27,7 +28,7 @@ export const habitacionesService = {
   remove: (id: number): Promise<void> =>
     api.delete(`/api/v1/habitaciones/${id}/`),
 
-  bulkCreate: (data: BulkCreateHabitacionPayload): Promise<Habitacion[]> =>
+  bulkCreate: (data: BulkCreateHabitacionPayload): Promise<BulkCreateResult> =>
     api.post('/api/v1/habitaciones/bulk_create/', data).then((r) => r.data),
 }
 

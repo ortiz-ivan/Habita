@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
+import type { Resolver } from 'react-hook-form'
 import { MoneyInput } from '../ui/MoneyInput'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -34,7 +35,7 @@ export default function HabitacionForm({ defaultValues, onSubmit, onCancel, isLo
   const [autoFilled, setAutoFilled] = useState(false)
 
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: defaultValues ?? { estado: 'disponible', capacidad: 1, tiene_banio_privado: true, descripcion: '' },
   })
 

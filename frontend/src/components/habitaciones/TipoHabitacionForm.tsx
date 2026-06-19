@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
+import type { Resolver } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { TipoHabitacion, TipoHabitacionWrite } from '../../types/api'
@@ -30,7 +31,7 @@ export default function TipoHabitacionForm({ defaultValues, onSubmit, onCancel, 
   const [applyToAll, setApplyToAll] = useState(false)
 
   const { register, handleSubmit, control, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: defaultValues ?? {
       nombre: '', precio: 0, capacidad: 1, tiene_banio_privado: false, descripcion: '',
     },

@@ -45,6 +45,7 @@ export interface Inquilino {
   telefono?: string
   fecha_nacimiento?: string | null
   fecha_ingreso?: string | null
+  contacto_emergencia?: string
   contrato_activo?: ContratoInquilino | null
 }
 
@@ -129,7 +130,7 @@ export interface BulkCreateResult {
 
 export type EstadoContrato = 'activo' | 'finalizado' | 'cancelado' | 'moroso'
 
-export type EstadoPago = 'pendiente' | 'pagado' | 'parcial' | 'vencido'
+export type EstadoPago = 'pendiente' | 'pagado' | 'parcial' | 'vencido' | 'por_vencer'
 
 // Inquilino anidado dentro de ContratoRead
 export interface ContratoInquilinoNested {

@@ -31,7 +31,7 @@ export function Sparkline({ data = [], color = 'var(--color-brand)', w = 150, h 
       </defs>
       <path d={area} fill={`url(#sp${gid})`} />
       <path d={line} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={pts.at(-1)![0]} cy={pts.at(-1)![1]} r="2.5" fill={color} />
+      <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="2.5" fill={color} />
     </svg>
   )
 }

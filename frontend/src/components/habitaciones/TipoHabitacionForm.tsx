@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import type { Resolver } from 'react-hook-form'
+import type { Resolver, Control, FieldValues } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { TipoHabitacion, TipoHabitacionWrite } from '../../types/api'
@@ -48,7 +48,7 @@ export default function TipoHabitacionForm({ defaultValues, onSubmit, onCancel, 
         </FormField>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Precio (Gs.)" error={errors.precio}>
-            <MoneyInput name="precio" control={control} placeholder="500.000" />
+            <MoneyInput name="precio" control={control as unknown as Control<FieldValues>} placeholder="500.000" />
           </FormField>
           <FormField label="Capacidad" error={errors.capacidad}>
             <input {...register('capacidad')} type="number" min="1" className={inputClass} placeholder="1" />

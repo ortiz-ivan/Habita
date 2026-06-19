@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { Habitacion } from '../types/api'
+import type { Habitacion, EstadoHabitacion } from '../types/api'
 import { parseApiError } from '../utils/format'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -75,8 +75,8 @@ export default function HabitacionesPage() {
 
   const filters = {
     search: debouncedSearch || undefined,
-    estado: estado          || undefined,
-    piso:   piso            || undefined,
+    estado: (estado as EstadoHabitacion) || undefined,
+    piso:   piso ? Number(piso) : undefined,
     page:   page > 1 ? page : undefined,
   }
 
@@ -121,7 +121,7 @@ export default function HabitacionesPage() {
   const count      = data?.count
   const activeChips = [
     search && { key: 'search', isSearch: true as const, label: `"${search}"`,                                                                      onRemove: () => setSearch('') },
-    estado && { key: 'estado', dot: estadoConfig[estado]?.dot, color: estadoConfig[estado]?.text, label: estadoConfig[estado]?.label, onRemove: () => setEstado('') },
+    estado && { key: 'estado', dot: estadoConfig[estado as EstadoHabitacion]?.dot, color: estadoConfig[estado as EstadoHabitacion]?.text, label: estadoConfig[estado as EstadoHabitacion]?.label, onRemove: () => setEstado('') },
     piso   && { key: 'piso',   label: `Piso ${piso}`,                                                                                               onRemove: () => setPiso('') },
   ].filter(Boolean) as Array<{ key: string; isSearch?: true; dot?: string; color?: string; label: string; onRemove: () => void }>
 
@@ -201,7 +201,7 @@ export default function HabitacionesPage() {
           <>
             <div className="h-px bg-border" />
             <div className="flex items-center gap-2 flex-wrap px-6 py-3">
-              {activeChips.map((chip) => <Chip key={chip.key} {...chip} />)}
+              {activeChips.map(({ key, ...rest }) => <Chip key={key} {...rest} />)}
             </div>
           </>
         )}
@@ -236,7 +236,7 @@ export default function HabitacionesPage() {
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editTarget ? 'Editar habitación' : 'Nueva habitación'}>
         <HabitacionForm
           key={editTarget?.id ?? 'new'}
-          defaultValues={editTarget ?? undefined}
+          defaultValues={editTarget ? { ...editTarget, tipo: editTarget.tipo?.id } : undefined}
           onSubmit={handleSubmit}
           onCancel={() => setModalOpen(false)}
           isLoading={isSaving}

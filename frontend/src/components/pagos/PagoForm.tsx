@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
+import type { Resolver, Control, FieldValues } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -25,7 +26,7 @@ type FormValues = z.infer<typeof schema>
 const NEW_DEFAULTS = { metodo_pago: 'efectivo' as const, estado: 'pagado' as const, observacion: '' }
 
 interface PagoFormProps {
-  defaultValues?: Partial<PagoRead & { contrato: number | { id: number } }>
+  defaultValues?: Partial<Omit<PagoRead, 'contrato'> & { contrato?: number | { id: number } | null }>
   onSubmit: (data: PagoWrite) => void
   onCancel?: () => void
   isLoading?: boolean
@@ -35,10 +36,10 @@ interface PagoFormProps {
 export default function PagoForm({ defaultValues, onSubmit, onCancel, isLoading, apiError }: PagoFormProps) {
   const today = new Date().toISOString().slice(0, 10)
   const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: defaultValues
-      ? { ...NEW_DEFAULTS, ...defaultValues, contrato: typeof defaultValues.contrato === 'object' ? defaultValues.contrato.id : defaultValues.contrato }
-      : { ...NEW_DEFAULTS, fecha_pago: today },
+    resolver: zodResolver(schema) as Resolver<FormValues>,
+    defaultValues: (defaultValues
+      ? { ...NEW_DEFAULTS, ...defaultValues, contrato: typeof defaultValues.contrato === 'object' && defaultValues.contrato != null ? defaultValues.contrato.id : defaultValues.contrato as number | undefined }
+      : { ...NEW_DEFAULTS, fecha_pago: today }) as unknown as Partial<FormValues>,
   })
 
   const { data: contratos } = useContratosSelect()
@@ -84,7 +85,7 @@ export default function PagoForm({ defaultValues, onSubmit, onCancel, isLoading,
       <FormSection label="Detalle del pago">
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Monto (Gs.)" error={errors.monto}>
-            <MoneyInput name="monto" control={control} placeholder="1.500.000" />
+            <MoneyInput name="monto" control={control as unknown as Control<FieldValues>} placeholder="1.500.000" />
           </FormField>
           <FormField label="Fecha de pago" error={errors.fecha_pago}>
             <Controller

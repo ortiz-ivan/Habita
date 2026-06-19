@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import type { ContratoRead, ContratoWrite } from '../types/api'
+import type { ContratoRead, ContratoWrite, EstadoContrato } from '../types/api'
 import { parseApiError } from '../utils/format'
 import { pagosService } from '../services/pagosService'
 import { queryKeys } from '../lib/queryKeys'
@@ -76,7 +76,7 @@ export default function ContratosPage() {
 
   const filters = {
     search: debouncedSearch || undefined,
-    estado: estado          || undefined,
+    estado: (estado as EstadoContrato) || undefined,
     page:   page > 1 ? page : undefined,
   }
 
@@ -190,7 +190,7 @@ export default function ContratosPage() {
   const count      = data?.count
   const activeChips = [
     search && { key: 'search', isSearch: true as const, label: `"${search}"`,                                                                         onRemove: () => setSearch('') },
-    estado && { key: 'estado', dot: estadoConfig[estado]?.dot, color: estadoConfig[estado]?.text, label: estadoConfig[estado]?.label ?? estado,        onRemove: () => setEstado('') },
+    estado && { key: 'estado', dot: estadoConfig[estado as EstadoContrato]?.dot, color: estadoConfig[estado as EstadoContrato]?.text, label: estadoConfig[estado as EstadoContrato]?.label ?? estado,        onRemove: () => setEstado('') },
   ].filter(Boolean) as Array<{ key: string; isSearch?: true; dot?: string; color?: string; label: string; onRemove: () => void }>
 
   return (
@@ -246,7 +246,7 @@ export default function ContratosPage() {
           <>
             <div className="h-px bg-border" />
             <div className="flex items-center gap-2 flex-wrap px-6 py-3">
-              {activeChips.map((chip) => <Chip key={chip.key} {...chip} />)}
+              {activeChips.map(({ key, ...rest }) => <Chip key={key} {...rest} />)}
             </div>
           </>
         )}

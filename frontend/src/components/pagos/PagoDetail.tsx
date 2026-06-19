@@ -16,9 +16,9 @@ export function PagoDetail({ p, onEdit, onDelete }: PagoDetailProps) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 text-sm">
         <InfoCard label="Inquilino" colSpan={2}>
-          <p className="font-bold text-fg">{p.contrato.inquilino_nombre}</p>
+          <p className="font-bold text-fg">{p.contrato?.inquilino_nombre}</p>
         </InfoCard>
-        <InfoCard label="Habitación" value={p.contrato.habitacion_numero} />
+        <InfoCard label="Habitación" value={p.contrato?.habitacion_numero} />
         <InfoCard label="Estado">
           <PaymentStatusBadge status={p.estado} />
         </InfoCard>

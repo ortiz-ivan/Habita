@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import type { Resolver } from 'react-hook-form'
+import type { Resolver, Control, FieldValues } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { ContratoRead, ContratoWrite } from '../../types/api'
@@ -186,10 +186,10 @@ export default function ContratoForm({ defaultValues, onSubmit, onCancel, isLoad
         <FormSection label="Condiciones económicas">
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Monto mensual (Gs.)" error={errors.monto_mensual}>
-              <MoneyInput name="monto_mensual" control={control} placeholder="1.500.000" />
+              <MoneyInput name="monto_mensual" control={control as unknown as Control<FieldValues>} placeholder="1.500.000" />
             </FormField>
             <FormField label="Garantía (Gs.)" error={errors.deposito}>
-              <MoneyInput name="deposito" control={control} placeholder="0" />
+              <MoneyInput name="deposito" control={control as unknown as Control<FieldValues>} placeholder="0" />
             </FormField>
           </div>
           {!defaultValues?.id && watch('deposito') > 0 && (

@@ -140,7 +140,7 @@ function TipoRow({ tipo, onEdit, onDelete }: { tipo: TipoHabitacion; onEdit: () 
         <p className="text-sm font-semibold" style={{ color: 'var(--color-fg)' }}>{tipo.nombre}</p>
         <p className="text-xs mt-0.5" style={{ color: 'var(--color-stone-text)' }}>
           {info}
-          {tipo.habitaciones_count > 0 && (
+          {(tipo.habitaciones_count ?? 0) > 0 && (
             <span style={{ color: 'var(--color-brand)' }}> · {tipo.habitaciones_count} hab.</span>
           )}
         </p>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import type { PagoRead, PagoWrite } from '../types/api'
+import type { PagoRead, PagoWrite, EstadoPago, MetodoPago } from '../types/api'
 import { parseApiError } from '../utils/format'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -171,8 +171,8 @@ export default function PagosPage() {
     : ''
   const activeChips = [
     search     && { key: 'search',     isSearch: true as const, label: `"${search}"`,                                                                           onRemove: () => setSearch('') },
-    estado     && { key: 'estado',     dot: estadoConfig[estado]?.dot, color: estadoConfig[estado]?.text, label: estadoConfig[estado]?.label ?? estado,          onRemove: () => setEstado('') },
-    metodoPago && { key: 'metodoPago', label: metodoLabel[metodoPago] ?? metodoPago,                                                                             onRemove: () => setMetodoPago('') },
+    estado     && { key: 'estado',     dot: estadoConfig[estado as EstadoPago]?.dot, color: estadoConfig[estado as EstadoPago]?.text, label: estadoConfig[estado as EstadoPago]?.label ?? estado,          onRemove: () => setEstado('') },
+    metodoPago && { key: 'metodoPago', label: metodoLabel[metodoPago as MetodoPago] ?? metodoPago,                                                                             onRemove: () => setMetodoPago('') },
     contratoId && { key: 'contrato',   label: contratoLabel,                                                                                                     onRemove: () => setContratoId('') },
     periodo    && { key: 'periodo',    label: (periodoLabel[periodo] ?? periodo) + (diaInicio !== 1 ? ` · día ${diaInicio}` : ''),                              onRemove: () => setPeriodo('') },
   ].filter(Boolean) as Array<{ key: string; isSearch?: true; dot?: string; color?: string; label: string; onRemove: () => void }>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import type { Resolver } from 'react-hook-form'
+import type { Resolver, Control, FieldValues } from 'react-hook-form'
 import { MoneyInput } from '../ui/MoneyInput'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -22,7 +22,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>
 
 interface HabitacionFormProps {
-  defaultValues?: Partial<Habitacion & { tipo?: number | string }>
+  defaultValues?: Partial<Omit<Habitacion, 'tipo'> & { tipo?: number | string }>
   onSubmit: (data: HabitacionWrite & { tipo: number | null }) => void
   onCancel?: () => void
   isLoading?: boolean
@@ -103,7 +103,7 @@ export default function HabitacionForm({ defaultValues, onSubmit, onCancel, isLo
         </div>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Precio (Gs.)" error={errors.precio}>
-            <MoneyInput name="precio" control={control} placeholder="1.500.000" />
+            <MoneyInput name="precio" control={control as unknown as Control<FieldValues>} placeholder="1.500.000" />
           </FormField>
           <FormField label="Capacidad" error={errors.capacidad}>
             <input {...register('capacidad')} type="number" className={inputClass} placeholder="1" />

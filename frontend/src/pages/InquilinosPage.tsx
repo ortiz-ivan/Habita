@@ -110,7 +110,7 @@ export default function InquilinosPage() {
           <>
             <div className="h-px bg-border" />
             <div className="flex items-center gap-2 flex-wrap px-6 py-3">
-              {activeChips.map((chip) => <Chip key={chip.key} {...chip} />)}
+              {activeChips.map(({ key, ...rest }) => <Chip key={key} {...rest} />)}
             </div>
           </>
         )}

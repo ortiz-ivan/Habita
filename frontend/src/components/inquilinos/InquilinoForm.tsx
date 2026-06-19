@@ -28,7 +28,7 @@ interface InquilinoFormProps {
 export default function InquilinoForm({ defaultValues, onSubmit, onCancel, isLoading, apiError }: InquilinoFormProps) {
   const { register, handleSubmit, control, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: defaultValues ?? {},
+    defaultValues: (defaultValues ?? {}) as Partial<FormValues>,
   })
 
   return (

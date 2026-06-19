@@ -1,4 +1,4 @@
-import type { Inquilino, ContratoInquilino } from '../../types/api'
+import type { Inquilino, ContratoInquilino, EstadoContrato } from '../../types/api'
 import { formatDate, formatGs } from '../../utils/format'
 import { avatarColor } from '../../utils/avatar'
 import { estadoConfig } from '../../lib/constants/contratos'
@@ -45,7 +45,7 @@ export function Avatar({ nombre, apellido, size = 'md' }: AvatarProps) {
 }
 
 function ContratoActivo({ c }: { c: ContratoInquilino }) {
-  const cfg = estadoConfig[c.estado] ?? estadoConfig.activo
+  const cfg = estadoConfig[c.estado as EstadoContrato] ?? estadoConfig.activo
   return (
     <div className="rounded px-3 py-2.5 flex flex-col gap-1.5" style={{ backgroundColor: 'var(--color-surface-2)' }}>
       <div className="flex items-center justify-between">

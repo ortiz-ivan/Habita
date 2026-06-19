@@ -46,8 +46,8 @@ export function PagoCard({ p, onEdit, onView, onCobrar }: PagoCardProps) {
       <div style={{ height: '3px', backgroundColor: cfg.dot }} />
 
       <div className="px-5 pt-5 pb-4">
-        <p className="text-base font-bold leading-snug text-fg mb-1">{p.contrato.inquilino_nombre}</p>
-        <p className="text-[12px]" style={{ color: 'var(--color-stone-text)' }}>Hab. {p.contrato.habitacion_numero}</p>
+        <p className="text-base font-bold leading-snug text-fg mb-1">{p.contrato?.inquilino_nombre}</p>
+        <p className="text-[12px]" style={{ color: 'var(--color-stone-text)' }}>Hab. {p.contrato?.habitacion_numero}</p>
       </div>
 
       <div className="mx-5 h-px bg-border" />

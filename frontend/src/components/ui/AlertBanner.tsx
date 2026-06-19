@@ -23,7 +23,7 @@ interface AlertConfig {
   border: string
   text: string
   icon: string
-  Icon: () => JSX.Element
+  Icon: () => React.ReactElement
 }
 
 const alertConfig: Record<AlertType, AlertConfig> = {

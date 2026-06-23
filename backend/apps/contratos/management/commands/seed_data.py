@@ -259,7 +259,7 @@ class Command(BaseCommand):
                 habitacion=hab,
                 inquilino=inquilino,
                 fecha_inicio=contrato_inicio,
-                fecha_fin=contrato_fin,
+                fecha_fin=contrato_fin,  # type: ignore[misc]  # django-stubs no infiere null=True en create()
                 monto_mensual=monto_mensual,
                 deposito=monto_mensual,
                 estado=estado,

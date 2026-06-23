@@ -1,4 +1,9 @@
+from datetime import timedelta
+from typing import Any, cast
+
 from django.conf import settings
+from django.http import HttpResponse
+from rest_framework.request import Request
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -14,11 +19,12 @@ REFRESH_COOKIE = 'habita_refresh'
 COOKIE_PATH = '/api/v1/auth/'
 
 
-def _cookie_max_age():
-    return int(settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds())
+def _cookie_max_age() -> int:
+    lifetime = cast(timedelta, settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'])
+    return int(lifetime.total_seconds())
 
 
-def _set_refresh_cookie(response, token_str):
+def _set_refresh_cookie(response: HttpResponse, token_str: str) -> None:
     response.set_cookie(
         key=REFRESH_COOKIE,
         value=token_str,
@@ -30,14 +36,14 @@ def _set_refresh_cookie(response, token_str):
     )
 
 
-def _delete_refresh_cookie(response):
+def _delete_refresh_cookie(response: HttpResponse) -> None:
     response.delete_cookie(REFRESH_COOKIE, path=COOKIE_PATH)
 
 
 class CookieTokenObtainPairView(TokenObtainPairView):
     throttle_classes = [LoginRateThrottle]
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
@@ -68,13 +74,13 @@ class CookieTokenObtainPairView(TokenObtainPairView):
 class CookieTokenRefreshView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         token_str = request.COOKIES.get(REFRESH_COOKIE)
         if not token_str:
             return Response({'detail': 'No autenticado.'}, status=401)
 
         try:
-            refresh = RefreshToken(token_str)
+            refresh = RefreshToken(token_str)  # type: ignore[arg-type]  # simplejwt stub incorrecto: acepta str
         except TokenError:
             response = Response({'detail': 'Sesión expirada.'}, status=401)
             _delete_refresh_cookie(response)
@@ -101,11 +107,11 @@ class CookieTokenRefreshView(APIView):
 class LogoutView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         token_str = request.COOKIES.get(REFRESH_COOKIE)
         if token_str:
             try:
-                RefreshToken(token_str).blacklist()
+                RefreshToken(token_str).blacklist()  # type: ignore[arg-type]  # simplejwt stub incorrecto: acepta str
             except (TokenError, AttributeError):
                 pass
 

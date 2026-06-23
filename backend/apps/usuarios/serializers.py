@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 from .models import Usuario
 
@@ -16,5 +18,5 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = ['username', 'email', 'first_name', 'last_name', 'rol', 'password']
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict[str, Any]) -> Usuario:
         return Usuario.objects.create_user(**validated_data)

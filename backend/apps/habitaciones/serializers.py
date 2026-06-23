@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 from .models import Habitacion, TipoHabitacion
 
@@ -20,7 +22,7 @@ class HabitacionSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
-    def get_contrato_activo(self, obj):
+    def get_contrato_activo(self, obj: Habitacion) -> dict[str, Any] | None:
         contratos = getattr(obj, 'contratos_activos', None)
         if contratos is None:
             contratos = list(

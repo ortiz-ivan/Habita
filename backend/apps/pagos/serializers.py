@@ -1,10 +1,12 @@
 from datetime import date, timedelta
+from typing import Any
+
 from rest_framework import serializers
 from .models import Pago
 from apps.contratos.models import Contrato
 
 
-def get_ciclo_pago(fecha_pago, dia_inicio):
+def get_ciclo_pago(fecha_pago: date, dia_inicio: int) -> tuple[date, date]:
     """Devuelve (inicio, fin) del ciclo de pago que contiene fecha_pago."""
     dia = min(max(dia_inicio, 1), 28)
     y, m, d = fecha_pago.year, fecha_pago.month, fecha_pago.day
@@ -44,7 +46,7 @@ class PagoWriteSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
-    def validate(self, data):
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         contrato   = data.get('contrato',   getattr(self.instance, 'contrato',   None))
         tipo       = data.get('tipo',       getattr(self.instance, 'tipo',       Pago.Tipo.ALQUILER))
         fecha_pago = data.get('fecha_pago', getattr(self.instance, 'fecha_pago', None))

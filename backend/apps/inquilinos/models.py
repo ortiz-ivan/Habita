@@ -17,5 +17,5 @@ class Inquilino(models.Model):
         verbose_name_plural = 'inquilinos'
         ordering = ['apellido', 'nombre']
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.apellido}, {self.nombre}'

@@ -26,5 +26,5 @@ class Contrato(models.Model):
         verbose_name_plural = 'contratos'
         ordering = ['-created_at']
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'Contrato #{self.pk} — {self.inquilino} / Hab. {self.habitacion.numero}'

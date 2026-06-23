@@ -15,7 +15,7 @@ class TipoHabitacion(models.Model):
         verbose_name_plural = 'tipos de habitación'
         ordering            = ['nombre']
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.nombre
 
 
@@ -47,5 +47,5 @@ class Habitacion(models.Model):
         verbose_name_plural = 'habitaciones'
         ordering            = ['piso', 'numero']
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'Hab. {self.numero} — Piso {self.piso}'

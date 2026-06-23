@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 from .models import Inquilino
 
@@ -10,7 +12,7 @@ class InquilinoSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
-    def get_contrato_activo(self, obj):
+    def get_contrato_activo(self, obj: Inquilino) -> dict[str, Any] | None:
         contrato = obj.contratos.filter(estado__in=['activo', 'moroso']).order_by('-created_at').first()
         if not contrato:
             return None

@@ -34,5 +34,5 @@ class Pago(models.Model):
         verbose_name_plural = 'pagos'
         ordering = ['-fecha_pago']
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'Pago #{self.pk} — {self.contrato} ({self.estado})'

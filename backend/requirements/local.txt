@@ -1,0 +1,7 @@
+-r base.txt
+
+# Type checking
+mypy>=1.10
+django-stubs[compatible-mypy]>=5.2.0
+djangorestframework-stubs[compatible-mypy]>=3.15.0
+django-filter-stubs>=0.1.3

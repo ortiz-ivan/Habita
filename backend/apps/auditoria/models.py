@@ -28,6 +28,6 @@ class AuditLog(models.Model):
         verbose_name_plural = 'registros de auditoría'
         ordering            = ['-timestamp']
 
-    def __str__(self):
+    def __str__(self) -> str:
         usuario = self.usuario or 'Anónimo'
         return f'[{self.timestamp:%Y-%m-%d %H:%M}] {usuario} — {self.accion} {self.recurso}'

@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 from .models import Contrato
 from .services import ESTADOS_ACTIVOS
@@ -26,7 +28,7 @@ class ContratoReadSerializer(serializers.ModelSerializer):
         model = Contrato
         fields = '__all__'
 
-    def get_garantia_info(self, obj):
+    def get_garantia_info(self, obj: Contrato) -> dict[str, Any] | None:
         pagos = [p for p in obj.pagos.all() if p.tipo == 'garantia']
         total = len(pagos)
         if total == 0:
@@ -41,7 +43,7 @@ class ContratoWriteSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
-    def validate(self, data):
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         habitacion = data.get('habitacion', getattr(self.instance, 'habitacion', None))
         inquilino  = data.get('inquilino',  getattr(self.instance, 'inquilino',  None))
         estado     = data.get('estado',     getattr(self.instance, 'estado', 'activo'))

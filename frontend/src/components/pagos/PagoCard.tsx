@@ -30,7 +30,7 @@ interface PagoCardProps {
   p: PagoRead
   onEdit: (p: PagoRead) => void
   onView: (p: PagoRead) => void
-  onCobrar: (p: PagoRead) => void
+  onCobrar?: (p: PagoRead) => void
 }
 
 export function PagoCard({ p, onEdit, onView, onCobrar }: PagoCardProps) {

@@ -1,17 +1,22 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { PagoCard } from '../../../components/pagos/PagoCard'
+import type { PagoRead } from '../../../types/api'
 
-const basePago = {
+const basePago: PagoRead = {
   id: 1,
   contrato: {
+    id: 1,
     inquilino_nombre: 'García, Juan',
     habitacion_numero: '101',
+    monto_mensual: 1200000,
   },
   monto: 1500000,
   fecha_pago: '2025-06-01',
   estado: 'pagado',
   metodo_pago: 'efectivo',
+  tipo: 'mensualidad',
+  observacion: '',
 }
 
 const handlers = {
@@ -20,7 +25,7 @@ const handlers = {
   onCobrar: vi.fn(),
 }
 
-function renderCard(pago = basePago, props = {}) {
+function renderCard(pago: PagoRead = basePago, props = {}) {
   return render(<PagoCard p={pago} {...handlers} {...props} />)
 }
 
@@ -83,14 +88,14 @@ describe('PagoCard', () => {
   })
 
   it('calls onCobrar with the pago when Cobrar is clicked', () => {
-    const pendientePago = { ...basePago, estado: 'pendiente' }
+    const pendientePago = { ...basePago, estado: 'pendiente' } as PagoRead
     renderCard(pendientePago)
     fireEvent.click(screen.getByText('Cobrar'))
     expect(handlers.onCobrar).toHaveBeenCalledWith(pendientePago)
   })
 
   it('handles unknown estado with a fallback label (raw value)', () => {
-    renderCard({ ...basePago, estado: 'desconocido' })
+    renderCard({ ...basePago, estado: 'desconocido' as PagoRead['estado'] })
     expect(screen.getByText('desconocido')).toBeInTheDocument()
   })
 })

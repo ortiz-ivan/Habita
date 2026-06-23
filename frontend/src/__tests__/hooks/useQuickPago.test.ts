@@ -11,7 +11,7 @@ import { useCreatePago } from '../../hooks/queries/usePagos'
 describe('useQuickPago', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    useCreatePago.mockReturnValue({ mutate: vi.fn(), isPending: false })
+    vi.mocked(useCreatePago).mockReturnValue({ mutate: vi.fn(), isPending: false } as any)
   })
 
   it('starts closed with no error', () => {
@@ -35,34 +35,34 @@ describe('useQuickPago', () => {
   })
 
   it('onSuccess callback closes modal and clears error', () => {
-    let capturedOnSuccess
-    useCreatePago.mockImplementation(({ onSuccess }) => {
+    let capturedOnSuccess: (() => void) | undefined
+    vi.mocked(useCreatePago).mockImplementation(({ onSuccess }: any) => {
       capturedOnSuccess = onSuccess
-      return { mutate: vi.fn(), isPending: false }
+      return { mutate: vi.fn(), isPending: false } as any
     })
     const { result } = renderHook(() => useQuickPago())
     act(() => { result.current.open() })
-    act(() => { capturedOnSuccess() })
+    act(() => { capturedOnSuccess!() })
     expect(result.current.isOpen).toBe(false)
     expect(result.current.apiError).toBe('')
   })
 
   it('onError callback sets apiError from parsed response', () => {
-    let capturedOnError
-    useCreatePago.mockImplementation(({ onError }) => {
+    let capturedOnError: ((err: unknown) => void) | undefined
+    vi.mocked(useCreatePago).mockImplementation(({ onError }: any) => {
       capturedOnError = onError
-      return { mutate: vi.fn(), isPending: false }
+      return { mutate: vi.fn(), isPending: false } as any
     })
     const { result } = renderHook(() => useQuickPago())
     act(() => {
-      capturedOnError({ response: { data: { monto: ['El monto es requerido'] } } })
+      capturedOnError!({ response: { data: { monto: ['El monto es requerido'] } } })
     })
     expect(result.current.apiError).toBe('monto: El monto es requerido')
   })
 
   it('exposes the mutation object from useCreatePago', () => {
     const mockMutation = { mutate: vi.fn(), isPending: false }
-    useCreatePago.mockReturnValue(mockMutation)
+    vi.mocked(useCreatePago).mockReturnValue(mockMutation as any)
     const { result } = renderHook(() => useQuickPago())
     expect(result.current.mutation).toBe(mockMutation)
   })

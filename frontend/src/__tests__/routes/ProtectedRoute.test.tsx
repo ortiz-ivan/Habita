@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import ProtectedRoute from '../../routes/ProtectedRoute'
 import { useAuthStore } from '../../store/authStore'
+import type { User } from '../../types/api'
 
 vi.mock('../../services/authService', () => ({
   silentRefresh: vi.fn(),
@@ -10,7 +11,7 @@ vi.mock('../../services/authService', () => ({
 
 import { silentRefresh } from '../../services/authService'
 
-function renderRoute(children) {
+function renderRoute(children: React.ReactNode) {
   return render(
     <MemoryRouter>
       <ProtectedRoute>{children}</ProtectedRoute>
@@ -25,7 +26,7 @@ describe('ProtectedRoute', () => {
   })
 
   it('shows a loading spinner while authStatus is loading', () => {
-    silentRefresh.mockReturnValue(new Promise(() => {})) // never resolves
+    vi.mocked(silentRefresh).mockReturnValue(new Promise(() => {}) as Promise<User>)
     const { container } = renderRoute(<div>Protected</div>)
     expect(container.querySelector('.animate-spin')).toBeInTheDocument()
     expect(screen.queryByText('Protected')).not.toBeInTheDocument()
@@ -44,7 +45,7 @@ describe('ProtectedRoute', () => {
   })
 
   it('calls silentRefresh when no access token is in memory', () => {
-    silentRefresh.mockResolvedValue({ username: 'admin' })
+    vi.mocked(silentRefresh).mockResolvedValue({ username: 'admin' } as User)
     useAuthStore.setState({ authStatus: 'loading', accessToken: null })
     renderRoute(<div>Protected</div>)
     expect(silentRefresh).toHaveBeenCalledOnce()
@@ -57,7 +58,7 @@ describe('ProtectedRoute', () => {
   })
 
   it('marks authStatus as unauthenticated when silentRefresh rejects', async () => {
-    silentRefresh.mockRejectedValue(new Error('No refresh cookie'))
+    vi.mocked(silentRefresh).mockRejectedValue(new Error('No refresh cookie'))
     useAuthStore.setState({ authStatus: 'loading', accessToken: null })
     renderRoute(<div>Protected</div>)
     await waitFor(() => {

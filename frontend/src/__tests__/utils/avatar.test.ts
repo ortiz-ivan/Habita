@@ -29,7 +29,6 @@ describe('avatarColor', () => {
   })
 
   it('different inputs can produce different colors', () => {
-    // Hash 'A' vs 'Z' — won't collide since palette has 8 entries
     const colors = ['Ana', 'Luis', 'María', 'Pedro', 'Rosa', 'Juan', 'Karla', 'Tomás']
       .map(avatarColor)
     const unique = new Set(colors.map((c) => c.bg))

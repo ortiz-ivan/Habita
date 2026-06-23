@@ -6,7 +6,7 @@ import PagoForm from '../../../components/pagos/PagoForm'
 
 // Mock complex UI inputs to simple controlled inputs
 vi.mock('../../../components/ui/DatePickerInput', () => ({
-  DatePickerInput: ({ value, onChange }) => (
+  DatePickerInput: ({ value, onChange }: { value?: string; onChange: (v: string) => void }) => (
     <input
       data-testid="date-picker"
       type="text"
@@ -19,7 +19,7 @@ vi.mock('../../../components/ui/DatePickerInput', () => ({
 vi.mock('../../../components/ui/MoneyInput', async () => {
   const { useController } = await import('react-hook-form')
   return {
-    MoneyInput: ({ control, name }) => {
+    MoneyInput: ({ control, name }: { control: any; name: string }) => {
       const { field } = useController({ name, control })
       return (
         <input
@@ -55,7 +55,9 @@ vi.mock('../../../services/pagosService', () => ({
 
 function createWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  return ({ children }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+  )
 }
 
 describe('PagoForm', () => {
@@ -132,7 +134,7 @@ describe('PagoForm', () => {
       estado: 'pagado',
     }
     render(
-      <PagoForm onSubmit={onSubmit} onCancel={onCancel} defaultValues={defaultValues} />,
+      <PagoForm onSubmit={onSubmit} onCancel={onCancel} defaultValues={defaultValues as any} />,
       { wrapper: createWrapper() }
     )
     expect(screen.getByRole('button', { name: 'Guardar cambios' })).toBeInTheDocument()

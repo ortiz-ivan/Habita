@@ -1,3 +1,6 @@
+from argparse import ArgumentParser
+from typing import Any
+
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from apps.contratos.models import Contrato
@@ -6,14 +9,14 @@ from apps.contratos.models import Contrato
 class Command(BaseCommand):
     help = 'Marca como morosos los contratos activos que tienen pagos vencidos.'
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             '--dry-run',
             action='store_true',
             help='Muestra los contratos afectados sin aplicar cambios.',
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         dry_run = options['dry_run']
 
         candidatos = (

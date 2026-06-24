@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.core.management.base import BaseCommand
 from apps.habitaciones.models import Habitacion
 from apps.contratos.services import _sincronizar_habitacion
@@ -6,7 +8,7 @@ from apps.contratos.services import _sincronizar_habitacion
 class Command(BaseCommand):
     help = 'Re-sincroniza el estado de todas las habitaciones basandose en sus contratos activos.'
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         habitaciones = Habitacion.objects.all()
         cambiadas = 0
         for h in habitaciones:

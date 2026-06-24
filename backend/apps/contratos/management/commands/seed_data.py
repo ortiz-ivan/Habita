@@ -3,7 +3,10 @@ Management command to populate the database with realistic simulated data.
 Run with: python manage.py seed_data [--clear]
 """
 import random
+from argparse import ArgumentParser
 from datetime import date, timedelta
+from typing import Any
+
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from apps.habitaciones.models import Habitacion
@@ -81,7 +84,7 @@ def random_documento() -> str:
 class Command(BaseCommand):
     help = "Populates the database with simulated data for development/demo purposes."
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--clear",
             action="store_true",
@@ -101,7 +104,7 @@ class Command(BaseCommand):
         )
 
     @transaction.atomic
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         if options["clear"]:
             self.stdout.write("Clearing existing data...")
             Pago.objects.all().delete()
@@ -202,7 +205,7 @@ class Command(BaseCommand):
 
     def _create_contratos_y_pagos(
         self, habitaciones: list[Habitacion], inquilinos: list[Inquilino]
-    ):
+    ) -> None:
         today = date.today()
         random.shuffle(inquilinos)
         inquilino_pool = list(inquilinos)
@@ -283,7 +286,7 @@ class Command(BaseCommand):
         fin: date,
         today: date,
         closed: bool,
-    ):
+    ) -> None:
         metodos = list(Pago.MetodoPago.values)
         metodo_weights = [40, 35, 15, 10]  # efectivo, transferencia, tarjeta, qr
 
@@ -346,21 +349,21 @@ class Command(BaseCommand):
                 year += 1
             current = date(year, month, 1)
 
-    def _print_summary(self):
+    def _print_summary(self) -> None:
         self.stdout.write("\n--- Summary ---")
         self.stdout.write(f"  Habitaciones : {Habitacion.objects.count()}")
         self.stdout.write(f"  Inquilinos   : {Inquilino.objects.count()}")
         self.stdout.write(f"  Contratos    : {Contrato.objects.count()}")
         self.stdout.write(f"  Pagos        : {Pago.objects.count()}")
         self.stdout.write("")
-        for estado in Habitacion.Estado:
-            n = Habitacion.objects.filter(estado=estado).count()
-            self.stdout.write(f"  Hab. {estado.label:<15}: {n}")
+        for eh in Habitacion.Estado:
+            n = Habitacion.objects.filter(estado=eh).count()
+            self.stdout.write(f"  Hab. {eh.label:<15}: {n}")
         self.stdout.write("")
-        for estado in Contrato.Estado:
-            n = Contrato.objects.filter(estado=estado).count()
-            self.stdout.write(f"  Contratos {estado.label:<12}: {n}")
+        for ec in Contrato.Estado:
+            n = Contrato.objects.filter(estado=ec).count()
+            self.stdout.write(f"  Contratos {ec.label:<12}: {n}")
         self.stdout.write("")
-        for estado in Pago.Estado:
-            n = Pago.objects.filter(estado=estado).count()
-            self.stdout.write(f"  Pagos {estado.label:<15}: {n}")
+        for ep in Pago.Estado:
+            n = Pago.objects.filter(estado=ep).count()
+            self.stdout.write(f"  Pagos {ep.label:<15}: {n}")

@@ -1,12 +1,13 @@
 from django.db import IntegrityError
-from django.db.models import Count
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework import status as drf_status
-from rest_framework.filters import SearchFilter, OrderingFilter
+from django.db.models import Count, Prefetch, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Prefetch
+from rest_framework import status as drf_status
+from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
 from apps.auditoria.mixins import AuditMixin
 from apps.contratos.models import Contrato
 from .models import Habitacion, TipoHabitacion
@@ -15,12 +16,12 @@ from .serializers import HabitacionSerializer, TipoHabitacionSerializer
 
 class TipoHabitacionViewSet(AuditMixin, ModelViewSet):
     audit_recurso    = 'tipo_habitacion'
-    queryset         = TipoHabitacion.objects.annotate(habitaciones_count=Count('habitaciones'))
+    queryset: QuerySet[TipoHabitacion] = TipoHabitacion.objects.annotate(habitaciones_count=Count('habitaciones'))
     serializer_class = TipoHabitacionSerializer
     ordering         = ['nombre']
 
     @action(detail=True, methods=['post'], url_path='apply_to_all')
-    def apply_to_all(self, request, pk=None):
+    def apply_to_all(self, request: Request, pk: str | None = None) -> Response:
         tipo  = self.get_object()
         count = tipo.habitaciones.update(
             precio=tipo.precio,
@@ -33,7 +34,7 @@ class TipoHabitacionViewSet(AuditMixin, ModelViewSet):
 
 class HabitacionViewSet(AuditMixin, ModelViewSet):
     audit_recurso = 'habitacion'
-    queryset = Habitacion.objects.prefetch_related(
+    queryset: QuerySet[Habitacion] = Habitacion.objects.prefetch_related(
         Prefetch(
             'contratos',
             queryset=Contrato.objects.filter(
@@ -50,7 +51,7 @@ class HabitacionViewSet(AuditMixin, ModelViewSet):
     ordering         = ['piso', 'numero']
 
     @action(detail=False, methods=['post'], url_path='bulk_create')
-    def bulk_create(self, request):
+    def bulk_create(self, request: Request) -> Response:
         tipo_id    = request.data.get('tipo_id')
         rooms      = request.data.get('habitaciones', [])
 

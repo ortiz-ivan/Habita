@@ -1,11 +1,16 @@
 import datetime
-from django.db.models import Sum
+from typing import Any
+
+from django.db.models import QuerySet, Sum
 from django.utils import timezone
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer
+from rest_framework.viewsets import ModelViewSet
+
 from apps.auditoria.mixins import AuditMixin
 from .models import Pago
 from .serializers import PagoReadSerializer, PagoWriteSerializer
@@ -14,7 +19,7 @@ from .filters import PagoFilter
 
 class PagoViewSet(AuditMixin, ModelViewSet):
     audit_recurso = 'pago'
-    queryset = Pago.objects.select_related(
+    queryset: QuerySet[Pago] = Pago.objects.select_related(
         'contrato', 'contrato__habitacion', 'contrato__inquilino'
     ).all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -23,13 +28,13 @@ class PagoViewSet(AuditMixin, ModelViewSet):
     ordering_fields = ['fecha_pago', 'monto', 'created_at']
     ordering = ['-fecha_pago']
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[BaseSerializer[Any]]:
         if self.action in ['create', 'update', 'partial_update']:
             return PagoWriteSerializer
         return PagoReadSerializer
 
     @action(detail=False, methods=['get'])
-    def resumen(self, request):
+    def resumen(self, request: Request) -> Response:
         hoy = timezone.now().date()
         inicio_mes = hoy.replace(day=1)
         fin_mes_anterior = inicio_mes - datetime.timedelta(days=1)

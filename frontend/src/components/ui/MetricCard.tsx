@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Sparkline } from './Sparkline'
 import { IconTrendUp } from './icons'
-import { useCountUp } from '../../hooks/useCountUp'
+import { useCountUp } from '../../hooks/ui/useCountUp'
 
 function DonutRing({ value, color }: { value: number; color: string }) {
   const r = 13

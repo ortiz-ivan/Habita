@@ -1,26 +1,35 @@
 from typing import Any
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from .models import Habitacion, TipoHabitacion
 
 
 class TipoHabitacionSerializer(serializers.ModelSerializer):
+    nombre = serializers.CharField(
+        max_length=100,
+        validators=[UniqueValidator(queryset=TipoHabitacion.objects.all())],
+    )
     habitaciones_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model  = TipoHabitacion
         fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at', 'deleted_at']
 
 
 class HabitacionSerializer(serializers.ModelSerializer):
+    numero          = serializers.CharField(
+        max_length=10,
+        validators=[UniqueValidator(queryset=Habitacion.objects.all())],
+    )
     contrato_activo = serializers.SerializerMethodField()
     tipo_nombre     = serializers.CharField(source='tipo.nombre', read_only=True)
 
     class Meta:
         model  = Habitacion
         fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at', 'deleted_at']
 
     def get_contrato_activo(self, obj: Habitacion) -> dict[str, Any] | None:
         contratos = getattr(obj, 'contratos_activos', None)

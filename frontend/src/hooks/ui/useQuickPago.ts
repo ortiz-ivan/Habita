@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useCreatePago } from './queries/usePagos'
-import { parseApiError } from '../utils/format'
+import { useCreatePago } from '../queries/usePagos'
+import { parseApiError } from '../../utils/format'
 
 export function useQuickPago() {
   const [isOpen, setIsOpen]     = useState(false)

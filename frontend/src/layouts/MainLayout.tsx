@@ -8,7 +8,7 @@ import { Modal } from '../components/ui/Modal'
 import PagoForm from '../components/pagos/PagoForm'
 import { Button } from '../components/ui/Button'
 import { usePagosVencidosCount } from '../hooks/queries/usePagos'
-import { useQuickPago } from '../hooks/useQuickPago'
+import { useQuickPago } from '../hooks/ui/useQuickPago'
 import {
   IconDashboard,
   IconHabitaciones,

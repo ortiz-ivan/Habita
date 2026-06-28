@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useQuickPago } from '../../hooks/useQuickPago'
+import { useQuickPago } from '../../hooks/ui/useQuickPago'
 
 vi.mock('../../hooks/queries/usePagos', () => ({
   useCreatePago: vi.fn(),

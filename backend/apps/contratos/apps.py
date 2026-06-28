@@ -5,5 +5,3 @@ class ContratosConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'apps.contratos'
 
-    def ready(self):
-        import apps.contratos.signals  # noqa: F401

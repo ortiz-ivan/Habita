@@ -1,16 +1,24 @@
 from typing import Any
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from .models import Inquilino
 
 
 class InquilinoSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        validators=[UniqueValidator(queryset=Inquilino.objects.all())]
+    )
+    documento = serializers.CharField(
+        max_length=20,
+        validators=[UniqueValidator(queryset=Inquilino.objects.all())],
+    )
     contrato_activo = serializers.SerializerMethodField()
 
     class Meta:
         model = Inquilino
         fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at', 'deleted_at']
 
     def get_contrato_activo(self, obj: Inquilino) -> dict[str, Any] | None:
         contrato = obj.contratos.filter(estado__in=['activo', 'moroso']).order_by('-created_at').first()

@@ -3,6 +3,8 @@ from typing import Any, cast
 
 from django.conf import settings
 from django.http import HttpResponse
+from drf_spectacular.utils import extend_schema, OpenApiResponse, inline_serializer
+from rest_framework import serializers as drf_serializers
 from rest_framework.request import Request
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -40,9 +42,29 @@ def _delete_refresh_cookie(response: HttpResponse) -> None:
     response.delete_cookie(REFRESH_COOKIE, path=COOKIE_PATH)
 
 
+_LoginRequest = inline_serializer('LoginRequest', fields={
+    'username': drf_serializers.CharField(),
+    'password': drf_serializers.CharField(),
+})
+_AccessTokenResponse = inline_serializer('AccessTokenResponse', fields={
+    'access': drf_serializers.CharField(help_text='JWT de acceso (30 min). El refresh token se envía en cookie HttpOnly.'),
+})
+
+
+@extend_schema(tags=['Auth'])
 class CookieTokenObtainPairView(TokenObtainPairView):
     throttle_classes = [LoginRateThrottle]
 
+    @extend_schema(
+        summary='Iniciar sesión',
+        description='Autentica al usuario y devuelve un JWT de acceso en el body. El refresh token se almacena en cookie HttpOnly.',
+        request=_LoginRequest,
+        responses={
+            200: _AccessTokenResponse,
+            401: OpenApiResponse(description='Credenciales incorrectas'),
+            429: OpenApiResponse(description='Demasiados intentos (5/min)'),
+        },
+    )
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer = self.get_serializer(data=request.data)
         try:
@@ -71,9 +93,19 @@ class CookieTokenObtainPairView(TokenObtainPairView):
         return response
 
 
+@extend_schema(tags=['Auth'])
 class CookieTokenRefreshView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        summary='Renovar token de acceso',
+        description='Lee el refresh token desde la cookie HttpOnly y emite un nuevo JWT de acceso.',
+        request=None,
+        responses={
+            200: _AccessTokenResponse,
+            401: OpenApiResponse(description='Cookie ausente o refresh token expirado'),
+        },
+    )
     def post(self, request: Request) -> Response:
         token_str = request.COOKIES.get(REFRESH_COOKIE)
         if not token_str:
@@ -104,9 +136,18 @@ class CookieTokenRefreshView(APIView):
         return response
 
 
+@extend_schema(tags=['Auth'])
 class LogoutView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        summary='Cerrar sesión',
+        description='Invalida el refresh token (blacklist) y elimina la cookie HttpOnly.',
+        request=None,
+        responses={200: inline_serializer('LogoutResponse', fields={
+            'detail': drf_serializers.CharField(),
+        })},
+    )
     def post(self, request: Request) -> Response:
         token_str = request.COOKIES.get(REFRESH_COOKIE)
         if token_str:

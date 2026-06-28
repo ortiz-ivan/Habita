@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import type { ToastItem } from '../../hooks/useToast'
-import { useToastListener } from '../../hooks/useToast'
+import type { ToastItem } from '../../hooks/ui/useToast'
+import { useToastListener } from '../../hooks/ui/useToast'
 
 const typeConfig = {
   success: {

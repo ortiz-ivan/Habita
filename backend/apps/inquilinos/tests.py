@@ -47,6 +47,7 @@ class InquilinoModelTest(TestCase):
         inq = make_inquilino()
         Contrato.objects.create(
             habitacion=hab, inquilino=inq, fecha_inicio=datetime.date.today(),
+            fecha_fin=datetime.date.today() + datetime.timedelta(days=365),
             monto_mensual=500_000, deposito=500_000,
         )
         with self.assertRaises(ProtectedError):

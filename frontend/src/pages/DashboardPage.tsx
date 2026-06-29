@@ -281,7 +281,7 @@ export default function DashboardPage() {
             { id: '',       label: 'Todo' },
             { id: 'rango',  label: 'Rango' },
           ].map((p) => (
-            <button key={p.id} onClick={() => setPeriodoKpi(p.id)} className="text-[12px] px-3 py-1.5 rounded-full font-medium transition-colors cursor-pointer" style={periodoKpi === p.id ? { backgroundColor: 'var(--color-brand)', color: '#fff' } : { backgroundColor: 'var(--color-surface-2)', color: 'var(--color-stone-text)', border: '1px solid var(--color-border)' }} onMouseEnter={(e) => { if (periodoKpi !== p.id) e.currentTarget.style.color = 'var(--color-fg)' }} onMouseLeave={(e) => { if (periodoKpi !== p.id) e.currentTarget.style.color = 'var(--color-stone-text)' }}>
+            <button key={p.id} onClick={() => setPeriodoKpi(p.id)} className="text-[12px] px-3 py-1.5 rounded font-medium transition-colors cursor-pointer" style={periodoKpi === p.id ? { backgroundColor: 'var(--color-brand)', color: '#fff' } : { backgroundColor: 'var(--color-surface-2)', color: 'var(--color-stone-text)', border: '1px solid var(--color-border)' }} onMouseEnter={(e) => { if (periodoKpi !== p.id) e.currentTarget.style.color = 'var(--color-fg)' }} onMouseLeave={(e) => { if (periodoKpi !== p.id) e.currentTarget.style.color = 'var(--color-stone-text)' }}>
               {p.label}
             </button>
           ))}

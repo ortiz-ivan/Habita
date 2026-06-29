@@ -52,7 +52,7 @@ export function Button({ variant = 'primary', size = 'md', className = '', child
   const v = variants[variant]
   return (
     <button
-      className={`flex items-center justify-center gap-1.5 rounded-md font-semibold cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed ${sizes[size]} ${className}`}
+      className={`flex items-center justify-center gap-1.5 rounded font-semibold cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed ${sizes[size]} ${className}`}
       style={v.base}
       onMouseEnter={(e) => { if (!disabled) Object.assign(e.currentTarget.style, v.hover) }}
       onMouseLeave={(e) => { if (!disabled) Object.assign(e.currentTarget.style, v.leave) }}

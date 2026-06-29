@@ -12,7 +12,7 @@ interface FilterBarProps {
 export function FilterBar({ filters, active, onChange }: FilterBarProps) {
   return (
     <div
-      className="inline-flex gap-1 p-1 rounded-lg"
+      className="inline-flex gap-1 p-1 rounded"
       style={{
         backgroundColor: 'var(--color-surface-1)',
         border: '1px solid var(--color-border)',
@@ -22,7 +22,7 @@ export function FilterBar({ filters, active, onChange }: FilterBarProps) {
         <button
           key={f.id}
           onClick={() => onChange(f.id)}
-          className="text-[13px] px-3.5 py-1.5 rounded-md cursor-pointer transition-all"
+          className="text-[13px] px-3.5 py-1.5 rounded cursor-pointer transition-all"
           style={
             active === f.id
               ? {

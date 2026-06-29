@@ -19,7 +19,7 @@ import { useContratosList, useContratosSummary, useCreateContrato, useUpdateCont
 import { Pagination } from '../components/ui/Pagination'
 import { estadoConfig, estadoPills } from '../lib/constants/contratos'
 
-const inpFilter = 'border border-border-strong rounded-lg px-3 py-2 text-[13px] bg-surface-2 text-stone-dark placeholder:text-[#55554f] focus:outline-none focus:ring-[3px] focus:ring-brand/15 focus:border-brand transition-all'
+const inpFilter = 'border border-border-strong rounded-lg py-2 text-[13px] bg-surface-2 text-stone-dark placeholder:text-[#55554f] focus:outline-none focus:ring-[3px] focus:ring-brand/15 focus:border-brand transition-all'
 
 interface KpiCardProps {
   label: string
@@ -211,7 +211,7 @@ export default function ContratosPage() {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-stone-text">
               <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
             </svg>
-            <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por inquilino o habitación..." className={`${inpFilter} pl-9 w-full`} />
+            <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por inquilino o habitación..." className={`${inpFilter} pr-3 w-full`} style={{ paddingLeft: '2.25rem' }} />
           </div>
 
           <div className="w-px h-5 self-center shrink-0" style={{ backgroundColor: 'var(--color-border-strong)' }} />
@@ -234,7 +234,7 @@ export default function ContratosPage() {
             const isActive    = estado === pill.id
             const activeStyle = pill.id === '' ? { backgroundColor: 'var(--color-brand)', color: '#FFFFFF' } : { backgroundColor: pill.bg, color: pill.text }
             return (
-              <button key={pill.id} onClick={() => setEstado(pill.id)} className="flex items-center gap-1.5 text-[12px] px-3 py-[5px] rounded-full font-medium transition-colors cursor-pointer" style={isActive ? activeStyle : { color: 'var(--color-stone-text)', backgroundColor: 'transparent' }} onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = 'var(--color-surface-2)' }} onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent' }}>
+              <button key={pill.id} onClick={() => setEstado(pill.id)} className="flex items-center gap-1.5 text-[12px] px-3 py-[5px] rounded font-medium transition-colors cursor-pointer" style={isActive ? activeStyle : { color: 'var(--color-stone-text)', backgroundColor: 'transparent' }} onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = 'var(--color-surface-2)' }} onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent' }}>
                 {pill.id && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isActive ? pill.dot : '#555553' }} />}
                 {pill.label}
               </button>

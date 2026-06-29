@@ -15,7 +15,7 @@ import { Chip } from '../components/ui/Chip'
 import { useInquilinosList, useInquilinosSummary, useCreateInquilino, useUpdateInquilino, useDeleteInquilino } from '../hooks/queries/useInquilinos'
 import { Pagination } from '../components/ui/Pagination'
 
-const inpFilter = 'border border-border-strong rounded-lg px-3 py-2 text-[13px] bg-surface-2 text-stone-dark placeholder:text-[#55554f] focus:outline-none focus:ring-[3px] focus:ring-brand/15 focus:border-brand transition-all'
+const inpFilter = 'border border-border-strong rounded-lg py-2 text-[13px] bg-surface-2 text-stone-dark placeholder:text-[#55554f] focus:outline-none focus:ring-[3px] focus:ring-brand/15 focus:border-brand transition-all'
 
 export default function InquilinosPage() {
   const [modalOpen, setModalOpen]       = useState(false)
@@ -89,7 +89,7 @@ export default function InquilinosPage() {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-stone-text">
               <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
             </svg>
-            <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nombre, apellido, documento o email..." className={`${inpFilter} pl-9 w-full`} />
+            <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nombre, apellido, documento o email..." className={`${inpFilter} pr-3 w-full`} style={{ paddingLeft: '2.25rem' }} />
           </div>
 
           <div className="w-px h-5 self-center shrink-0" style={{ backgroundColor: 'var(--color-border-strong)' }} />

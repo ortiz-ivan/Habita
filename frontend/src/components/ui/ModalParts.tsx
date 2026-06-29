@@ -22,7 +22,7 @@ interface SelectInputProps extends SelectHTMLAttributes<HTMLSelectElement> {
 export function SelectInput({ className, wrapperClassName = '', children, ...props }: SelectInputProps) {
   return (
     <div className={`relative ${wrapperClassName}`}>
-      <select className={`${className ?? selectClass} appearance-none cursor-pointer pr-10`} {...props}>
+      <select className={`${className ?? selectClass} appearance-none cursor-pointer pr-10`} {...props} style={{ ...props.style, paddingRight: '2.5rem' }}>
         {children}
       </select>
       <Chevron />

@@ -41,7 +41,7 @@ class HabitacionSerializer(serializers.ModelSerializer):
         if not contratos:
             return None
         contrato = contratos[0]
-        pagos_pendientes = contrato.pagos.filter(estado__in=['pendiente', 'vencido']).count()
+        pagos_pendientes = contrato.pagos.filter(estado__in=['pendiente', 'por_vencer', 'vencido']).count()
         return {
             'id':               contrato.id,
             'inquilino_nombre': f"{contrato.inquilino.apellido}, {contrato.inquilino.nombre}",

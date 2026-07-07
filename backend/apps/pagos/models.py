@@ -7,6 +7,7 @@ class Pago(models.Model):
         PENDIENTE = 'pendiente', 'Pendiente'
         PAGADO = 'pagado', 'Pagado'
         PARCIAL = 'parcial', 'Parcial'
+        POR_VENCER = 'por_vencer', 'Por vencer'
         VENCIDO = 'vencido', 'Vencido'
 
     class MetodoPago(models.TextChoices):
@@ -22,6 +23,7 @@ class Pago(models.Model):
     contrato = models.ForeignKey(Contrato, on_delete=models.PROTECT, related_name='pagos')
     tipo     = models.CharField(max_length=10, choices=Tipo.choices, default=Tipo.ALQUILER)
     monto    = models.PositiveIntegerField()
+    fecha_vencimiento = models.DateField()
     fecha_pago = models.DateField()
     metodo_pago = models.CharField(max_length=15, choices=MetodoPago.choices)
     estado = models.CharField(max_length=12, choices=Estado.choices, default=Estado.PENDIENTE)

@@ -6,10 +6,10 @@ from .models import Pago
 from apps.contratos.models import Contrato
 
 
-def get_ciclo_pago(fecha_pago: date, dia_inicio: int) -> tuple[date, date]:
-    """Devuelve (inicio, fin) del ciclo de pago que contiene fecha_pago."""
+def get_ciclo_pago(fecha_vencimiento: date, dia_inicio: int) -> tuple[date, date]:
+    """Devuelve (inicio, fin) del ciclo de pago que contiene fecha_vencimiento."""
     dia = min(max(dia_inicio, 1), 28)
-    y, m, d = fecha_pago.year, fecha_pago.month, fecha_pago.day
+    y, m, d = fecha_vencimiento.year, fecha_vencimiento.month, fecha_vencimiento.day
 
     if d >= dia:
         inicio = date(y, m, dia)
@@ -47,23 +47,23 @@ class PagoWriteSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
-        contrato   = data.get('contrato',   getattr(self.instance, 'contrato',   None))
-        tipo       = data.get('tipo',       getattr(self.instance, 'tipo',       Pago.Tipo.ALQUILER))
-        fecha_pago = data.get('fecha_pago', getattr(self.instance, 'fecha_pago', None))
+        contrato          = data.get('contrato',          getattr(self.instance, 'contrato',          None))
+        tipo              = data.get('tipo',               getattr(self.instance, 'tipo',              Pago.Tipo.ALQUILER))
+        fecha_vencimiento = data.get('fecha_vencimiento',  getattr(self.instance, 'fecha_vencimiento',  None))
 
-        if tipo == Pago.Tipo.ALQUILER and contrato and fecha_pago:
-            inicio, fin = get_ciclo_pago(fecha_pago, contrato.fecha_inicio.day)
+        if tipo == Pago.Tipo.ALQUILER and contrato and fecha_vencimiento:
+            inicio, fin = get_ciclo_pago(fecha_vencimiento, contrato.fecha_inicio.day)
             qs = Pago.objects.filter(
                 contrato=contrato,
                 tipo=Pago.Tipo.ALQUILER,
-                fecha_pago__gte=inicio,
-                fecha_pago__lte=fin,
+                fecha_vencimiento__gte=inicio,
+                fecha_vencimiento__lte=fin,
             )
             if self.instance:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
                 raise serializers.ValidationError({
-                    'fecha_pago': (
+                    'fecha_vencimiento': (
                         f'Ya hay un pago de alquiler registrado para este ciclo '
                         f'({inicio.strftime("%d/%m/%Y")} – {fin.strftime("%d/%m/%Y")}).'
                     )

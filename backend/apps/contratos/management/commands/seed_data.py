@@ -335,6 +335,7 @@ class Command(BaseCommand):
             Pago.objects.create(
                 contrato=contrato,
                 monto=monto,
+                fecha_vencimiento=fecha_vencimiento,
                 fecha_pago=fecha_pago,
                 metodo_pago=metodo or Pago.MetodoPago.EFECTIVO,
                 estado=estado,

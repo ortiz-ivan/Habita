@@ -34,6 +34,7 @@ def make_contrato(habitacion, inquilino, estado=Contrato.Estado.ACTIVO):
         habitacion=habitacion,
         inquilino=inquilino,
         fecha_inicio=datetime.date.today(),
+        fecha_fin=datetime.date.today() + datetime.timedelta(days=365),
         monto_mensual=500_000,
         deposito=500_000,
         estado=estado,
@@ -259,6 +260,7 @@ class MarcarMorososCommandTest(TestCase):
         return Pago.objects.create(
             contrato=self.contrato,
             monto=500_000,
+            fecha_vencimiento=datetime.date.today(),
             fecha_pago=datetime.date.today(),
             metodo_pago=Pago.MetodoPago.EFECTIVO,
             estado=estado,
@@ -290,6 +292,7 @@ class MarcarMorososCommandTest(TestCase):
         )
         Pago.objects.create(
             contrato=contrato_fin, monto=500_000,
+            fecha_vencimiento=datetime.date.today(),
             fecha_pago=datetime.date.today(),
             metodo_pago=Pago.MetodoPago.EFECTIVO,
             estado=Pago.Estado.VENCIDO,

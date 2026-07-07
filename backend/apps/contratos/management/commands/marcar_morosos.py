@@ -4,6 +4,7 @@ from typing import Any
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from apps.contratos.models import Contrato
+from apps.pagos.services import sincronizar_estados_vencimiento
 
 
 class Command(BaseCommand):
@@ -18,6 +19,8 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         dry_run = options['dry_run']
+
+        sincronizar_estados_vencimiento()
 
         candidatos = (
             Contrato.objects

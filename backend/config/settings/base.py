@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.pagos.middleware.SincronizarEstadosPagoMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -173,3 +174,6 @@ CORS_ALLOWED_ORIGINS = config(
 ).split(',')
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Días de anticipación antes de fecha_pago en que un pago 'pendiente' pasa a 'por_vencer'.
+PAGOS_DIAS_POR_VENCER = config('PAGOS_DIAS_POR_VENCER', default=5, cast=int)

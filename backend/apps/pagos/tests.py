@@ -7,6 +7,7 @@ from apps.habitaciones.models import Habitacion
 from apps.inquilinos.models import Inquilino
 from apps.contratos.models import Contrato
 from apps.pagos.models import Pago
+from apps.pagos.services import sincronizar_estados_vencimiento, DIAS_POR_VENCER
 
 
 def make_habitacion(numero='101'):
@@ -27,6 +28,7 @@ def make_contrato(habitacion, inquilino):
         habitacion=habitacion,
         inquilino=inquilino,
         fecha_inicio=datetime.date.today(),
+        fecha_fin=datetime.date.today() + datetime.timedelta(days=365),
         monto_mensual=500_000,
         deposito=500_000,
         estado=Contrato.Estado.ACTIVO,
@@ -48,6 +50,7 @@ class PagoAPITest(TestCase):
         return {
             'contrato': self.contrato.pk,
             'monto': 500_000,
+            'fecha_vencimiento': str(datetime.date.today()),
             'fecha_pago': str(datetime.date.today()),
             'metodo_pago': Pago.MetodoPago.EFECTIVO,
             'estado': estado,
@@ -72,13 +75,13 @@ class PagoAPITest(TestCase):
     def test_filter_pagos_by_estado(self):
         Pago.objects.create(
             contrato=self.contrato, monto=500_000,
-            fecha_pago=datetime.date.today(),
+            fecha_vencimiento=datetime.date.today(), fecha_pago=datetime.date.today(),
             metodo_pago=Pago.MetodoPago.EFECTIVO,
             estado=Pago.Estado.PAGADO,
         )
         Pago.objects.create(
             contrato=self.contrato, monto=300_000,
-            fecha_pago=datetime.date.today(),
+            fecha_vencimiento=datetime.date.today(), fecha_pago=datetime.date.today(),
             metodo_pago=Pago.MetodoPago.EFECTIVO,
             estado=Pago.Estado.VENCIDO,
         )
@@ -91,7 +94,7 @@ class PagoAPITest(TestCase):
     def test_update_pago(self):
         pago = Pago.objects.create(
             contrato=self.contrato, monto=500_000,
-            fecha_pago=datetime.date.today(),
+            fecha_vencimiento=datetime.date.today(), fecha_pago=datetime.date.today(),
             metodo_pago=Pago.MetodoPago.EFECTIVO,
             estado=Pago.Estado.PENDIENTE,
         )
@@ -100,10 +103,30 @@ class PagoAPITest(TestCase):
         pago.refresh_from_db()
         self.assertEqual(pago.estado, Pago.Estado.PAGADO)
 
+    def test_cobrar_no_pisa_fecha_vencimiento(self):
+        vencimiento = datetime.date.today() - datetime.timedelta(days=3)
+        pago = Pago.objects.create(
+            contrato=self.contrato, monto=500_000,
+            fecha_vencimiento=vencimiento, fecha_pago=vencimiento,
+            metodo_pago=Pago.MetodoPago.EFECTIVO,
+            estado=Pago.Estado.VENCIDO,
+        )
+        hoy = datetime.date.today()
+        response = self.client.patch(
+            f'/api/v1/pagos/{pago.pk}/',
+            {'estado': 'pagado', 'fecha_pago': str(hoy)},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado, Pago.Estado.PAGADO)
+        self.assertEqual(pago.fecha_pago, hoy)
+        self.assertEqual(pago.fecha_vencimiento, vencimiento)
+
     def test_delete_pago(self):
         pago = Pago.objects.create(
             contrato=self.contrato, monto=500_000,
-            fecha_pago=datetime.date.today(),
+            fecha_vencimiento=datetime.date.today(), fecha_pago=datetime.date.today(),
             metodo_pago=Pago.MetodoPago.EFECTIVO,
             estado=Pago.Estado.PENDIENTE,
         )
@@ -129,15 +152,15 @@ class PagoFiltrosFechaTest(TestCase):
         manana = hoy + datetime.timedelta(days=1)
 
         Pago.objects.create(
-            contrato=self.contrato, monto=100_000, fecha_pago=ayer,
+            contrato=self.contrato, monto=100_000, fecha_vencimiento=ayer, fecha_pago=ayer,
             metodo_pago=Pago.MetodoPago.EFECTIVO, estado=Pago.Estado.PAGADO,
         )
         Pago.objects.create(
-            contrato=self.contrato, monto=200_000, fecha_pago=hoy,
+            contrato=self.contrato, monto=200_000, fecha_vencimiento=hoy, fecha_pago=hoy,
             metodo_pago=Pago.MetodoPago.TRANSFERENCIA, estado=Pago.Estado.PENDIENTE,
         )
         Pago.objects.create(
-            contrato=self.contrato, monto=300_000, fecha_pago=manana,
+            contrato=self.contrato, monto=300_000, fecha_vencimiento=manana, fecha_pago=manana,
             metodo_pago=Pago.MetodoPago.QR, estado=Pago.Estado.PENDIENTE,
         )
         self.hoy = hoy
@@ -170,7 +193,8 @@ class PagoFiltrosFechaTest(TestCase):
         inq2 = make_inquilino(email='second@test.com', documento='700')
         contrato2 = make_contrato(hab2, inq2)
         Pago.objects.create(
-            contrato=contrato2, monto=500_000, fecha_pago=datetime.date.today(),
+            contrato=contrato2, monto=500_000,
+            fecha_vencimiento=datetime.date.today(), fecha_pago=datetime.date.today(),
             metodo_pago=Pago.MetodoPago.EFECTIVO, estado=Pago.Estado.PENDIENTE,
         )
         response = self.client.get(f'/api/v1/pagos/?contrato={self.contrato.pk}')
@@ -180,3 +204,85 @@ class PagoFiltrosFechaTest(TestCase):
         futuro = self.manana + datetime.timedelta(days=30)
         response = self.client.get(f'/api/v1/pagos/?fecha_desde={futuro}')
         self.assertEqual(response.data['count'], 0)
+
+
+class SincronizarEstadosVencimientoTest(TestCase):
+    """Cubre apps.pagos.services.sincronizar_estados_vencimiento."""
+
+    def setUp(self):
+        self.hab = make_habitacion()
+        self.inq = make_inquilino()
+        self.contrato = make_contrato(self.hab, self.inq)
+        self.hoy = datetime.date.today()
+
+    def _make_pago(self, estado, fecha_vencimiento):
+        return Pago.objects.create(
+            contrato=self.contrato, monto=500_000,
+            fecha_vencimiento=fecha_vencimiento, fecha_pago=fecha_vencimiento,
+            metodo_pago=Pago.MetodoPago.EFECTIVO, estado=estado,
+        )
+
+    def test_pendiente_vencido_pasa_a_vencido(self):
+        pago = self._make_pago(Pago.Estado.PENDIENTE, self.hoy - datetime.timedelta(days=1))
+        sincronizar_estados_vencimiento(self.hoy)
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado, Pago.Estado.VENCIDO)
+
+    def test_pendiente_hoy_no_es_vencido(self):
+        pago = self._make_pago(Pago.Estado.PENDIENTE, self.hoy)
+        sincronizar_estados_vencimiento(self.hoy)
+        pago.refresh_from_db()
+        self.assertNotEqual(pago.estado, Pago.Estado.VENCIDO)
+
+    def test_pendiente_dentro_del_umbral_pasa_a_por_vencer(self):
+        pago = self._make_pago(Pago.Estado.PENDIENTE, self.hoy + datetime.timedelta(days=DIAS_POR_VENCER))
+        sincronizar_estados_vencimiento(self.hoy)
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado, Pago.Estado.POR_VENCER)
+
+    def test_pendiente_lejos_del_umbral_no_cambia(self):
+        pago = self._make_pago(Pago.Estado.PENDIENTE, self.hoy + datetime.timedelta(days=DIAS_POR_VENCER + 1))
+        sincronizar_estados_vencimiento(self.hoy)
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado, Pago.Estado.PENDIENTE)
+
+    def test_por_vencer_vencido_pasa_a_vencido(self):
+        pago = self._make_pago(Pago.Estado.POR_VENCER, self.hoy - datetime.timedelta(days=1))
+        sincronizar_estados_vencimiento(self.hoy)
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado, Pago.Estado.VENCIDO)
+
+    def test_por_vencer_fuera_de_umbral_vuelve_a_pendiente(self):
+        pago = self._make_pago(Pago.Estado.POR_VENCER, self.hoy + datetime.timedelta(days=DIAS_POR_VENCER + 5))
+        sincronizar_estados_vencimiento(self.hoy)
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado, Pago.Estado.PENDIENTE)
+
+    def test_vencido_es_pegajoso_no_se_revierte(self):
+        pago = self._make_pago(Pago.Estado.VENCIDO, self.hoy + datetime.timedelta(days=10))
+        sincronizar_estados_vencimiento(self.hoy)
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado, Pago.Estado.VENCIDO)
+
+    def test_pagado_nunca_se_toca(self):
+        pago = self._make_pago(Pago.Estado.PAGADO, self.hoy - datetime.timedelta(days=30))
+        sincronizar_estados_vencimiento(self.hoy)
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado, Pago.Estado.PAGADO)
+
+    def test_parcial_nunca_se_toca(self):
+        pago = self._make_pago(Pago.Estado.PARCIAL, self.hoy - datetime.timedelta(days=30))
+        sincronizar_estados_vencimiento(self.hoy)
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado, Pago.Estado.PARCIAL)
+
+    def test_filtro_por_estado_por_vencer_via_api(self):
+        client = APIClient()
+        user = Usuario.objects.create_user(username='syncuser', password='pass1234')
+        client.force_authenticate(user=user)
+        self._make_pago(Pago.Estado.PENDIENTE, self.hoy + datetime.timedelta(days=1))
+        # El middleware sincroniza antes de que la vista resuelva el queryset.
+        response = client.get('/api/v1/pagos/?estado=por_vencer')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['estado'], 'por_vencer')

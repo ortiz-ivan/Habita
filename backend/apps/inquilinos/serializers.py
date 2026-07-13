@@ -21,9 +21,17 @@ class InquilinoSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at', 'deleted_at']
 
     def get_contrato_activo(self, obj: Inquilino) -> dict[str, Any] | None:
-        contrato = obj.contratos.filter(estado__in=['activo', 'moroso']).order_by('-created_at').first()
-        if not contrato:
+        contratos = getattr(obj, 'contratos_activos', None)
+        if contratos is None:
+            contratos = list(
+                obj.contratos.filter(estado__in=['activo', 'moroso'])
+                             .select_related('habitacion')
+                             .prefetch_related('pagos')
+                             .order_by('-created_at')
+            )
+        if not contratos:
             return None
+        contrato = contratos[0]
         pagos_garantia = [p for p in contrato.pagos.all() if p.tipo == 'garantia']
         total_g  = len(pagos_garantia)
         pagadas_g = sum(1 for p in pagos_garantia if p.estado == 'pagado')

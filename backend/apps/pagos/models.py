@@ -35,6 +35,10 @@ class Pago(models.Model):
         verbose_name = 'pago'
         verbose_name_plural = 'pagos'
         ordering = ['-fecha_pago']
+        indexes = [
+            models.Index(fields=['estado', 'fecha_vencimiento']),
+            models.Index(fields=['fecha_pago']),
+        ]
 
     def __str__(self) -> str:
         return f'Pago #{self.pk} — {self.contrato} ({self.estado})'

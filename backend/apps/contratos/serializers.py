@@ -1,5 +1,6 @@
-from typing import Any
+from typing import Any, NoReturn
 
+from django.db import IntegrityError
 from rest_framework import serializers
 from .models import Contrato
 from .services import ESTADOS_ACTIVOS
@@ -42,6 +43,35 @@ class ContratoWriteSerializer(serializers.ModelSerializer):
         model = Contrato
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
+
+    def create(self, validated_data: dict[str, Any]) -> Contrato:
+        try:
+            return super().create(validated_data)
+        except IntegrityError as exc:
+            self._raise_conflict(exc)
+
+    def update(self, instance: Contrato, validated_data: dict[str, Any]) -> Contrato:
+        try:
+            return super().update(instance, validated_data)
+        except IntegrityError as exc:
+            self._raise_conflict(exc)
+
+    @staticmethod
+    def _raise_conflict(exc: IntegrityError) -> NoReturn:
+        # Red de seguridad ante una carrera entre la validación de arriba y el
+        # INSERT/UPDATE: dos requests concurrentes pueden pasar validate() antes
+        # de que cualquiera confirme, y es la UniqueConstraint de la DB la que
+        # termina rechazando al segundo.
+        msg = str(exc)
+        if 'unique_contrato_habitacion_activo' in msg:
+            raise serializers.ValidationError(
+                {'habitacion': 'Esta habitación ya tiene un contrato activo. Finalizá ese contrato primero.'}
+            ) from exc
+        if 'unique_contrato_inquilino_activo' in msg:
+            raise serializers.ValidationError(
+                {'inquilino': 'Este inquilino ya tiene un contrato activo. Finalizá ese contrato primero.'}
+            ) from exc
+        raise exc
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         habitacion = data.get('habitacion', getattr(self.instance, 'habitacion', None))

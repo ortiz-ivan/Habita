@@ -75,13 +75,20 @@ class ContratoServiceTest(TestCase):
         self.assertEqual(hab.estado, Habitacion.Estado.DISPONIBLE)
 
     def test_no_libera_habitacion_si_quedan_contratos_activos(self):
+        # unique_contrato_habitacion_activo impide 2 contratos activos a la vez
+        # sobre la misma habitación, así que el escenario realista es turnover:
+        # el contrato viejo se finaliza, entra un inquilino nuevo con contrato
+        # activo, y recién ahí se borra el registro finalizado (limpieza).
+        # _sincronizar_habitacion debe revisar el estado actual de la DB y no
+        # asumir que borrar un contrato libera la habitación.
         hab = make_habitacion()
         inq1 = make_inquilino(email='a@test.com', documento='111')
         inq2 = make_inquilino(email='b@test.com', documento='222')
-        make_contrato(hab, inq1)
-        contrato2 = make_contrato(hab, inq2)
+        contrato_viejo = make_contrato(hab, inq1, estado=Contrato.Estado.FINALIZADO)
+        make_contrato(hab, inq2)  # activo, tenant nuevo tras el turnover
+        contrato_viejo.delete()
 
-        on_contrato_deleted(hab, Contrato.Estado.ACTIVO)
+        on_contrato_deleted(hab, Contrato.Estado.FINALIZADO)
 
         hab.refresh_from_db()
         self.assertEqual(hab.estado, Habitacion.Estado.OCUPADA)

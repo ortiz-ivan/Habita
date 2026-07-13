@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from apps.habitaciones.models import Habitacion
 from apps.inquilinos.models import Inquilino
 
@@ -25,6 +26,24 @@ class Contrato(models.Model):
         verbose_name = 'contrato'
         verbose_name_plural = 'contratos'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['estado']),
+        ]
+        constraints = [
+            # Debe coincidir con services.ESTADOS_ACTIVOS — refuerza a nivel de DB
+            # la regla que ContratoWriteSerializer.validate() ya valida en la app,
+            # para evitar la condición de carrera entre el check y el create.
+            models.UniqueConstraint(
+                fields=['habitacion'],
+                condition=Q(estado__in=['activo', 'moroso']),
+                name='unique_contrato_habitacion_activo',
+            ),
+            models.UniqueConstraint(
+                fields=['inquilino'],
+                condition=Q(estado__in=['activo', 'moroso']),
+                name='unique_contrato_inquilino_activo',
+            ),
+        ]
 
     def __str__(self) -> str:
         return f'Contrato #{self.pk} — {self.inquilino} / Hab. {self.habitacion.numero}'

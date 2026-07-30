@@ -2,6 +2,7 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
 from apps.usuarios.models import Usuario
+from config.auth_views import REFRESH_COOKIE
 
 
 def make_user(username='admin', password='securepass123', **kwargs):
@@ -22,7 +23,10 @@ class AuthTokenTest(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)
+        # El refresh token no va en el body: se entrega en cookie HttpOnly.
+        self.assertNotIn('refresh', response.data)
+        self.assertIn(REFRESH_COOKIE, response.cookies)
+        self.assertTrue(response.cookies[REFRESH_COOKIE]['httponly'])
 
     def test_obtain_token_password_incorrecto(self):
         response = self.client.post(
@@ -41,25 +45,24 @@ class AuthTokenTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_refresh_token_valido_genera_nuevo_access(self):
-        tokens = self.client.post(
+        # El refresh token viaja en la cookie HttpOnly que el client
+        # arrastra automáticamente entre requests, no en el body.
+        self.client.post(
             '/api/v1/auth/token/',
             {'username': 'admin', 'password': 'securepass123'},
             format='json',
-        ).data
-        response = self.client.post(
-            '/api/v1/auth/token/refresh/',
-            {'refresh': tokens['refresh']},
-            format='json',
         )
+        response = self.client.post('/api/v1/auth/token/refresh/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
 
     def test_refresh_token_invalido_retorna_401(self):
-        response = self.client.post(
-            '/api/v1/auth/token/refresh/',
-            {'refresh': 'not-a-valid-token'},
-            format='json',
-        )
+        self.client.cookies[REFRESH_COOKIE] = 'not-a-valid-token'
+        response = self.client.post('/api/v1/auth/token/refresh/')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_refresh_sin_cookie_retorna_401(self):
+        response = self.client.post('/api/v1/auth/token/refresh/')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_todos_los_endpoints_requieren_autenticacion(self):

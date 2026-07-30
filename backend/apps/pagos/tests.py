@@ -8,6 +8,7 @@ from apps.inquilinos.models import Inquilino
 from apps.contratos.models import Contrato
 from apps.pagos.models import Pago
 from apps.pagos.services import sincronizar_estados_vencimiento, DIAS_POR_VENCER
+from apps.pagos.tasks import sincronizar_pagos_task
 
 
 def make_habitacion(numero='101'):
@@ -281,8 +282,30 @@ class SincronizarEstadosVencimientoTest(TestCase):
         user = Usuario.objects.create_user(username='syncuser', password='pass1234')
         client.force_authenticate(user=user)
         self._make_pago(Pago.Estado.PENDIENTE, self.hoy + datetime.timedelta(days=1))
-        # El middleware sincroniza antes de que la vista resuelva el queryset.
+        # La sincronización ahora corre vía Celery Beat, no en cada request.
+        sincronizar_estados_vencimiento(self.hoy)
         response = client.get('/api/v1/pagos/?estado=por_vencer')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['estado'], 'por_vencer')
+
+
+class SincronizarPagosTaskTest(TestCase):
+    """Cubre apps.pagos.tasks.sincronizar_pagos_task (ejecutada por Celery Beat)."""
+
+    def test_task_delega_en_el_servicio(self):
+        hab = make_habitacion()
+        inq = make_inquilino()
+        contrato = make_contrato(hab, inq)
+        hoy = datetime.date.today()
+        pago = Pago.objects.create(
+            contrato=contrato, monto=500_000,
+            fecha_vencimiento=hoy - datetime.timedelta(days=1), fecha_pago=hoy,
+            metodo_pago=Pago.MetodoPago.EFECTIVO, estado=Pago.Estado.PENDIENTE,
+        )
+
+        resultado = sincronizar_pagos_task.delay().get()
+
+        pago.refresh_from_db()
+        self.assertEqual(pago.estado, Pago.Estado.VENCIDO)
+        self.assertEqual(resultado['vencido'], 1)

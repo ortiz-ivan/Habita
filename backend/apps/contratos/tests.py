@@ -144,6 +144,7 @@ class ContratoAPITest(TestCase):
             habitacion=self.hab.pk,
             inquilino=self.inq.pk,
             fecha_inicio=str(datetime.date.today()),
+            fecha_fin=str(datetime.date.today() + datetime.timedelta(days=365)),
             monto_mensual=500_000,
             deposito=500_000,
             estado=Contrato.Estado.ACTIVO,

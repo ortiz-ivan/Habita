@@ -7,9 +7,9 @@ from apps.pagos.services import sincronizar_estados_vencimiento
 
 class Command(BaseCommand):
     help = (
-        'Recalcula el estado de los pagos (pendiente/por_vencer/vencido) según fecha_pago. '
-        'El middleware ya lo hace en cada request; este comando es para correrlo manualmente '
-        'o vía cron/tarea programada externa si se prefiere no depender del middleware.'
+        'Recalcula el estado de los pagos (pendiente/por_vencer/vencido) según fecha_vencimiento. '
+        'Se ejecuta automáticamente cada 15 min vía Celery Beat (ver apps.pagos.tasks); '
+        'este comando es para correrlo manualmente si hace falta.'
     )
 
     def handle(self, *args: Any, **options: Any) -> None:

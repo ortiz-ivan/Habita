@@ -27,6 +27,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'django_filters',
     'drf_spectacular',
+    'django_celery_beat',
 ]
 
 LOCAL_APPS = [
@@ -49,7 +50,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'apps.pagos.middleware.SincronizarEstadosPagoMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -177,3 +177,12 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Días de anticipación antes de fecha_pago en que un pago 'pendiente' pasa a 'por_vencer'.
 PAGOS_DIAS_POR_VENCER = config('PAGOS_DIAS_POR_VENCER', default=5, cast=int)
+
+
+CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

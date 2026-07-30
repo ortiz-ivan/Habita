@@ -1,6 +1,12 @@
+import sys
+
 from .base import *  # noqa: F401, F403
 
 DEBUG = True
+
+if 'test' in sys.argv:
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
 
 LOGGING = {
     'version': 1,

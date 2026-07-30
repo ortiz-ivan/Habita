@@ -179,6 +179,19 @@ CORS_ALLOW_CREDENTIALS = True
 PAGOS_DIAS_POR_VENCER = config('PAGOS_DIAS_POR_VENCER', default=5, cast=int)
 
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        # DB distinta a la del broker/result-backend de Celery (0) para no mezclar namespaces.
+        'LOCATION': config('REDIS_CACHE_URL', default='redis://localhost:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            # Si Redis no responde, el cache se degrada a "siempre miss" en vez de tirar el sitio.
+            'IGNORE_EXCEPTIONS': True,
+        },
+    }
+}
+
 CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
 CELERY_ACCEPT_CONTENT = ['json']

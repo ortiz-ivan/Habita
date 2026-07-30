@@ -11,6 +11,7 @@ x-backend-env: &backend-env
   SENTRY_DSN: ${SENTRY_DSN:-}
   CELERY_BROKER_URL: redis://redis:6379/0
   CELERY_RESULT_BACKEND: redis://redis:6379/0
+  REDIS_CACHE_URL: redis://redis:6379/1
 
 services:
   db:
@@ -46,6 +47,8 @@ services:
       <<: *backend-env
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     command: >
       sh -c "python manage.py migrate --noinput &&

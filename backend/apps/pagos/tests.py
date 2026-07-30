@@ -1,4 +1,5 @@
 import datetime
+from django.core.cache import cache
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -7,7 +8,7 @@ from apps.habitaciones.models import Habitacion
 from apps.inquilinos.models import Inquilino
 from apps.contratos.models import Contrato
 from apps.pagos.models import Pago
-from apps.pagos.services import sincronizar_estados_vencimiento, DIAS_POR_VENCER
+from apps.pagos.services import calcular_resumen, sincronizar_estados_vencimiento, DIAS_POR_VENCER
 from apps.pagos.tasks import sincronizar_pagos_task
 
 
@@ -309,3 +310,43 @@ class SincronizarPagosTaskTest(TestCase):
         pago.refresh_from_db()
         self.assertEqual(pago.estado, Pago.Estado.VENCIDO)
         self.assertEqual(resultado['vencido'], 1)
+
+
+class CalcularResumenCacheTest(TestCase):
+    """Cubre el cacheo en Redis de apps.pagos.services.calcular_resumen."""
+
+    def setUp(self):
+        cache.clear()
+        self.hab = make_habitacion()
+        self.inq = make_inquilino()
+        self.contrato = make_contrato(self.hab, self.inq)
+
+    def _make_pago(self, monto=500_000, estado=Pago.Estado.PAGADO):
+        hoy = datetime.date.today()
+        return Pago.objects.create(
+            contrato=self.contrato, monto=monto,
+            fecha_vencimiento=hoy, fecha_pago=hoy,
+            metodo_pago=Pago.MetodoPago.EFECTIVO, estado=estado,
+        )
+
+    def test_segunda_llamada_no_pega_a_la_base(self):
+        self._make_pago()
+        calcular_resumen()  # primera llamada: puebla la cache
+        with self.assertNumQueries(0):
+            resultado = calcular_resumen()
+        self.assertEqual(resultado['ingresos_mes'], 500_000)
+
+    def test_crear_pago_invalida_la_cache(self):
+        primero = calcular_resumen()
+        self._make_pago(monto=100_000)
+        segundo = calcular_resumen()
+        self.assertNotEqual(primero, segundo)
+        self.assertEqual(segundo['ingresos_mes'], 100_000)
+
+    def test_borrar_pago_invalida_la_cache(self):
+        pago = self._make_pago()
+        primero = calcular_resumen()
+        pago.delete()
+        segundo = calcular_resumen()
+        self.assertNotEqual(primero, segundo)
+        self.assertEqual(segundo['ingresos_mes'], 0)
